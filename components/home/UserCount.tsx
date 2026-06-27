@@ -94,30 +94,20 @@ export const UserBaseCounter: React.FC<UserBaseCounterProps> = ({
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{
-            duration: 0.8,
-            delay: 0.5,
-            ease: [0.21, 0.47, 0.32, 0.98],
-          }}
-        >
-          <div className="relative group inline-block text-left">
-            <div className="relative bg-background backdrop-blur-lg border rounded-2xl px-5 py-4">
-              <div className="flex items-center gap-3">
-                <Users className="w-7 h-7" />
-                <div>
-                  <div className="text-3xl font-bold text-foreground flex items-center justify-center gap-1">
-                    <AnimatedCounter value={totalUsers} duration={2.5} />
-                    <span className="text-green-600">+</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Active Users</p>
+        <div className="relative group inline-block text-left">
+          <div className="relative bg-background backdrop-blur-lg border rounded-2xl px-5 py-4">
+            <div className="flex items-center gap-3">
+              <Users className="w-7 h-7" />
+              <div>
+                <div className="text-3xl font-bold text-foreground flex items-center justify-center gap-1">
+                  <AnimatedCounter value={totalUsers} duration={4} />
+                  <span className="text-green-600">+</span>
                 </div>
+                <p className="text-xs text-muted-foreground">Active Users</p>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       <p className="text-sm text-white">Join thousands of satisfied users</p>

@@ -134,6 +134,47 @@ export const content = {
       saveBtn: "Save profile",
       savingBtn: "Saving...",
     },
+    problem: {
+      badge: "The Challenge",
+      headingPart1: "Farmers face ",
+      headingHighlight: "climate uncertainty",
+      headingPart2: " every day",
+      description:
+        "Without reliable, localized weather information and actionable insights, farmers struggle to make critical decisions that directly impact their livelihood.",
+      metrics: [
+        {
+          label: "Weather Uncertainty",
+          value: "40%",
+          impact: "crop loss risk",
+          description:
+            "Unpredictable rainfall and extreme weather events threaten agricultural productivity",
+          link: "https://www.fao.org/climate-change/en/",
+        },
+        {
+          label: "Information Gap",
+          value: "78%",
+          impact: "farmers lack access",
+          description:
+            "Critical weather data not available in regional languages or localized formats",
+          link: "https://www.isro.gov.in/",
+        },
+        {
+          label: "Poor Timing",
+          value: "₹2.5L",
+          impact: "avg. annual loss",
+          description:
+            "Incorrect timing of irrigation, sowing, and harvesting due to lack of actionable insights",
+          link: "https://www.imd.gov.in/",
+        },
+      ],
+      impactEyebrow: "The Cost of Uncertainty",
+      impactTitle: "Billions in annual losses",
+      impactDesc:
+        "Without reliable information, farmers often incur significant losses due to poor timing of agricultural operations. Unpredictable weather patterns, lack of localized forecasts, and limited access to actionable advisories create a perfect storm of risk.",
+      impactBtnSolution: "Discover the Solution",
+      impactBtnLearnMore: "Learn More",
+      goToSource: "Go to source",
+    },
   },
   hi: {
     title: "FarmRisk",
@@ -271,6 +312,47 @@ export const content = {
       saveBtn: "प्रोफ़ाइल सहेजें",
       savingBtn: "सहेज रहा है...",
     },
+    problem: {
+      badge: "चुनौती",
+      headingPart1: "किसानों को हर दिन ",
+      headingHighlight: "जलवायु अनिश्चितता",
+      headingPart2: " का सामना करना पड़ता है",
+      description:
+        "विश्वसनीय, स्थानीयकृत मौसम की जानकारी और व्यावहारिक अंतर्दृष्टि के बिना, किसान महत्वपूर्ण निर्णय लेने के लिए संघर्ष करते हैं जो सीधे उनकी आजीविका को प्रभावित करते हैं।",
+      metrics: [
+        {
+          label: "मौसम की अनिश्चितता",
+          value: "40%",
+          impact: "फसल नुकसान का जोखिम",
+          description:
+            "अप्रत्याशित वर्षा और अत्यधिक मौसम की घटनाएं कृषि उत्पादकता के लिए खतरा पैदा करती हैं",
+          link: "https://www.fao.org/climate-change/en/",
+        },
+        {
+          label: "सूचना का अंतर",
+          value: "78%",
+          impact: "किसानों के पास पहुंच नहीं है",
+          description:
+            "महत्वपूर्ण मौसम डेटा क्षेत्रीय भाषाओं या स्थानीय प्रारूपों में उपलब्ध नहीं है",
+          link: "https://www.isro.gov.in/",
+        },
+        {
+          label: "खराब समय",
+          value: "₹2.5L",
+          impact: "औसत वार्षिक हानि",
+          description:
+            "व्यावहारिक अंतर्दृष्टि की कमी के कारण सिंचाई, बुवाई और कटाई का गलत समय",
+          link: "https://www.imd.gov.in/",
+        },
+      ],
+      impactEyebrow: "अनिश्चितता की लागत",
+      impactTitle: "सालाना अरबों का नुकसान",
+      impactDesc:
+        "विश्वसनीय जानकारी के बिना, किसानों को अक्सर कृषि कार्यों के खराब समय के कारण महत्वपूर्ण नुकसान उठाना पड़ता है। अप्रत्याशित मौसम के पैटर्न, स्थानीयकृत पूर्वानुमानों की कमी और व्यावहारिक सलाह तक सीमित पहुंच जोखिम का एक आदर्श तूफान पैदा करती है।",
+      impactBtnSolution: "समाधान खोजें",
+      impactBtnLearnMore: "अधिक जानें",
+      goToSource: "स्रोत पर जाएं",
+    },
   },
   mr: {
     title: "FarmRisk",
@@ -406,6 +488,47 @@ export const content = {
       locationPlaceholder: "गाव, जिल्हा किंवा शहर",
       saveBtn: "प्रोफाइल जतन करा",
       savingBtn: "जतन करत आहे...",
+    },
+    problem: {
+      badge: "आव्हान",
+      headingPart1: "शेतकऱ्यांना दररोज ",
+      headingHighlight: "हवामान अनिश्चिततेचा",
+      headingPart2: " सामना करावा लागतो",
+      description:
+        "विश्वासार्ह, स्थानिक हवामान माहिती आणि कृती करण्यायोग्य अंतर्दृष्टीशिवाय, शेतकरी त्यांच्या उपजीविकेवर थेट परिणाम करणारे महत्त्वाचे निर्णय घेण्यासाठी धडपडतात.",
+      metrics: [
+        {
+          label: "हवामान अनिश्चितता",
+          value: "40%",
+          impact: "पीक नुकसानीचा धोका",
+          description:
+            "अकल्पित पाऊस आणि कमालीचे हवामान शेती उत्पादकतेला धोका निर्माण करतात",
+          link: "https://www.fao.org/climate-change/en/",
+        },
+        {
+          label: "माहितीचा अभाव",
+          value: "78%",
+          impact: "शेतकऱ्यांकडे प्रवेश नाही",
+          description:
+            "महत्त्वपूर्ण हवामान डेटा प्रादेशिक भाषांमध्ये किंवा स्थानिक स्वरूपात उपलब्ध नाही",
+          link: "https://www.isro.gov.in/",
+        },
+        {
+          label: "नियोजनाचा अभाव",
+          value: "₹2.5L",
+          impact: "सरासरी वार्षिक नुकसान",
+          description:
+            "कृती करण्यायोग्य अंतर्दृष्टीच्या अभावामुळे सिंचन, पेरणी आणि कापणीची चुकीची वेळ",
+          link: "https://www.imd.gov.in/",
+        },
+      ],
+      impactEyebrow: "अनिश्चिततेचा खर्च",
+      impactTitle: "वार्षिक अब्जावधींचे नुकसान",
+      impactDesc:
+        "विश्वासार्ह माहितीशिवाय, शेती कामांच्या चुकीच्या नियोजनामुळे शेतकऱ्यांना अनेकदा मोठे नुकसान सहन करावे लागते. लहरी हवामान, स्थानिक अंदाजांचा अभाव आणि सल्लागारांचा मर्यादित प्रवेश यामुळे धोक्याची परिस्थिती निर्माण होते.",
+      impactBtnSolution: "उपाय शोधा",
+      impactBtnLearnMore: "अधिक जाणून घ्या",
+      goToSource: "स्रोताकडे जा",
     },
   },
   ta: {
@@ -545,8 +668,49 @@ export const content = {
       agePlaceholder: "வயது",
       locationLabel: "இருப்பிடம்",
       locationPlaceholder: "கிராமம், மாவட்டம் அல்லது நகரம்",
-      saveBtn: "சுயவிவரத்தைச் சேமிக்கவும்",
+      saveBtn: "சுயவிவரத்தைச் சேમીக்கவும்",
       savingBtn: "சேமிக்கப்படுகிறது...",
+    },
+    problem: {
+      badge: "சவால்",
+      headingPart1: "விவசாயிகள் ஒவ்வொரு நாளும் ",
+      headingHighlight: "காலநிலை நிச்சயமற்ற தன்மையை",
+      headingPart2: " எதிர்கொள்கின்றனர்",
+      description:
+        "நம்பகமான, உள்ளூர் வானிலை தகவல்கள் மற்றும் செயல்படக்கூடிய ஆலோசனைகள் இல்லாததால், விவசாயிகள் தங்கள் வாழ்வாதாரத்தை நேரடியாகப் பாதிக்கும் முக்கியமான முடிவுகளை எடுக்க சிரமப்படுகிறார்கள்.",
+      metrics: [
+        {
+          label: "வானிலை நிச்சயமற்ற தன்மை",
+          value: "40%",
+          impact: "பயிர் இழப்பு ஆபத்து",
+          description:
+            "கணிக்க முடியாத மழைப்பொழிவு மற்றும் தீவிர வானிலை நிகழ்வுகள் விவசாய உற்பத்தியை அச்சுறுத்துகின்றன",
+          link: "https://www.fao.org/climate-change/en/",
+        },
+        {
+          label: "தகவல் இடைவெளி",
+          value: "78%",
+          impact: "விவசாயிகளுக்கு அணுகல் இல்லை",
+          description:
+            "முக்கியமான வானிலை தரவு பிராந்திய மொழிகளிலோ அல்லது உள்ளூர் வடிவங்களிலோ கிடைக்கவில்லை",
+          link: "https://www.isro.gov.in/",
+        },
+        {
+          label: "தவறான நேரம்",
+          value: "₹2.5L",
+          impact: "சராசரி ஆண்டு இழப்பு",
+          description:
+            "செயல்படக்கூடிய நுண்ணறிவு இல்லாததால் நீர்ப்பாசனம், விதைப்பு மற்றும் அறுவடையின் தவறான நேரம்",
+          link: "https://www.imd.gov.in/",
+        },
+      ],
+      impactEyebrow: "நிச்சயமற்ற தன்மையின் விலை",
+      impactTitle: "ஆண்டுதோறும் கோடிக்கணக்கான இழப்பு",
+      impactDesc:
+        "நம்பகமான தகவல் இல்லாததால், விவசாய நடவடிக்கைகளின் தவறான நேரத்தின் காரணமாக விவசாயிகள் பெரும்பாலும் குறிப்பிடத்தக்க இழப்புகளைச் சந்திக்கின்றனர். கணிக்க முடியாத வானிலை, உள்ளூர் கணிப்புகள் இல்லாதது மற்றும் ஆலோசனைகளுக்கான குறைந்த அணுகல் ஆகியவை ஆபத்தை உருவாக்குகின்றன.",
+      impactBtnSolution: "தீர்வை கண்டறியவும்",
+      impactBtnLearnMore: "மேலும் அறிய",
+      goToSource: "மூலத்திற்குச் செல்லவும்",
     },
   },
   gu: {
@@ -683,6 +847,47 @@ export const content = {
       locationPlaceholder: "ગામ, જિલ્લો અથવા શહેર",
       saveBtn: "પ્રોફાઇલ સાચવો",
       savingBtn: "સાચવી રહ્યું છે...",
+    },
+    problem: {
+      badge: "પડકાર",
+      headingPart1: "ખેડૂતો દરરોજ ",
+      headingHighlight: "હવામાનની અનિશ્ચિતતાનો",
+      headingPart2: " સામનો કરે છે",
+      description:
+        "વિશ્વસનીય, સ્થાનિક હવામાન માહિતી અને યોગ્ય માર્ગદર્શન વિના, ખેડૂતો તેમની આજીવિકાને સીધી અસર કરતા મહત્વપૂર્ણ નિર્ણયો લેવા માટે સંઘર્ષ કરે છે.",
+      metrics: [
+        {
+          label: "હવામાન અનિશ્ચિતતા",
+          value: "40%",
+          impact: "પાક નુકસાનનું જોખમ",
+          description:
+            "અણધારી વરસાદ અને અતિશય હવામાનની ઘટનાઓ કૃષિ ઉત્પાદકતા માટે જોખમ ઊભું કરે છે",
+          link: "https://www.fao.org/climate-change/en/",
+        },
+        {
+          label: "માહિતીનો અભાવ",
+          value: "78%",
+          impact: "ખેડૂતો પાસે પહોંચ નથી",
+          description:
+            "મહત્વપૂર્ણ હવામાન માહિતી પ્રાદેશિક ભાષાઓમાં અથવા સ્થાનિક સ્વરૂપોમાં ઉપલબ્ધ નથી",
+          link: "https://www.isro.gov.in/",
+        },
+        {
+          label: "ખોટો સમય",
+          value: "₹2.5L",
+          impact: "સરેરાશ વાર્ષિક નુકસાન",
+          description:
+            "માહિતીના અભાવને કારણે સિંચાઈ, વાવણી અને લણણીનો ખોટો સમય",
+          link: "https://www.imd.gov.in/",
+        },
+      ],
+      impactEyebrow: "અનિશ્ચિતતાની કિંમત",
+      impactTitle: "વાર્ષિક અબજોનું નુકસાન",
+      impactDesc:
+        "વિશ્વસનીય માહિતી વિના, ખેતીકામના ખોટા સમયને કારણે ખેડૂતોને વારંવાર મોટું નુકસાન સહન કરવું પડે છે. લહેરી હવામાન, સ્થાનિક અંદાજોનો અભાવ અને મર્યાદિત સલાહ સેવાઓ જોખમ વધારે છે.",
+      impactBtnSolution: "ઉકેલ શોધો",
+      impactBtnLearnMore: "વધુ જાણો",
+      goToSource: "સ્ત્રોત પર જાઓ",
     },
   },
 };

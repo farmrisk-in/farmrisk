@@ -13,11 +13,18 @@ import { UserBaseCounter } from "@/components/home/UserCount";
 import Image from "next/image";
 
 const transitionVariants = {
+  container: {
+    visible: {
+      transition: {
+        staggerChildren: 0.12,
+      },
+    },
+  },
   item: {
     hidden: {
       opacity: 0,
       filter: "blur(12px)",
-      y: 12,
+      y: 16,
     },
     visible: {
       opacity: 1,
@@ -25,8 +32,8 @@ const transitionVariants = {
       y: 0,
       transition: {
         type: "spring" as const,
-        bounce: 0.3,
-        duration: 1.5,
+        bounce: 0.1,
+        duration: 0.9,
       },
     },
   },
@@ -43,8 +50,12 @@ export function Hero() {
           id="hero"
           className="relative min-h-125 lg:min-h-screen dark:bg-[url('/sat2.png')] bg-[url('/sat1.png')] bg-cover bg-center flex items-center overflow-hidden"
         >
-          <div className="absolute z-1 inset-0 size-full [background:linear-gradient(to_bottom,transparent_0%,transparent_70%,var(--background)_100%)]" />
-          <div className="mx-[10%] max-w-7xl pt-28 pb-0 md:pt-40 lg:pt-36 w-full relative">
+          {/* Radial gradient background */}
+          <div
+            aria-hidden
+            className="absolute z-1 inset-0 size-full [background:linear-gradient(to_bottom,transparent_0%,transparent_70%,var(--background)_100%)]"
+          />
+          <div className="mx-[10%] max-w-7xl pt-28 pb-0 md:pt-36 lg:pt-24 w-full relative">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Left Side: Text and CTAs */}
               <div className="lg:col-span-5 flex flex-col items-start text-left w-full backdrop-brightness-95 rounded-2xl z-100">
@@ -58,19 +69,18 @@ export function Hero() {
                   <p className="text-left text-white mt-6 text-base md:text-lg opacity-90 max-w-lg leading-relaxed">
                     {t.heroSubheading}
                   </p>
+                  <div className="mt-8 w-full flex justify-start">
+                    <UserBaseCounter totalUsers={10000} />
+                  </div>
                 </AnimatedGroup>
-
-                <div className="mt-8 w-full flex justify-start">
-                  <UserBaseCounter totalUsers={10000} />
-                </div>
 
                 <AnimatedGroup
                   variants={{
                     container: {
                       visible: {
                         transition: {
-                          staggerChildren: 0.05,
-                          delayChildren: 0.75,
+                          staggerChildren: 0.08,
+                          delayChildren: 0.45,
                         },
                       },
                     },
@@ -106,7 +116,7 @@ export function Hero() {
                       visible: {
                         transition: {
                           staggerChildren: 0.05,
-                          delayChildren: 0.75,
+                          delayChildren: 0.2,
                         },
                       },
                     },

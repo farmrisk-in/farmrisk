@@ -1,7 +1,7 @@
 import { Features } from "@/components/home/Features";
 import { Footer } from "@/components/home/Footer";
 import { Hero } from "@/components/home/Hero";
-import Problem from "@/components/home/Problem";
+import { Problem } from "@/components/home/Problem";
 import Solution from "@/components/home/Solution";
 
 export default function Home() {
