@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Brain,
   CalendarDays,
@@ -39,17 +38,6 @@ const ICON_MAP: Record<WeatherIcon, LucideIcon> = {
   Snowflake,
   Wind,
 };
-
-function WeatherLucideIcon({
-  name,
-  className,
-}: {
-  name: WeatherIcon;
-  className?: string;
-}) {
-  const Icon = ICON_MAP[name] ?? Sun;
-  return <Icon className={className} />;
-}
 
 // Shared layout primitives
 
@@ -158,10 +146,10 @@ function HourlyWeatherBlock() {
                     <span className="text-xs font-semibold text-slate-500">
                       {hour.time}
                     </span>
-                    <WeatherLucideIcon
+                    {/* <WeatherLucideIcon
                       name={hour.icon}
                       className="size-5 text-amber-500 transition-transform group-hover:scale-110"
-                    />
+                    /> */}
                   </div>
                   <p className="mt-4 text-2xl font-bold tracking-tight text-slate-950">
                     {hour.temp}°C
@@ -307,10 +295,10 @@ function ForecastBlock() {
                         {day.date}
                       </p>
                     </div>
-                    <WeatherLucideIcon
+                    {/* <WeatherLucideIcon
                       name={day.icon}
                       className="size-5 text-amber-500 transition-transform group-hover:scale-110"
-                    />
+                    /> */}
                   </div>
                   <div className="mt-4 flex items-end gap-1.5">
                     <span className="text-2xl font-bold tracking-tight text-slate-950">
