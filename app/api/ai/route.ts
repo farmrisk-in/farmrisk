@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Path to the python script
-    const scriptPath = path.join(process.cwd(), "app/api/ai/ai.py");
+    const scriptPath = path.join(process.cwd(), "app/api/ai/advisory.py");
 
     // Spawn python3 process, feeding the JSON payload into stdin
     const result = spawnSync("python3", [scriptPath], {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const output = JSON.parse(result.stdout.trim());
     return NextResponse.json(output);
   } catch (error: any) {
-    console.error("Error in POST /api/ai:", error);
+    console.error("Error in POST /api/advisory:", error);
     return NextResponse.json(
       { error: error.message || "Unknown server error" },
       { status: 500 },

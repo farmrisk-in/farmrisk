@@ -46,14 +46,14 @@ const AIOverview = () => {
       const simplifiedWeather = {
         current: current
           ? {
-              temp: current.temp,
-              condition: current.condition.en,
-              humidity: current.humidity,
-              apparentTemp: current.apparentTemp,
-              windKph: current.windKph,
-              windGustsKph: current.windGustsKph,
-              pressureMb: current.pressureMb,
-            }
+            temp: current.temp,
+            condition: current.condition.en,
+            humidity: current.humidity,
+            apparentTemp: current.apparentTemp,
+            windKph: current.windKph,
+            windGustsKph: current.windGustsKph,
+            pressureMb: current.pressureMb,
+          }
           : undefined,
         hourly:
           hourly?.map((h) => ({
@@ -74,13 +74,13 @@ const AIOverview = () => {
           })) || [],
       };
 
-      const response = await fetch("/api/ai", {
+      const response = await fetch("http://localhost:8000/api/advisory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          cropId,
-          location: loc,
-          weather: simplifiedWeather,
+          crop: cropId,
+          latitude: loc.lat,
+          longitude: loc.lng,
           language: lang,
         }),
       });
@@ -91,7 +91,7 @@ const AIOverview = () => {
 
       const resData = await response.json();
       setAdvisoryText(
-        resData.advisory || "No advisory text could be generated.",
+        resData.advisory_summary || "No advisory text could be generated.",
       );
     } catch (err) {
       console.error("AI advisory fetch failed:", err);
@@ -102,6 +102,21 @@ const AIOverview = () => {
       setIsGenerating(false);
     }
   };
+
+  const formattedText = advisoryText.split(/(\*[^*]+\*)/g).map((part, index) => {
+    if (part.startsWith("*") && part.endsWith("*")) {
+      return (
+        <span
+          key={index}
+          className="text-emerald-600 dark:text-emerald-400 text-sm sm:text-base font-semibold"
+        >
+          {part.slice(1, -1)}
+        </span>
+      );
+    }
+    return part;
+  });
+
 
   // Fetch new advisory whenever coordinate, crop, or language parameters change
   useEffect(() => {
@@ -191,7 +206,7 @@ const AIOverview = () => {
         ) : (
           <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
             <p className="text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300">
-              {advisoryText}
+              {formattedText}
             </p>
           </div>
         )}

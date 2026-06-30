@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import {
@@ -44,12 +44,12 @@ const DOWNLOAD_TRANSLATIONS: Record<string, {
   mr: {
     download: "डाउनलोड",
     generating: "तयार होत आहे...",
-    jpeg: "प्रतिма डाउनलोड करा (JPEG)",
+    jpeg: "प्रतिमा डाउनलोड करा (JPEG)",
     pdf: "दस्तऐवज डाउनलोड करा (PDF)",
   },
   ta: {
     download: "பதிவிறக்கு",
-    generating: "உруவாக்கப்படுகிறது...",
+    generating: "உருவாக்கப்படுகிறது...",
     jpeg: "படம் பதிவிறக்கம் (JPEG)",
     pdf: "ஆவணம் பதிவிறக்கம் (PDF)",
   },
@@ -178,13 +178,19 @@ const Download = ({ className }: { className?: string }) => {
 };
 
 function DownloadTemplate() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <>
       {/* --- DESIGN YOUR CUSTOM A4 LAYOUT HERE --- */}
       <div>
         <div>
           <h1>FarmRisk Operational Report</h1>
-          <p>Generated: {new Date().toLocaleDateString()}</p>
+          <p>Generated: {mounted ? new Date().toLocaleDateString() : ""}</p>
         </div>
         <div>🌾 FarmRisk</div>
       </div>
@@ -221,5 +227,24 @@ function DownloadTemplate() {
     </>
   );
 }
+
+// export default Download;>32°C</div>
+//         </div>
+//         <div>
+//           <span>Soil Moisture Vitals</span>
+//           <div>Optimal (42%)</div>
+//         </div>
+//       </div>
+
+//       {/* Extended 16-Day Chart Space */}
+//       <div>[ Extended 16-Day Bias-Corrected Forecast Visuals ]</div>
+
+//       {/* Print Footer */}
+//       <div>
+//         FarmRisk Analytics Console • Secure Offline Local Browser Export
+//       </div>
+//     </>
+//   );
+// }
 
 export default Download;
