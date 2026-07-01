@@ -106,7 +106,7 @@ export function Hero() {
               </div>
 
               {/* Right Side: Dashboard Image */}
-              <div className="relative z-0 lg:col-span-7 overflow-visible">
+              <div className="relative z-10 lg:col-span-7 overflow-visible">
                 <AnimatedGroup
                   variants={{
                     container: {
@@ -121,25 +121,27 @@ export function Hero() {
                   }}
                   className="w-full lg:w-[155%] xl:w-[140%]"
                 >
-                  <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border bg-background p-2 shadow-2xl ring-1">
-                    <Image
-                      src="/dashlight.png"
-                      alt="Dashboard"
-                      width={2200}
-                      height={1200}
-                      priority
-                      className="block dark:hidden w-full h-auto rounded-xl"
-                    />
+                  <Link className="cursor-pointer" href="/auth/choice">
+                    <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border-border bg-background p-2 shadow-2xl ring-1">
+                      <Image
+                        src="/dashlight.png"
+                        alt="Dashboard"
+                        width={2200}
+                        height={1200}
+                        priority
+                        className="block dark:hidden w-full h-auto rounded-xl"
+                      />
 
-                    <Image
-                      src="/dashdark.png"
-                      alt="Dashboard"
-                      width={2200}
-                      height={1200}
-                      priority
-                      className="hidden dark:block w-full h-auto rounded-xl"
-                    />
-                  </div>
+                      <Image
+                        src="/dashdark.png"
+                        alt="Dashboard"
+                        width={2200}
+                        height={1200}
+                        priority
+                        className="hidden dark:block w-full h-auto rounded-xl"
+                      />
+                    </div>
+                  </Link>
                 </AnimatedGroup>
               </div>
             </div>

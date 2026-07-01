@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "app/api/crops/betterFormat.js"  ],
   "exclude": ["node_modules", "types/validator.ts"]
 }

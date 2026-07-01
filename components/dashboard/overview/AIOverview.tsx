@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Sparkles, ChevronDown, Check, Sprout, Wheat } from "lucide-react";
+import { Sparkles, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,22 +17,29 @@ import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeather } from "@/hooks/use-weather";
 
-// Define structured options for the agricultural context filter
-const CROP_OPTIONS = [
-  { id: "general", name: "General (All Crops)", icon: Sprout },
-  { id: "wheat", name: "Wheat Cam", icon: Wheat },
-  { id: "maize", name: "Maize / Corn", icon: Wheat },
-];
+interface CropOption {
+  id: string;
+  name: string;
+  area: number;
+}
+
+// Global default option to ensure dropdown is never completely empty
+const GENERAL_CROP: CropOption = {
+  id: "general", // Unified to match lowercase convention
+  name: "General (All Crops)",
+  area: 0,
+};
 
 const AIOverview = () => {
   const { language } = useLanguage();
   const { location } = useLocationContext();
   const weatherData = useWeather();
-  const [selectedCrop, setSelectedCrop] = useState(CROP_OPTIONS[0]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [advisoryText, setAdvisoryText] = useState("");
+  const [crops, setCrops] = useState<CropOption[]>([]);
+  const [selectedCrop, setSelectedCrop] = useState<CropOption>(GENERAL_CROP);
 
-  const { isLoading, current, hourly, forecast } = weatherData;
+  const { isLoading, current } = weatherData;
 
   // Trigger POST request to /api/ai with localized, simplified weather details
   const getAIAdvisory = async (
@@ -42,38 +49,6 @@ const AIOverview = () => {
   ) => {
     setIsGenerating(true);
     try {
-      // Localize weather strings to only the currently selected language
-      const simplifiedWeather = {
-        current: current
-          ? {
-            temp: current.temp,
-            condition: current.condition.en,
-            humidity: current.humidity,
-            apparentTemp: current.apparentTemp,
-            windKph: current.windKph,
-            windGustsKph: current.windGustsKph,
-            pressureMb: current.pressureMb,
-          }
-          : undefined,
-        hourly:
-          hourly?.map((h) => ({
-            time: h.time,
-            temp: h.temp,
-            condition: h.condition.en,
-            rainChance: h.rainChance,
-            windKph: h.windKph,
-          })) || [],
-        forecast:
-          forecast?.map((f) => ({
-            date: f.date,
-            day: f.day.en,
-            high: f.high,
-            low: f.low,
-            condition: f.condition.en,
-            rainChance: f.rainChance,
-          })) || [],
-      };
-
       const response = await fetch("http://localhost:8000/api/advisory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,9 +65,13 @@ const AIOverview = () => {
       }
 
       const resData = await response.json();
-      setAdvisoryText(
-        resData.advisory_summary || "No advisory text could be generated.",
-      );
+      const text = resData.advisory_summary || "No advisory text could be generated.";
+      setAdvisoryText(text);
+      try {
+        localStorage.setItem("farmrisk-ai-advisory", text);
+      } catch (e) {
+        console.error("Failed to save AI advisory to localStorage", e);
+      }
     } catch (err) {
       console.error("AI advisory fetch failed:", err);
       setAdvisoryText(
@@ -103,20 +82,54 @@ const AIOverview = () => {
     }
   };
 
-  const formattedText = advisoryText.split(/(\*[^*]+\*)/g).map((part, index) => {
-    if (part.startsWith("*") && part.endsWith("*")) {
-      return (
-        <span
-          key={index}
-          className="text-emerald-600 dark:text-emerald-400 text-sm sm:text-base font-semibold"
-        >
-          {part.slice(1, -1)}
-        </span>
-      );
-    }
-    return part;
-  });
+  useEffect(() => {
+    async function fetchCropsForCoordinates() {
+      if (!location.lat || !location.lng) return;
 
+      try {
+        // Queries the CSV-direct API endpoint we built previously
+        const response = await fetch(
+          `/api/crops?lat=${location.lat}&lng=${location.lng}`,
+        );
+        const data = await response.json();
+        if (
+          response.ok &&
+          data.success &&
+          data.crops &&
+          data.crops.length > 0
+        ) {
+          // General option sits at the top of the selectable dropdown list
+          setCrops([GENERAL_CROP, ...data.crops]);
+          setSelectedCrop(GENERAL_CROP);
+        } else {
+          setCrops([GENERAL_CROP]);
+          setSelectedCrop(GENERAL_CROP);
+        }
+      } catch (err) {
+        console.error("Error fetching regional crops:", err);
+        setCrops([GENERAL_CROP]);
+        setSelectedCrop(GENERAL_CROP);
+      }
+    }
+
+    fetchCropsForCoordinates();
+  }, [location.lat, location.lng]);
+
+  const formattedText = advisoryText
+    .split(/(\*[^*]+\*)/g)
+    .map((part, index) => {
+      if (part.startsWith("*") && part.endsWith("*")) {
+        return (
+          <span
+            key={index}
+            className="text-emerald-600 dark:text-emerald-400 text-sm sm:text-base font-semibold"
+          >
+            {part.slice(1, -1)}
+          </span>
+        );
+      }
+      return part;
+    });
 
   // Fetch new advisory whenever coordinate, crop, or language parameters change
   useEffect(() => {
@@ -126,9 +139,6 @@ const AIOverview = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.lat, location.lng, selectedCrop.id, language, isLoading]);
-
-  const ActiveIcon = selectedCrop.icon;
-
   return (
     <div className="w-full h-full bg-linear-to-br from-emerald-500/10 via-background to-muted/30 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl shadow-[0_4px_20px_-4px_rgba(16,185,129,0.1)] p-3 select-none relative overflow-hidden backdrop-blur-md flex flex-col justify-between">
       {/* BACKGROUND BRAND GLOW */}
@@ -158,7 +168,6 @@ const AIOverview = () => {
               className="w-full sm:w-auto h-8 bg-background/60 border-emerald-500/20 hover:border-emerald-500/40 text-foreground text-xs font-medium px-2.5 rounded-lg shadow-xs flex items-center justify-between gap-1.5 cursor-pointer"
             >
               <div className="flex items-center gap-1.5 min-w-0">
-                <ActiveIcon className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span className="truncate">{selectedCrop.name}</span>
               </div>
               <ChevronDown className="size-3.5 opacity-60 shrink-0" />
@@ -169,8 +178,7 @@ const AIOverview = () => {
             align="end"
             className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
           >
-            {CROP_OPTIONS.map((option) => {
-              const OptionIcon = option.icon;
+            {crops.map((option) => {
               const isSelected = option.id === selectedCrop.id;
 
               return (
@@ -180,7 +188,6 @@ const AIOverview = () => {
                   className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <OptionIcon className="size-3.5 text-muted-foreground shrink-0" />
                     <span className="truncate font-medium">{option.name}</span>
                   </div>
                   {isSelected && (

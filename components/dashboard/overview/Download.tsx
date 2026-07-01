@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import html2canvas from "html2canvas";
+import { useRef, useState } from "react";
+import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import {
   ChevronDown,
@@ -20,15 +20,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useLanguage } from "@/hooks/use-language";
+import DownloadTemplate from "./DownloadTemplate";
+import { useLocationContext } from "@/providers/LocationProvider";
+import { useWeather } from "@/hooks/use-weather";
 
 // Ensure you have run: npm install html2canvas jspdf
 
-const DOWNLOAD_TRANSLATIONS: Record<string, {
-  download: string;
-  generating: string;
-  jpeg: string;
-  pdf: string;
-}> = {
+const DOWNLOAD_TRANSLATIONS: Record<
+  string,
+  {
+    download: string;
+    generating: string;
+    jpeg: string;
+    pdf: string;
+  }
+> = {
   en: {
     download: "Download",
     generating: "Generating...",
@@ -66,6 +72,8 @@ const Download = ({ className }: { className?: string }) => {
   const trans = DOWNLOAD_TRANSLATIONS[language] || DOWNLOAD_TRANSLATIONS.en;
   const printRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const { location } = useLocationContext();
+  const weatherData = useWeather();
 
   // 1. Core Snapshot Function
   const getCanvas = async () => {
@@ -167,84 +175,18 @@ const Download = ({ className }: { className?: string }) => {
       <div className="overflow-hidden absolute left-[-9999px] top-[-9999px] pointer-events-none">
         <div
           ref={printRef}
-          className="p-10 relative flex flex-col"
+          className="relative flex flex-col bg-white"
           style={{ width: "794px", height: "1123px" }} // Standard 96 DPI A4 Pixel Grid
         >
-          <DownloadTemplate />
+          <DownloadTemplate
+            location={location}
+            language={language}
+            weather={weatherData}
+          />
         </div>
       </div>
     </div>
   );
 };
-
-function DownloadTemplate() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  return (
-    <>
-      {/* --- DESIGN YOUR CUSTOM A4 LAYOUT HERE --- */}
-      <div>
-        <div>
-          <h1>FarmRisk Operational Report</h1>
-          <p>Generated: {mounted ? new Date().toLocaleDateString() : ""}</p>
-        </div>
-        <div>🌾 FarmRisk</div>
-      </div>
-
-      {/* AI Advisor Content Slot */}
-      <div>
-        <h2>AI Agronomist Overview</h2>
-        <p>
-          Heavy convective activity detected in nearby grids. High lightning
-          probability index over next 6 hours. Delay open field spraying
-          operations.
-        </p>
-      </div>
-
-      {/* Sample Metrics Placement Grid */}
-      <div>
-        <div>
-          <span>Current Weather</span>
-          <div>32°C</div>
-        </div>
-        <div>
-          <span>Soil Moisture Vitals</span>
-          <div>Optimal (42%)</div>
-        </div>
-      </div>
-
-      {/* Extended 16-Day Chart Space */}
-      <div>[ Extended 16-Day Bias-Corrected Forecast Visuals ]</div>
-
-      {/* Print Footer */}
-      <div>
-        FarmRisk Analytics Console • Secure Offline Local Browser Export
-      </div>
-    </>
-  );
-}
-
-// export default Download;>32°C</div>
-//         </div>
-//         <div>
-//           <span>Soil Moisture Vitals</span>
-//           <div>Optimal (42%)</div>
-//         </div>
-//       </div>
-
-//       {/* Extended 16-Day Chart Space */}
-//       <div>[ Extended 16-Day Bias-Corrected Forecast Visuals ]</div>
-
-//       {/* Print Footer */}
-//       <div>
-//         FarmRisk Analytics Console • Secure Offline Local Browser Export
-//       </div>
-//     </>
-//   );
-// }
 
 export default Download;

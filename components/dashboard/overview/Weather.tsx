@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   CloudSun,
   Wind,
@@ -13,6 +12,7 @@ import {
   CloudRain,
   CloudLightning,
   Snowflake,
+  Compass,
 } from "lucide-react";
 import { type CurrentWeather } from "@/hooks/use-weather";
 import { useLocationContext } from "@/providers/LocationProvider";
@@ -29,6 +29,30 @@ const ICON_MAP = {
   Snowflake,
   Wind,
 };
+
+// Convert degrees to cardinal directions
+function getWindDirection(deg: number): string {
+  const directions = [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW",
+  ];
+  const val = Math.floor(deg / 22.5 + 0.5);
+  return directions[val % 16];
+}
 
 interface WeatherProps {
   weatherData: {
@@ -57,11 +81,10 @@ const Weather = ({ weatherData }: WeatherProps) => {
             <Skeleton className="h-10 w-2/3" />
             <Skeleton className="h-4 w-1/2" />
           </div>
-          <div className="w-full @[380px]:w-46.25 shrink-0 space-y-2.5">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 w-full @[450px]:w-85 shrink-0">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <Skeleton key={i} className="h-4 w-full" />
+            ))}
           </div>
         </div>
       </div>
@@ -120,7 +143,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               {current.temp}°C
             </span>
             <span className="text-muted-foreground text-xs font-medium max-w-21.25 truncate">
-              {current.condition[language] || current.condition.en}
+              {current.condition[language as keyof typeof current.condition] || current.condition.en}
             </span>
           </div>
           <p className="text-xs text-muted-foreground font-medium mt-1.5">
@@ -131,9 +154,42 @@ const Weather = ({ weatherData }: WeatherProps) => {
           </p>
         </div>
 
-        {/* RIGHT COLUMN: HIGH-DENSITY METRICS DOCK (Responsive container wrapping & border toggle) */}
-        <div className="space-y-2 border-t @[380px]:border-t-0 @[380px]:border-l border-border pt-3 @[380px]:pt-0 @[380px]:pl-3 w-full @[380px]:w-46.25 shrink-0 min-w-46.25">
-          {/* Metric Row: Humidity */}
+        {/* RIGHT COLUMN: HIGH-DENSITY METRICS DOCK (2-Column Grid with responsive wrapping & border toggle) */}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 border-t @[450px]:border-t-0 @[450px]:border-l border-border pt-3.5 @[450px]:pt-0 @[450px]:pl-4 w-full @[450px]:w-85 shrink-0 min-w-70">
+          {/* Precipitation */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+              <CloudRain className="size-3.5 shrink-0 text-blue-400" />
+              <span className="truncate">Rainfall</span>
+            </div>
+            <span className="font-semibold text-right shrink-0">
+              {current.precipitation} mm
+            </span>
+          </div>
+
+          {/* Wind Speed */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+              <Wind className="size-3.5 shrink-0 text-sky-500" />
+              <span className="truncate">Wind</span>
+            </div>
+            <span className="font-semibold text-right shrink-0 truncate max-w-20">
+              {current.windKph} km/h
+            </span>
+          </div>
+
+          {/* Cloud Cover */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+              <Cloud className="size-3.5 shrink-0 text-slate-400" />
+              <span className="truncate">Clouds</span>
+            </div>
+            <span className="font-semibold text-right shrink-0">
+              {current.cloudCover}%
+            </span>
+          </div>
+
+          {/* Humidity */}
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Droplets className="size-3.5 shrink-0 text-blue-500" />
@@ -144,36 +200,47 @@ const Weather = ({ weatherData }: WeatherProps) => {
             </span>
           </div>
 
-          {/* Metric Row: Wind Dynamics */}
-          <div className="flex items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
-              <Wind className="size-3.5 shrink-0 text-sky-500" />
-              <span className="truncate">Wind</span>
-            </div>
-            <span className="font-semibold text-right shrink-0 truncate max-w-21.25">
-              {current.windKph} km/h
-            </span>
-          </div>
-
-          {/* Metric Row: Wind Gust Spikes */}
+          {/* Wind Gusts */}
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Wind className="size-3.5 shrink-0 opacity-40 text-sky-400" />
               <span className="truncate">Gusts</span>
             </div>
-            <span className="font-medium text-right shrink-0 truncate max-w-21.25">
+            <span className="font-medium text-right shrink-0 truncate max-w-20">
               {current.windGustsKph} km/h
             </span>
           </div>
 
-          {/* Metric Row: Barometric Pressure */}
+          {/* Wind Direction */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+              <Compass className="size-3.5 shrink-0 text-amber-500" />
+              <span className="truncate">Direction</span>
+            </div>
+            <span className="font-semibold text-right shrink-0 font-mono">
+              {current.windDirection}° {getWindDirection(current.windDirection)}
+            </span>
+          </div>
+
+          {/* Sea level pressure (MSL) */}
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Gauge className="size-3.5 shrink-0 text-purple-500" />
-              <span className="truncate">Pressure</span>
+              <span className="truncate">Pressure (MSL)</span>
             </div>
             <span className="font-semibold text-right shrink-0 font-mono">
-              {current.pressureMb} mb
+              {current.pressureMb} hPa
+            </span>
+          </div>
+
+          {/* Surface pressure */}
+          <div className="flex items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
+              <Gauge className="size-3.5 shrink-0 opacity-40 text-purple-400" />
+              <span className="truncate">Press (Surf)</span>
+            </div>
+            <span className="font-semibold text-right shrink-0 font-mono">
+              {current.surfacePressureMb} hPa
             </span>
           </div>
         </div>

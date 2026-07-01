@@ -126,7 +126,7 @@ const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
               className="flex-none flex flex-col items-center gap-1 min-w-15 py-1"
             >
               {/* 1. Time Label */}
-              <span className="text-[10px] text-muted-foreground font-semibold">
+              <span className="text-[12px] text-muted-foreground font-semibold">
                 {slot.time}
               </span>
 
@@ -141,7 +141,7 @@ const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
               </span>
 
               {/* 4. Precipitation & Wind (Below Temperature) */}
-              <div className="flex flex-col items-center text-[9px] text-muted-foreground font-medium leading-normal mt-0.5">
+              <div className="flex flex-col items-center text-[11px] text-muted-foreground font-medium leading-normal mt-0.5">
                 <span className="text-blue-500 font-semibold">
                   {slot.rainChance}%
                 </span>

@@ -49,6 +49,10 @@ export type CurrentWeather = {
   windKph: number;
   windGustsKph: number;
   pressureMb: number;
+  precipitation: number;
+  windDirection: number;
+  cloudCover: number;
+  surfacePressureMb: number;
 };
 
 type WeatherPayload = {
@@ -84,7 +88,14 @@ export function useWeather() {
         return res.json() as Promise<WeatherPayload>;
       })
       .then((data) => {
-        if (!cancelled) setState({ status: "success", data });
+        if (!cancelled) {
+          setState({ status: "success", data });
+          try {
+            localStorage.setItem("farmrisk-weather-data", JSON.stringify(data));
+          } catch (e) {
+            console.error("Failed to save weather data to localStorage", e);
+          }
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {

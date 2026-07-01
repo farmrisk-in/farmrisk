@@ -282,8 +282,12 @@ type OpenMeteoResponse = {
     apparent_temperature: number;
     weather_code: number;
     pressure_msl: number;
+    surface_pressure: number;
     wind_speed_10m: number;
+    wind_direction_10m: number;
     wind_gusts_10m: number;
+    precipitation: number;
+    cloud_cover: number;
   };
   hourly: {
     time: string[];
@@ -386,7 +390,7 @@ export async function GET(request: NextRequest) {
   url.searchParams.set("longitude", String(lngNum));
   url.searchParams.set(
     "current",
-    "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,pressure_msl,wind_speed_10m,wind_gusts_10m",
+    "temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,pressure_msl,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation,cloud_cover",
   );
   url.searchParams.set(
     "hourly",
@@ -466,6 +470,10 @@ export async function GET(request: NextRequest) {
     windKph: Math.round(raw.current.wind_speed_10m),
     windGustsKph: Math.round(raw.current.wind_gusts_10m),
     pressureMb: Math.round(raw.current.pressure_msl),
+    precipitation: raw.current.precipitation,
+    windDirection: raw.current.wind_direction_10m,
+    cloudCover: raw.current.cloud_cover,
+    surfacePressureMb: Math.round(raw.current.surface_pressure),
   };
 
   return Response.json({ current, hourly, forecast });

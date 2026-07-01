@@ -43,19 +43,21 @@ import {
 } from "@/lib/utils";
 import { toast } from "sonner";
 import Image from "next/image";
-import Download from "./Download";
 
 const TILE_SIZE = 256;
 const INITIAL_ZOOM = 11;
 
 type SearchResult = SelectedLocation & { id: string };
 
-const BUTTON_TRANSLATIONS: Record<string, {
-  locationShort: string;
-  locationMedium: string;
-  mapShort: string;
-  mapMedium: string;
-}> = {
+const BUTTON_TRANSLATIONS: Record<
+  string,
+  {
+    locationShort: string;
+    locationMedium: string;
+    mapShort: string;
+    mapMedium: string;
+  }
+> = {
   en: {
     locationShort: "Location",
     locationMedium: "Use Location",
@@ -445,7 +447,7 @@ export function LocationSearchBar() {
   return (
     <div className="w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 bg-card p-3 rounded-xl border border-border shadow-sm">
       {/* 1. SEARCH BAR CONTAINER: Full width on md, fluid expansion on lg */}
-      <div className="relative w-full lg:flex-grow lg:flex-1 min-w-full md:min-w-full lg:min-w-[380px]">
+      <div className="relative w-full lg:grow lg:flex-1 min-w-full md:min-w-full lg:min-w-95">
         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground flex items-center justify-center size-4">
           {loadingResults ? (
             <Loader2 className="size-4 animate-spin text-emerald-500" />
@@ -516,7 +518,7 @@ export function LocationSearchBar() {
           variant="outline"
           onClick={handleUseLocation}
           disabled={isLocating}
-          className="flex-grow flex-1 lg:flex-none lg:w-auto h-11 rounded-lg bg-background hover:bg-accent text-foreground border-border px-3 lg:px-4"
+          className="grow flex-1 lg:flex-none lg:w-auto h-11 rounded-lg bg-background hover:bg-accent text-foreground border-border px-3 lg:px-4"
         >
           {isLocating ? (
             <Loader2 className="size-4 animate-spin shrink-0 sm:mr-2" />
@@ -545,7 +547,9 @@ export function LocationSearchBar() {
               <span className="text-xs sm:text-sm font-medium truncate">
                 {/* Responsive Label Gating */}
                 <span className="sm:hidden">{btnTrans.mapShort}</span>
-                <span className="hidden sm:inline md:hidden">{btnTrans.mapMedium}</span>
+                <span className="hidden sm:inline md:hidden">
+                  {btnTrans.mapMedium}
+                </span>
                 <span className="hidden md:inline">
                   {locTrans.selectMapBtn}
                 </span>

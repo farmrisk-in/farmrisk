@@ -43,7 +43,7 @@ export default async function DashboardLayout({
               </div>
             </div>
             <main className="rounded-xl grow border w-full p-3 lg:p-6 overflow-scroll">
-              {children}
+              <div className="max-w-7xl mx-auto">{children}</div>
               <Toaster position="bottom-center" richColors />
             </main>
           </div>
