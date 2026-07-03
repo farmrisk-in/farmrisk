@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { Menu } from "lucide-react";
+import { ExternalLink, Menu } from "lucide-react";
 import { AuthButtons } from "@/components/auth/AuthButtons";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "../ui/button";
@@ -36,7 +36,11 @@ const transitionVariants = {
   },
 };
 
-export function Hero() {
+interface HeroProps {
+  userCount?: number;
+}
+
+export function Hero({ userCount = 10000 }: HeroProps) {
   const { t } = useLanguage();
 
   return (
@@ -52,22 +56,48 @@ export function Hero() {
             aria-hidden
             className="absolute z-1 inset-0 size-full [background:linear-gradient(to_bottom,transparent_0%,transparent_70%,var(--background)_100%)]"
           />
-          <div className="mx-[10%] max-w-7xl pt-28 pb-0 md:pt-36 lg:pt-24 w-full relative">
+          <div className="mx-[10%] max-w-350 pt-28 pb-0 md:pt-36 lg:pt-24 w-full relative">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               {/* Left Side: Text and CTAs */}
-              <div className="lg:col-span-5 flex flex-col items-start text-left w-full backdrop-brightness-95 rounded-2xl z-100">
+              <div className="lg:col-span-6 md:min-w-xl flex flex-col items-start text-left w-full backdrop-brightness-95 rounded-2xl z-100">
                 <AnimatedGroup
                   variants={transitionVariants}
                   className="w-full flex flex-col items-start"
                 >
-                  <h1 className="text-white font-bold text-5xl md:text-6xl xl:text-[5rem] tracking-tight text-left leading-tight">
+                  <h1 className="text-white font-bold text-4xl md:text-5xl xl:text-[4.9rem] text-balance tracking-tight text-left leading-tight">
                     {t.heroHeading}
                   </h1>
                   <p className="text-left text-white mt-6 text-base md:text-lg opacity-90 max-w-lg leading-relaxed">
-                    {t.heroSubheading}
+                    <span className="relative group/src1 cursor-pointer underline decoration-dotted decoration-white/40 hover:decoration-white transition-all">
+                      <a
+                        href="https://www.downtoearth.org.in/climate-change/year-of-extremes-india-hit-by-disasters-on-331-of-334-days-in-2025-up-from-295-in-2024-and-292-in-2022"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {t.heroSubheadingPart1}
+                      </a>
+                      <span className="flex items-center gap-2 absolute -top-8 left-1/2 -translate-x-1/2 bg-black/85 text-white text-sm px-2 py-1 rounded shadow-md pointer-events-none opacity-0 group-hover/src1:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                        Go to source (Down To Earth, Dec 2025)
+                        <ExternalLink className="w-4 h-4" />
+                      </span>
+                    </span>
+                    {t.heroSubheadingPart2}
+                    <span className="relative group/src2 cursor-pointer underline decoration-dotted decoration-white/40 hover:decoration-white transition-all">
+                      <a
+                        href="https://www.sciencedirect.com/science/article/pii/S0308521X23001567"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {t.heroSubheadingPart3}
+                      </a>
+                      <span className="flex items-center gap-2 absolute -top-8 left-1/2 -translate-x-1/2 bg-black/85 text-white text-sm px-2 py-1 rounded shadow-md pointer-events-none opacity-0 group-hover/src2:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
+                        Go to source (ScienceDirect)
+                        <ExternalLink className="w-4 h-4" />
+                      </span>
+                    </span>
                   </p>
                   <div className="mt-8 w-full flex justify-start">
-                    <UserBaseCounter totalUsers={10000} />
+                    <UserBaseCounter totalUsers={userCount} />
                   </div>
                 </AnimatedGroup>
 
@@ -106,7 +136,7 @@ export function Hero() {
               </div>
 
               {/* Right Side: Dashboard Image */}
-              <div className="relative z-10 lg:col-span-7 overflow-visible">
+              <div className="relative z-10 lg:col-span-6 overflow-visible transform scale-120 lg:scale-130 lg:translate-x-20">
                 <AnimatedGroup
                   variants={{
                     container: {

@@ -183,7 +183,7 @@ export function Problem() {
               </div>
             </div>
 
-            <p className="text-base leading-relaxed text-muted-foreground md:text-lg">
+            <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground md:text-lg">
               {t.problem.impactDesc}
             </p>
 

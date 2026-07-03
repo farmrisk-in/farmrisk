@@ -3,9 +3,10 @@ export const en = {
   description:
     "An advanced agricultural intelligence platform integrating high-resolution remote sensing, satellite field mapping, and real-time climate data. Empowering farmers with localized risk mitigation analytics and predictive AI insights to optimize crop yield and operational sustainability.",
   heroEyebrow: "Satellite intelligence",
-  heroHeading: "See the field before the risk arrives.",
-  heroSubheading:
-    "Track crop conditions, weather pressure, and field changes from one live view built for faster decisions.",
+  heroHeading: "Farmers face climate uncertainty almost every day",
+  heroSubheadingPart1: "India experienced extreme weather events on 99% days in 2025",
+  heroSubheadingPart2: ", directly threatening the ",
+  heroSubheadingPart3: "50% of India's crop area that is entirely rainfed.",
   heroCta: "Open Dashboard",
   version: "1.0.0",
 
@@ -171,34 +172,34 @@ export const en = {
       "Without reliable, localized weather information and actionable insights, farmers struggle to make critical decisions that directly impact their livelihood.",
     metrics: [
       {
-        label: "Weather Uncertainty",
-        value: "40%",
-        impact: "crop loss risk",
+        label: "CROP AREA LOST",
+        value: "69 Mn ha",
+        impact: "damaged in 6 years",
         description:
-          "Unpredictable rainfall and extreme weather events threaten agricultural productivity",
-        link: "https://www.fao.org/climate-change/en/",
+          "Between 2015 and 2021, India lost 33.9 million hectares of crops to floods/excess rain and 35 million hectares to drought — a combined 69 million hectares of cropland destroyed.",
+        link: "https://www.weforum.org/stories/2024/08/income-insurance-india-climate-resilience/",
       },
       {
-        label: "Information Gap",
-        value: "78%",
-        impact: "farmers lack access",
+        label: "ANTICIPATION VARIANCE",
+        value: "2.5 weeks",
+        impact: "monsoon timing guesswork",
         description:
-          "Critical weather data not available in regional languages or localized formats",
-        link: "https://www.isro.gov.in/",
+          "An NBER study across 250 villages in Telangana found farmers' predictions of monsoon onset varied by more than 2.5 weeks between optimistic and pessimistic farmers — with no official local forecast available.",
+        link: "https://www.nber.org/digest/202406/weather-forecasts-and-farming-practices-india",
       },
       {
-        label: "Poor Timing",
-        value: "₹2.5L",
-        impact: "avg. annual loss",
+        label: "DOCUMENTED LOSS",
+        value: "₹2.5 Lakh",
+        impact: "lost to a single weather event",
         description:
-          "Incorrect timing of irrigation, sowing, and harvesting due to lack of actionable insights",
-        link: "https://www.imd.gov.in/",
+          "A farmer in Delhi NCR who actively followed weather updates on DD Kisan and ICAR WhatsApp groups still suffered losses of up to ₹2.5 lakh on peas and onion crops due to a sudden downpour and hailstorm.",
+        link: "https://india.mongabay.com/2025/06/weather-forecasting-improves-but-access-remains-uneven-for-farmers/",
       },
     ],
     impactEyebrow: "The Cost of Uncertainty",
-    impactTitle: "Billions in annual losses",
+    impactTitle: "₹13 Lakh Crore+ in climate losses over three decades",
     impactDesc:
-      "Without reliable information, farmers often incur significant losses due to poor timing of agricultural operations. Unpredictable weather patterns, lack of localized forecasts, and limited access to actionable advisories create a perfect storm of risk.",
+      "Between 1993 and 2022, India suffered $180 billion (~₹15 lakh crore) in economic losses from over 400 extreme weather events. In just six years (2015–2021), floods destroyed 33.9 million hectares and drought destroyed 35 million hectares of cropland. In 2025 alone, extreme weather damaged 17.4 million hectares of crops and claimed 4,419 lives. With 50% of India's cropped area dependent on rain and 80% of farmers being smallholders with less than 2 hectares, unpredictable weather patterns don't just reduce yields — they threaten survival.\n\nYet research shows that accurate forecasts can transform outcomes. An NBER-backed randomized trial across 250 villages in Telangana demonstrated that farmers who received accurate monsoon onset forecasts 4–6 weeks in advance significantly re-optimised their investments. Pessimistic farmers who received “good news\" forecasts increased land under cultivation by 15% and were 40% more likely to diversify crops. In 2025, building on this evidence, India's Ministry of Agriculture disseminated AI-driven monsoon onset forecasts to 38 million farmers.",
     impactBtnSolution: "Discover the Solution",
     impactBtnLearnMore: "Learn More",
     goToSource: "Go to source",
