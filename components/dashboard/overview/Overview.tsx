@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import AIOverview from "./AIOverview";
 import { LocationSearchBar } from "./LocationSearchBar";
 import Forcast from "./Forcast";
-import Lightning from "./Lightning";
+import { LightningMonitoring } from "./LightningMonitoring";
 import HourlyWeather from "./HourlyWeather";
 import SoilMoisture from "./SoilMoisture";
 import Weather from "./Weather";
@@ -44,8 +44,14 @@ const Overview = () => {
       <Forcast />
       <HourlyWeather hourly={hourly} isLoading={isLoading} />
 
-      <SoilMoisture />
-      <Lightning />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
+        <div className="col-span-1 lg:col-span-2 flex">
+          <SoilMoisture />
+        </div>
+        <div className="col-span-1 flex">
+          <LightningMonitoring />
+        </div>
+      </div>
     </div>
   );
 };
