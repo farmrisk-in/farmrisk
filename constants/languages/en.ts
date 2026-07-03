@@ -3,8 +3,9 @@ export const en = {
   description:
     "An advanced agricultural intelligence platform integrating high-resolution remote sensing, satellite field mapping, and real-time climate data. Empowering farmers with localized risk mitigation analytics and predictive AI insights to optimize crop yield and operational sustainability.",
   heroEyebrow: "Satellite intelligence",
-  heroHeading: "Farmers face climate uncertainty almost every day",
-  heroSubheadingPart1: "India experienced extreme weather events on 99% days in 2025",
+  heroHeading: `Farmers face climate {Uncertainty} almost every day`,
+  heroSubheadingPart1:
+    "India experienced extreme weather events on 99% days in 2025",
   heroSubheadingPart2: ", directly threatening the ",
   heroSubheadingPart3: "50% of India's crop area that is entirely rainfed.",
   heroCta: "Open Dashboard",
@@ -131,7 +132,8 @@ export const en = {
     pressureMsl: "Pressure (MSL)",
     pressureSurf: "Press (Surf)",
     chooseCrop: "Choose a crop",
-    advisoryError: "Failed to retrieve advisory. Please check your network connection.",
+    advisoryError:
+      "Failed to retrieve advisory. Please check your network connection.",
     forecast: "Forecast",
     soilMoisture: "Soil Moisture",
     lightning: "Lightning",

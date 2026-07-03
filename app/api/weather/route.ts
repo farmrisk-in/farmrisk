@@ -9,15 +9,10 @@ type WmoEntry = {
     ta: string;
     gu: string;
   };
-  icon:
-    | "Sun"
-    | "CloudSun"
-    | "Cloud"
-    | "CloudDrizzle"
-    | "CloudRain"
-    | "CloudLightning"
-    | "Snowflake"
-    | "Wind";
+  icon: {
+    day: string;
+    night?: string;
+  };
 };
 
 const WMO_MAP: Record<number, WmoEntry> = {
@@ -29,7 +24,10 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "தெளிவான வானம்",
       gu: "સ્વચ્છ આકાશ",
     },
-    icon: "Sun",
+    icon: {
+      day: "clear_day.svg",
+      night: "clear_night.svg",
+    },
   },
   1: {
     condition: {
@@ -39,7 +37,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பெரும்பாலும் தெளிவு",
       gu: "મુખ્યત્વે સ્વચ્છ",
     },
-    icon: "Sun",
+    icon: { day: "mostly_clear_day.svg", night: "mostly_clear_night.svg" },
   },
   2: {
     condition: {
@@ -49,7 +47,10 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பகுதி மேகமூட்டம்",
       gu: "આંશિક વાદળ",
     },
-    icon: "CloudSun",
+    icon: {
+      day: "partly_cloudy_day.svg",
+      night: "partly_cloudy_night.svg",
+    },
   },
   3: {
     condition: {
@@ -59,7 +60,10 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "மேகமூட்டம்",
       gu: "વાદળછાયું",
     },
-    icon: "Cloud",
+    icon: {
+      day: "mostly_cloudy_day.svg",
+      night: "mostly_cloudy_night.svg",
+    },
   },
   45: {
     condition: {
@@ -69,7 +73,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "மூடுபனி",
       gu: "靄",
     },
-    icon: "Cloud",
+    icon: {
+      day: "haze_fog_dust_smoke.svg",
+    },
   },
   48: {
     condition: {
@@ -79,7 +85,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பனி மூட்டம்",
       gu: "ઠંડી靄",
     },
-    icon: "Cloud",
+    icon: {
+      day: "blizzard.svg",
+    },
   },
   51: {
     condition: {
@@ -89,7 +97,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "இலகுவான தூறல்",
       gu: "હળવી ઝરમર",
     },
-    icon: "CloudDrizzle",
+    icon: {
+      day: "drizzle.svg",
+    },
   },
   53: {
     condition: {
@@ -99,7 +109,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "தூறல்",
       gu: "ઝરમર",
     },
-    icon: "CloudDrizzle",
+    icon: {
+      day: "drizzle.svg",
+    },
   },
   55: {
     condition: {
@@ -109,7 +121,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கனமான தூறல்",
       gu: "ભારી ઝરમર",
     },
-    icon: "CloudDrizzle",
+    icon: {
+      day: "drizzle.svg",
+    },
   },
   61: {
     condition: {
@@ -119,11 +133,13 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "இலகுவான மழை",
       gu: "હળવો વરસાદ",
     },
-    icon: "CloudRain",
+    icon: {
+      day: "drizzle.svg",
+    },
   },
   63: {
     condition: { en: "Rain", hi: "बारिश", mr: "पाऊस", ta: "மழை", gu: "વરસાદ" },
-    icon: "CloudRain",
+    icon: { day: "showers_rain.svg" },
   },
   65: {
     condition: {
@@ -133,7 +149,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கனமழை",
       gu: "ભારી વરસાદ",
     },
-    icon: "CloudRain",
+    icon: { day: "heavy_rain.svg" },
   },
   71: {
     condition: {
@@ -143,7 +159,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "இலகுவான பனி",
       gu: "હળવો હિમ",
     },
-    icon: "Snowflake",
+    icon: { day: "flurries.svg" },
   },
   73: {
     condition: {
@@ -153,7 +169,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பனிப்பொழிவு",
       gu: "હિમ",
     },
-    icon: "Snowflake",
+    icon: { day: "cloudy_with_snow.svg" },
   },
   75: {
     condition: {
@@ -163,7 +179,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கனமான பனி",
       gu: "ભારી હિમ",
     },
-    icon: "Snowflake",
+    icon: {
+      day: "heavy_snow.svg",
+    },
   },
   77: {
     condition: {
@@ -173,7 +191,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பனி துகள்கள்",
       gu: "હિમ કણ",
     },
-    icon: "Snowflake",
+    icon: {
+      day: "blowing_snow.svg",
+    },
   },
   80: {
     condition: {
@@ -183,7 +203,10 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "மழை சாரல்",
       gu: "ઝાપટાં",
     },
-    icon: "CloudRain",
+    icon: {
+      day: "scattered_showers_day.svg",
+      night: "scattered_showers_night.svg",
+    },
   },
   81: {
     condition: {
@@ -193,7 +216,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "சாரல்",
       gu: "ઝાપટ",
     },
-    icon: "CloudRain",
+    icon: {
+      day: "showers_rain.svg",
+    },
   },
   82: {
     condition: {
@@ -203,7 +228,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கனமான சாரல்",
       gu: "ભારી ઝાપટ",
     },
-    icon: "CloudRain",
+    icon: {
+      day: "heavy_rain.svg",
+    },
   },
   85: {
     condition: {
@@ -213,7 +240,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "பனி சாரல்",
       gu: "હિમ ઝાપટ",
     },
-    icon: "Snowflake",
+    icon: {
+      day: "showers_snow.svg",
+    },
   },
   86: {
     condition: {
@@ -223,7 +252,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கனமான பனி சாரல்",
       gu: "ભારી હિમ ઝાપટ",
     },
-    icon: "Snowflake",
+    icon: {
+      day: "heavy_snow.svg",
+    },
   },
   95: {
     condition: {
@@ -233,7 +264,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "இடியுடன் கூடிய மழை",
       gu: "વીજળી-તોફાન",
     },
-    icon: "CloudLightning",
+    icon: {
+      day: "thunderstorms.svg",
+    },
   },
   96: {
     condition: {
@@ -243,7 +276,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கல் மழையுடன் இடி",
       gu: "કરા સાથે વાવાઝોડું",
     },
-    icon: "CloudLightning",
+    icon: { day: "isolated_thunderstorms.svg" },
   },
   99: {
     condition: {
@@ -253,7 +286,9 @@ const WMO_MAP: Record<number, WmoEntry> = {
       ta: "கடுமையான இடி",
       gu: "ભારી વીજળી-તોફાન",
     },
-    icon: "CloudLightning",
+    icon: {
+      day: "strong_thunderstorms.svg",
+    },
   },
 };
 
@@ -267,7 +302,10 @@ function resolveWmo(code: number): WmoEntry {
         ta: "தெரியவில்லை",
         gu: "અજ્ઞાત",
       },
-      icon: "Sun",
+      icon: {
+        day: "clear_day.svg",
+        night: "clear_night.svg",
+      },
     }
   );
 }
@@ -433,8 +471,10 @@ export async function GET(request: NextRequest) {
   }
 
   // Pick the next 24 hours starting from the next hour index
-  const hourlySlots = Array.from({ length: 24 }, (_, i) => nextHourIndex + i)
-    .filter((idx) => idx < raw.hourly.time.length);
+  const hourlySlots = Array.from(
+    { length: 24 },
+    (_, i) => nextHourIndex + i,
+  ).filter((idx) => idx < raw.hourly.time.length);
 
   const hourly = hourlySlots.map((i) => {
     const wmo = resolveWmo(raw.hourly.weathercode[i]);
@@ -460,12 +500,14 @@ export async function GET(request: NextRequest) {
     };
   });
 
+  const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
+
   // ---- Current Weather ----
   const wmoCurrent = resolveWmo(raw.current.weather_code);
   const current = {
     temp: Math.round(raw.current.temperature_2m),
     condition: wmoCurrent.condition,
-    icon: wmoCurrent.icon,
+    icon: wmoCurrent.icon[isDay ? "day" : "night"],
     humidity: raw.current.relative_humidity_2m,
     apparentTemp: Math.round(raw.current.apparent_temperature),
     windKph: Math.round(raw.current.wind_speed_10m),

@@ -8,6 +8,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { UserBaseCounter } from "@/components/ui/UserCount";
 import Image from "next/image";
 import { NavBar } from "@/components/home/Navbar";
+import { Highlight } from "@/components/ui/hero-highlight";
 
 const transitionVariants = {
   container: {
@@ -37,19 +38,20 @@ const transitionVariants = {
 };
 
 interface HeroProps {
-  userCount?: number;
+  userCount?: string;
+  suffix?: string;
 }
 
-export function Hero({ userCount = 10000 }: HeroProps) {
+export function Hero({ userCount, suffix }: HeroProps) {
   const { t } = useLanguage();
-
+  const parts = t.heroHeading.split(/\{([^}]*)\}/);
   return (
     <>
       <NavBar type="large" />
       <main className="overflow-hidden">
         <section
           id="hero"
-          className="relative min-h-125 lg:min-h-screen dark:bg-[url('/sat2.png')] bg-[url('/sat1.png')] bg-cover bg-center flex items-center overflow-hidden"
+          className="relative min-h-125 lg:min-h-screen dark:bg-[url('/sat2.webp')] bg-[url('/sat1.webp')] bg-cover bg-center flex items-center overflow-hidden"
         >
           {/* Radial gradient background */}
           <div
@@ -65,7 +67,9 @@ export function Hero({ userCount = 10000 }: HeroProps) {
                   className="w-full flex flex-col items-start"
                 >
                   <h1 className="text-white font-bold text-4xl md:text-5xl xl:text-[4.9rem] text-balance tracking-tight text-left leading-tight">
-                    {t.heroHeading}
+                    {parts[0]}
+                    <Highlight text={parts[1]} />
+                    {parts[2]}
                   </h1>
                   <p className="text-left text-white mt-6 text-base md:text-lg opacity-90 max-w-lg leading-relaxed">
                     <span className="relative group/src1 cursor-pointer underline decoration-dotted decoration-white/40 hover:decoration-white transition-all">
@@ -97,7 +101,7 @@ export function Hero({ userCount = 10000 }: HeroProps) {
                     </span>
                   </p>
                   <div className="mt-8 w-full flex justify-start">
-                    <UserBaseCounter totalUsers={userCount} />
+                    <UserBaseCounter totalUsers={userCount} append={suffix} />
                   </div>
                 </AnimatedGroup>
 
@@ -154,7 +158,7 @@ export function Hero({ userCount = 10000 }: HeroProps) {
                   <Link className="cursor-pointer" href="/auth/choice">
                     <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border-border bg-background p-2 shadow-2xl ring-1">
                       <Image
-                        src="/dashlight.png"
+                        src="/dashlight.webp"
                         alt="Dashboard"
                         width={2200}
                         height={1200}
@@ -163,7 +167,7 @@ export function Hero({ userCount = 10000 }: HeroProps) {
                       />
 
                       <Image
-                        src="/dashdark.png"
+                        src="/dashdark.webp"
                         alt="Dashboard"
                         width={2200}
                         height={1200}

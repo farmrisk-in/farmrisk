@@ -2,6 +2,7 @@ import { Footer } from "@/components/home/Footer";
 import { Hero } from "@/components/home/Hero";
 import { Problem } from "@/components/home/Problem";
 import { Solution } from "@/components/home/Solution";
+import { formatHeroUserCount } from "@/lib/utils";
 import { createClient } from "@/supabase/server";
 
 export default async function Home() {
@@ -9,7 +10,8 @@ export default async function Home() {
 
   try {
     const supabase = await createClient();
-    // Using untyped call to bypass TypeScript compilation checks on custom database RPCs
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc("get_user_count");
     if (error) {
       console.warn(
@@ -29,9 +31,11 @@ export default async function Home() {
     console.error("Failed to query user count on server side:", err);
   }
 
+  const { userCountRounded, suffix } = formatHeroUserCount(userCount);
+
   return (
     <div className="pt-(--standalone)">
-      <Hero userCount={userCount} />
+      <Hero userCount={userCountRounded} suffix={suffix} />
       <Problem />
       <Solution />
       <Footer />

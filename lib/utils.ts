@@ -61,3 +61,57 @@ export async function reverseGeocode(lat: number, lng: number) {
     lng: number;
   };
 }
+
+/**
+ * Formats a raw user count into a stylized, rounded social proof string for the Hero page.
+ * Rules:
+ * - Less than 100 -> "100"
+ * - 100 to 999   -> Snap to lower 10s (e.g., 854 -> "850+")
+ * - 1,000 to 9,999 -> Snap to lower 100s, convert to K (e.g., 4,321 -> "4.3K+")
+ * - 10,000 to 999,999 -> Snap to lower 1,000s, convert to K (e.g., 27,850 -> "27K+")
+ * - 1,000,000+   -> Snap to lower 100,000s, convert to M (e.g., 2,450,000 -> "2.4M+")
+ */
+export function formatHeroUserCount(count: number): {
+  userCountRounded: string;
+  suffix: string;
+} {
+  if (count < 100) {
+    return { userCountRounded: count.toString(), suffix: "+" };
+  }
+
+  if (count < 1000) {
+    const rounded = Math.floor(count / 10) * 10;
+    return {
+      userCountRounded: String(rounded),
+      suffix: "+",
+    };
+  }
+
+  if (count < 10000) {
+    const rounded = Math.floor(count / 100) * 100;
+    return {
+      userCountRounded: String(rounded / 1000),
+      suffix: "K+",
+    };
+  }
+
+  if (count < 1000000) {
+    const rounded = Math.floor(count / 1000);
+    return {
+      userCountRounded: String(rounded),
+      suffix: "K+",
+    };
+  }
+
+  // Handles 1,000,000 (Millions) and up gracefully
+  // e.g., Math.floor(2,450,000 / 100,000) * 100,000 = 2,400,000 -> / 1,000,000 = 2.4
+  const rounded = Math.floor(count / 100000) * 100000;
+
+  // Clean up potential trailing decimal zero bugs (e.g., 2.0M+ becomes 2M+)
+  const formattedNumber = String(Number((rounded / 1000000).toFixed(1)));
+
+  return {
+    userCountRounded: formattedNumber,
+    suffix: "M+",
+  };
+}
