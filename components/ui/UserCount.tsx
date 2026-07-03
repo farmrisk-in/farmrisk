@@ -41,20 +41,22 @@ const AnimatedCounter: React.FC<CounterProps> = ({
 };
 
 const avatarData = [
-  { name: "a", image: "/pic1.png" },
-  { name: "b", image: "/pic2.png" },
-  { name: "c", image: "/pic3.png" },
-  { name: "d", image: "/pic4.png" },
-  { name: "e", image: "/pic5.png" },
+  { name: "a", image: "/pic1.webp" },
+  { name: "b", image: "/pic2.webp" },
+  { name: "c", image: "/pic3.webp" },
+  { name: "d", image: "/pic4.webp" },
+  { name: "e", image: "/pic5.webp" },
 ];
 
 interface UserBaseCounterProps {
   totalUsers?: number;
+  append?: string;
   className?: string;
 }
 
 export const UserBaseCounter: React.FC<UserBaseCounterProps> = ({
-  totalUsers = 50000,
+  totalUsers = 500,
+  append = "M+",
   className,
 }) => {
   const { t } = useLanguage();
@@ -102,10 +104,12 @@ export const UserBaseCounter: React.FC<UserBaseCounterProps> = ({
               <Users className="w-7 h-7" />
               <div>
                 <div className="text-3xl font-bold text-foreground flex items-center justify-center gap-1">
-                  <AnimatedCounter value={totalUsers} duration={2} />
-                  <span className="text-green-600">+</span>
+                  <AnimatedCounter value={totalUsers} duration={1.5} />
+                  <span className="text-green-600">{append}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{t.landing.activeUsers}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t.landing.activeUsers}
+                </p>
               </div>
             </div>
           </div>

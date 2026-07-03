@@ -40,14 +40,14 @@ export default function ChoiceClient() {
           <Image
             width={440}
             height={280}
-            src="/dashlight.png"
+            src="/dashlight.webp"
             alt="Free Dashboard Snapshot"
             className="w-full h-full block dark:hidden object-cover object-top-right"
           />
           <Image
             width={440}
             height={280}
-            src="/dashdark.png"
+            src="/dashdark.webp"
             alt="Free Dashboard Snapshot"
             className="w-full h-full hidden dark:block object-cover object-top-right"
           />
@@ -57,14 +57,14 @@ export default function ChoiceClient() {
           <Image
             width={440}
             height={280}
-            src="/dashlight.png"
+            src="/dashlight.webp"
             alt="Free Dashboard Snapshot"
             className="w-full h-full block dark:hidden object-cover object-top-left"
           />
           <Image
             width={440}
             height={280}
-            src="/dashdark.png"
+            src="/dashdark.webp"
             alt="Free Dashboard Snapshot"
             className="w-full h-full hidden dark:block object-cover object-top-left"
           />

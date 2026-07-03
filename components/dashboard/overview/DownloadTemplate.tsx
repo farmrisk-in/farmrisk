@@ -66,7 +66,8 @@ const MONTHS_LABELS = [
 // Daily forecast weather icon helper
 const getForecastWeatherIcon = (pcp: number) => {
   const size = 16;
-  if (pcp > 5.0) return <CloudLightning size={size} className="text-amber-500" />;
+  if (pcp > 5.0)
+    return <CloudLightning size={size} className="text-amber-500" />;
   if (pcp > 1.0) return <CloudRain size={size} className="text-sky-400" />;
   if (pcp > 0.1) return <CloudSun size={size} className="text-slate-400" />;
   return <Cloud size={size} className="text-slate-300 dark:text-slate-500" />;
@@ -187,67 +188,6 @@ export default function DownloadTemplate({
           </div>
         </div>
 
-        {/* 3. CURRENT CLIMATE METRICS */}
-        <div>
-          <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-            <ShieldAlert className="size-3 text-emerald-600" />
-            Live Climate Telemetry
-          </h2>
-          <div className="grid grid-cols-4 gap-2.5">
-            {/* Temp Block */}
-            <div className="bg-slate-50/50 border border-slate-200/40 p-2 rounded-lg text-center flex flex-col justify-center">
-              <span className="text-[9px] text-slate-500 font-semibold mb-0.5">
-                Temperature
-              </span>
-              <span className="text-base font-extrabold text-slate-800">
-                {activeCurrent.temp}°C
-              </span>
-              <span className="text-[8px] text-slate-400 font-medium">
-                Feels like: {activeCurrent.apparentTemp}°C
-              </span>
-            </div>
-
-            {/* Precipitation Block */}
-            <div className="bg-slate-50/50 border border-slate-200/40 p-2 rounded-lg text-center flex flex-col justify-center">
-              <span className="text-[9px] text-slate-500 font-semibold mb-0.5">
-                Precipitation
-              </span>
-              <span className="text-base font-extrabold text-blue-600">
-                {activeCurrent.precipitation} mm
-              </span>
-              <span className="text-[8px] text-slate-400 font-medium">
-                Cloud Cover: {activeCurrent.cloudCover}%
-              </span>
-            </div>
-
-            {/* Wind Block */}
-            <div className="bg-slate-50/50 border border-slate-200/40 p-2 rounded-lg text-center flex flex-col justify-center">
-              <span className="text-[9px] text-slate-500 font-semibold mb-0.5">
-                Wind Velocity
-              </span>
-              <span className="text-base font-extrabold text-teal-600">
-                {activeCurrent.windKph} km/h
-              </span>
-              <span className="text-[8px] text-slate-400 font-medium">
-                Gusts: {activeCurrent.windGustsKph} km/h
-              </span>
-            </div>
-
-            {/* Pressure Block */}
-            <div className="bg-slate-50/50 border border-slate-200/40 p-2 rounded-lg text-center flex flex-col justify-center">
-              <span className="text-[9px] text-slate-500 font-semibold mb-0.5">
-                Barometric Press.
-              </span>
-              <span className="text-base font-extrabold text-purple-600">
-                {activeCurrent.pressureMb} hPa
-              </span>
-              <span className="text-[8px] text-slate-400 font-medium">
-                Surface: {activeCurrent.surfacePressureMb} hPa
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* 4. AI AGRONOMIST ADVISORY CARD */}
         {aiSummary && (
           <div className="bg-emerald-500/5 border border-emerald-500/15 p-3 rounded-lg relative">
@@ -264,52 +204,6 @@ export default function DownloadTemplate({
           </div>
         )}
 
-        {/* 5. NEXT 24-HOUR HORIZONTAL TIMELINE */}
-        {activeHourly && activeHourly.length > 0 && (
-          <div>
-            <h2 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-              <Clock className="size-3 text-emerald-600" />
-              Next 24-Hour Timeline Forecast
-            </h2>
-            <div className="border border-slate-200/80 rounded-lg p-2.5 bg-white space-y-2">
-              {/* Row 1: Hours 1-12 */}
-              <div className="flex justify-between w-full">
-                {activeHourly.slice(0, 12).map((slot, i) => {
-                  const ActiveIcon = ICON_MAP[slot.icon] || Sun;
-                  const colorClass = ICON_COLORS[slot.icon] || "text-slate-400";
-                  return (
-                    <div key={i} className="flex flex-col items-center w-[54px] text-center">
-                      <span className="text-[8px] text-slate-500 font-semibold">{slot.time}</span>
-                      <div className={`${colorClass} my-0.5`}>
-                        <ActiveIcon size={12} className="stroke-[1.8]" />
-                      </div>
-                      <span className="text-[9px] font-extrabold text-slate-800">{slot.temp}°C</span>
-                      <span className="text-[7.5px] text-blue-500 font-bold">{slot.rainChance}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Row 2: Hours 13-24 */}
-              <div className="flex justify-between w-full border-t border-slate-100 pt-1.5">
-                {activeHourly.slice(12, 24).map((slot, i) => {
-                  const ActiveIcon = ICON_MAP[slot.icon] || Sun;
-                  const colorClass = ICON_COLORS[slot.icon] || "text-slate-400";
-                  return (
-                    <div key={i} className="flex flex-col items-center w-[54px] text-center">
-                      <span className="text-[8px] text-slate-500 font-semibold">{slot.time}</span>
-                      <div className={`${colorClass} my-0.5`}>
-                        <ActiveIcon size={12} className="stroke-[1.8]" />
-                      </div>
-                      <span className="text-[9px] font-extrabold text-slate-800">{slot.temp}°C</span>
-                      <span className="text-[7.5px] text-blue-500 font-bold">{slot.rainChance}%</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* 6. 16-DAY RECTIFIED FORECAST */}
         {predictions && predictions.length > 0 && (
           <div>
@@ -323,27 +217,41 @@ export default function DownloadTemplate({
                 const minTemp = Math.round(day.corrected.tmin);
                 const rainVolume = day.corrected.pcp;
                 const dateObj = new Date(day.date);
-                const dayName = dateObj.toLocaleDateString("en-US", { weekday: "short" });
-                const dateText = dateObj.toLocaleDateString("en-US", { day: "numeric" });
+                const dayName = dateObj.toLocaleDateString("en-US", {
+                  weekday: "short",
+                });
+                const dateText = dateObj.toLocaleDateString("en-US", {
+                  day: "numeric",
+                });
 
                 return (
                   <div
                     key={day.date}
-                    className={`flex flex-col items-center py-1.5 rounded w-[42px] text-center ${
-                      idx === 0 ? "bg-emerald-500/10 border border-emerald-500/15" : ""
+                    className={`flex flex-col items-center py-1.5 rounded w-10.5 text-center ${
+                      idx === 0
+                        ? "bg-emerald-500/10 border border-emerald-500/15"
+                        : ""
                     }`}
                   >
-                    <span className="text-[9px] font-bold text-slate-800">{dayName}</span>
-                    <span className="text-[7.5px] text-slate-400 font-medium mb-1">{dateText}</span>
+                    <span className="text-[9px] font-bold text-slate-800">
+                      {dayName}
+                    </span>
+                    <span className="text-[7.5px] text-slate-400 font-medium mb-1">
+                      {dateText}
+                    </span>
                     <div className="h-4 flex items-center justify-center my-0.5">
                       {getForecastWeatherIcon(rainVolume)}
                     </div>
-                    <span className="text-[10px] font-extrabold text-orange-600 mt-0.5">{maxTemp}°</span>
-                    
+                    <span className="text-[10px] font-extrabold text-orange-600 mt-0.5">
+                      {maxTemp}°
+                    </span>
+
                     {/* Height bar graphic */}
-                    <div className="w-0.75 h-7 my-1 bg-gradient-to-b from-orange-500 via-amber-400 to-sky-500 rounded-full opacity-85" />
-                    
-                    <span className="text-[9px] font-bold text-sky-600">{minTemp}°</span>
+                    <div className="w-0.75 h-7 my-1 bg-linear-to-b from-orange-500 via-amber-400 to-sky-500 rounded-full opacity-85" />
+
+                    <span className="text-[9px] font-bold text-sky-600">
+                      {minTemp}°
+                    </span>
                     <span className="text-[7.5px] font-semibold text-slate-400 mt-1">
                       {rainVolume > 0 ? `${rainVolume.toFixed(1)}` : "—"}
                     </span>
@@ -368,7 +276,7 @@ export default function DownloadTemplate({
                   {calendar[0]?.crop || "Selected Crop"}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-3 text-[8px] text-slate-400 font-medium">
                 <div className="flex items-center gap-1">
                   <div className="w-2.5 h-1.5 bg-slate-100 rounded-xs border border-slate-200" />
@@ -405,15 +313,22 @@ export default function DownloadTemplate({
                 const today = new Date();
                 const currentMonthNum = today.getMonth() + 1;
                 const currentDayNum = today.getDate();
-                const totalDaysInMonth = new Date(today.getFullYear(), currentMonthNum, 0).getDate();
-                const todayPercentPosition = (currentMonthNum - 1 + currentDayNum / totalDaysInMonth) * (100 / 12);
+                const totalDaysInMonth = new Date(
+                  today.getFullYear(),
+                  currentMonthNum,
+                  0,
+                ).getDate();
+                const todayPercentPosition =
+                  (currentMonthNum - 1 + currentDayNum / totalDaysInMonth) *
+                  (100 / 12);
 
                 return (
                   <div key={idx}>
                     <div className="flex justify-between items-center mb-0.5 text-[8.5px] font-bold text-slate-700">
                       <span>{event.season || "Kharif"} Season</span>
                       <span className="text-[7.5px] text-slate-400 font-medium font-mono">
-                        Sow: Mon {startSow}-{endSow} • Harv: Mon {startHarv}-{endHarv}
+                        Sow: Mon {startSow}-{endSow} • Harv: Mon {startHarv}-
+                        {endHarv}
                       </span>
                     </div>
 

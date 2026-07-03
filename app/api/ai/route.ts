@@ -22,6 +22,19 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    // DONT WASTE API CALLS WHILE TESTING
+    if (process.env.NODE_ENV === "development") {
+      return NextResponse.json({
+        advisory_summary:
+          "This is a mock advisory summary for testing purposes.",
+        location: {
+          latitude,
+          longitude,
+          crop,
+          crop_stage,
+        },
+      });
+    }
 
     // Call the agrometeorological RAG pipeline
     const advisory = await getCropAdvisory({

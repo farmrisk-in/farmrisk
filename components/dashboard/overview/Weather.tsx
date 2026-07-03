@@ -5,31 +5,15 @@ import {
   Wind,
   Gauge,
   Droplets,
-  MapPin,
-  Sun,
   Cloud,
-  CloudDrizzle,
   CloudRain,
-  CloudLightning,
-  Snowflake,
   Compass,
 } from "lucide-react";
 import { type CurrentWeather } from "@/hooks/use-weather";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
-
-const ICON_MAP = {
-  Sun,
-  CloudSun,
-  Cloud,
-  CloudDrizzle,
-  CloudRain,
-  CloudLightning,
-  Snowflake,
-  Wind,
-};
-
+import Image from "next/image";
 // Convert degrees to cardinal directions
 function getWindDirection(deg: number): string {
   const directions = [
@@ -106,19 +90,17 @@ const Weather = ({ weatherData }: WeatherProps) => {
     );
   }
 
-  const ActiveIcon = ICON_MAP[current.icon] || Sun;
+  const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
 
   return (
     <div className="@container w-full h-full min-h-fit bg-card border border-border text-foreground rounded-xl shadow-sm p-5 flex flex-col justify-between select-none">
       {/* 1. MODULE SUBTITLE HEADER */}
-      <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">
-        <ActiveIcon className="size-4 text-primary animate-pulse" />
+      <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-bold uppercase tracking-wider mb-2">
         <span>{t.dashboard.currentClimate}</span>
       </div>
 
       {/* 2. GEOLOCATION RUNTIME HEADER BANNER */}
-      <div className="w-full flex items-start gap-2 bg-muted/40 border border-border/60 p-2.5 rounded-lg mb-3 shrink-0">
-        <MapPin className="size-3.5 mt-0.5 text-primary shrink-0" />
+      <div className="w-full flex items-start gap-2 border border-border border-x-0 py-2.5 mb-3 shrink-0">
         <div className="flex flex-col min-w-0">
           <p className="text-sm font-semibold truncate leading-tight">
             {location.name}
@@ -132,21 +114,33 @@ const Weather = ({ weatherData }: WeatherProps) => {
       {/* 3. CORE ADVISORY SEGMENT SPLIT LAYOUT (Using Flex Wrap & Container Queries) */}
       <div className="flex flex-row flex-wrap gap-4 items-center justify-between flex-1 min-h-0">
         {/* LEFT COLUMN: THE EXECUTIVE TEMPERATURE HOOK */}
-        <div className="flex flex-col flex-1 min-w-32.5">
-          <div className="flex items-baseline gap-1.5">
+        <div className="flex flex-1 min-w-32.5 justify-between">
+          <div className="flex flex-col items-baseline gap-1.5">
             <span className="text-5xl font-extrabold tracking-tighter">
               {current.temp}°C
             </span>
-            <span className="text-muted-foreground text-xs font-medium max-w-21.25 truncate">
-              {current.condition[language as keyof typeof current.condition] || current.condition.en}
+            <p className="text-xs text-muted-foreground font-medium">
+              Feels Like{" "}
+              <span className="font-semibold text-foreground">
+                {current.apparentTemp}°C
+              </span>
+            </p>
+          </div>
+          <div className="flex flex-col justify-between items-center">
+            <Image
+              src={"/weatherIcons/" + current.icon}
+              alt={
+                current.condition[language as keyof typeof current.condition] ||
+                current.condition.en
+              }
+              width={40}
+              height={40}
+            />
+            <span className="text-muted-foreground text-xs font-medium">
+              {current.condition[language as keyof typeof current.condition] ||
+                current.condition.en}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground font-medium mt-1.5">
-            RealFeel®{" "}
-            <span className="font-semibold text-foreground">
-              {current.apparentTemp}°C
-            </span>
-          </p>
         </div>
 
         {/* RIGHT COLUMN: HIGH-DENSITY METRICS DOCK (2-Column Grid with responsive wrapping & border toggle) */}

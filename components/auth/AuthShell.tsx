@@ -8,7 +8,7 @@ export function AuthShell({
   className?: string;
 }) {
   return (
-    <main className="flex min-h-svh items-center justify-center bg-[url('/sat2.png')] p-6">
+    <main className="flex min-h-svh items-center justify-center bg-[url('/sat2.webp')] p-6">
       <div className={cn("w-full max-w-md flex flex-col", className)}>
         {children}
       </div>

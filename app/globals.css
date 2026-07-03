@@ -131,3 +131,78 @@
     @apply font-sans;
   }
 }
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes rotate {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.borderAnimate {
+  position: relative;
+  /* Ensure background-clip leaves a 3px padding zone for the border visual */
+  border: 3px solid transparent;
+  border-radius: 1rem; /* Equivalent to rounded-xl */
+
+  /* Layer 1: Inner background color (masked to content) */
+  /* Layer 2: Moving gradient background (masked to border box edge) */
+  background:
+    linear-gradient(to bottom, var(--sidebar), var(--sidebar)) padding-box,
+    conic-gradient(
+        from var(--angle),
+        oklch(95% 0.052 163.051),
+        oklch(26.2% 0.051 172.552),
+        oklch(50.8% 0.118 165.612),
+        oklch(95% 0.052 163.051)
+      )
+      border-box;
+
+  animation: 2s rotate linear infinite;
+}
+
+@keyframes meshMove {
+  0% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      0% 100%,
+      100% 100%,
+      50% 50%;
+  }
+
+  50% {
+    background-position:
+      100% 20%,
+      10% 80%,
+      80% 10%,
+      20% 100%,
+      50% 20%;
+  }
+
+  100% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      0% 100%,
+      100% 100%,
+      50% 50%;
+  }
+}
+
+.animate-mesh {
+  background: #32ab64;
+  background: linear-gradient(
+    141deg,
+    rgba(50, 171, 100, 0.1) 0%,
+    rgba(0, 112, 80, 0.1) 100%
+  );
+
+  filter: blur(35px) saturate(160%);
+  animation: meshMove 18s ease-in-out infinite alternate;
+}

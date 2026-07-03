@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Sparkles, ChevronDown, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeather } from "@/hooks/use-weather";
 import { type CropOption, GENERAL_CROP } from "./Overview";
+import { cn } from "@/lib/utils";
 
 interface AIOverviewProps {
   selectedCrop: CropOption;
@@ -106,6 +106,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
           console.error("Failed to save AI advisory to localStorage", e);
         }
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.name !== "AbortError") {
         console.error("AI advisory fetch failed:", err);
@@ -145,6 +146,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
           setCrops([GENERAL_CROP]);
           setSelectedCrop(GENERAL_CROP);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (err.name !== "AbortError" && !controller.signal.aborted) {
           console.error("Error fetching regional crops:", err);
@@ -159,6 +161,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.lat, location.lng]);
 
   const formattedText = advisoryText
@@ -182,6 +185,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
     const controller = new AbortController();
 
     if (!isLoading && current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       getAIAdvisory(selectedCrop.id, location, language, controller.signal);
     }
 
@@ -191,87 +195,104 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.lat, location.lng, selectedCrop.id, language, isLoading]);
   return (
-    <div className="w-full h-full bg-linear-to-br from-emerald-500/10 via-background to-muted/30 border border-emerald-500/20 dark:border-emerald-500/30 rounded-xl shadow-[0_4px_20px_-4px_rgba(16,185,129,0.1)] p-3 select-none relative overflow-hidden backdrop-blur-md flex flex-col justify-between">
+    <div
+      className={cn(
+        "w-full h-full p-3 relative overflow-hidden flex flex-col justify-between transition-colors duration-500",
+        isLoading || isGenerating
+          ? "borderAnimate"
+          : "border-3 border-emerald-800 rounded-xl",
+      )}
+    >
+      {/* FIX: Trigger mesh gradient exclusively when generating and not loading */}
+      <div
+        className={cn(
+          "absolute inset-0 animate-mesh pointer-events-none mix-blend-screen transition-opacity duration-1000",
+          isGenerating || formattedText
+            ? "opacity-100 dark:opacity-80" // Stay visible during generation AND after text arrives
+            : "opacity-0", // Hidden by default when idle
+        )}
+        aria-hidden="true"
+      />
       {/* BACKGROUND BRAND GLOW */}
-      <div className="absolute -right-16 -top-16 size-48 bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
-
       {/* HEADER SECTION: Title block paired with dropdown controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 dark:border-border/60 pb-2 mb-2 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0 shadow-xs">
-            <Sparkles className="size-4 animate-pulse" />
+      <div className="relative z-10 w-full h-full flex flex-col justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/10 dark:border-border/60 pb-2 mb-2 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0 shadow-xs">
+              <Sparkles className="size-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-foreground leading-none">
+                {t.dashboard.aiOverview}
+              </h2>
+              <p className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase mt-1">
+                {t.dashboard.chooseCrop}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-foreground leading-none">
-              {t.dashboard.aiOverview}
-            </h2>
-            <p className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 tracking-wider uppercase mt-1">
-              {t.dashboard.chooseCrop}
-            </p>
-          </div>
+
+          {/* CROP SELECTOR DROPDOWN MODULE */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto h-8 bg-background/60 border-emerald-500/20 hover:border-emerald-500/40 text-foreground text-xs font-medium px-2.5 rounded-lg shadow-xs flex items-center justify-between gap-1.5 cursor-pointer"
+              >
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="truncate">
+                    {translateCropName(selectedCrop)}
+                  </span>
+                </div>
+                <ChevronDown className="size-3.5 opacity-60 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent
+              align="end"
+              className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
+            >
+              {crops.map((option) => {
+                const isSelected = option.id === selectedCrop.id;
+
+                return (
+                  <DropdownMenuItem
+                    key={option.id}
+                    onClick={() => setSelectedCrop(option)}
+                    className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="truncate font-medium">
+                        {translateCropName(option)}
+                      </span>
+                    </div>
+                    {isSelected && (
+                      <Check className="size-3.5 text-primary shrink-0" />
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* CROP SELECTOR DROPDOWN MODULE */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto h-8 bg-background/60 border-emerald-500/20 hover:border-emerald-500/40 text-foreground text-xs font-medium px-2.5 rounded-lg shadow-xs flex items-center justify-between gap-1.5 cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="truncate">
-                  {translateCropName(selectedCrop)}
-                </span>
-              </div>
-              <ChevronDown className="size-3.5 opacity-60 shrink-0" />
-            </Button>
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            align="end"
-            className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
-          >
-            {crops.map((option) => {
-              const isSelected = option.id === selectedCrop.id;
-
-              return (
-                <DropdownMenuItem
-                  key={option.id}
-                  onClick={() => setSelectedCrop(option)}
-                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="truncate font-medium">
-                      {translateCropName(option)}
-                    </span>
-                  </div>
-                  {isSelected && (
-                    <Check className="size-3.5 text-primary shrink-0" />
-                  )}
-                </DropdownMenuItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* CORE CONTENT SLOT: Scrollable container with simulated generation skeleton loaders */}
-      <div className="overflow-y-auto flex-1 min-h-0 max-h-full flex flex-col justify-start">
-        {isGenerating || isLoading ? (
-          <div className="space-y-2 mt-1">
-            <Skeleton className="h-4 w-full rounded-sm" />
-            <Skeleton className="h-4 w-[92%] rounded-sm" />
-            <Skeleton className="h-4 w-[96%] rounded-sm" />
-            <Skeleton className="h-4 w-[85%] rounded-sm" />
-            <Skeleton className="h-4 w-[50%] rounded-sm" />
-          </div>
-        ) : (
-          <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
-            <p className="text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300">
-              {formattedText}
-            </p>
-          </div>
-        )}
+        {/* CORE CONTENT SLOT: Scrollable container with simulated generation skeleton loaders */}
+        <div className="overflow-y-auto flex-1 min-h-0 max-h-full flex flex-col justify-start">
+          {isGenerating || isLoading ? (
+            <div className="space-y-2 mt-1">
+              <Skeleton className="h-4 w-full rounded-sm" />
+              <Skeleton className="h-4 w-[92%] rounded-sm" />
+              <Skeleton className="h-4 w-[96%] rounded-sm" />
+              <Skeleton className="h-4 w-[85%] rounded-sm" />
+              <Skeleton className="h-4 w-[50%] rounded-sm" />
+            </div>
+          ) : (
+            <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
+              <p className="text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300">
+                {formattedText}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
