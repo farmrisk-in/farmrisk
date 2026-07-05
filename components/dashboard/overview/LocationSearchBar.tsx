@@ -1,51 +1,47 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  MouseEvent,
-  TouchEvent,
-} from "react";
-import {
-  Search,
-  MapPinned,
-  LocateFixed,
-  X,
-  Crosshair,
-  Loader2,
-} from "lucide-react";
-
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { MapPinned, LocateFixed, X, Crosshair, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { useLanguage } from "@/hooks/use-language";
+import { useLocationSearch } from "@/hooks/useLocations";
 import {
   useLocationContext,
   type SelectedLocation,
 } from "@/providers/LocationProvider";
 
-import {
-  project,
-  unproject,
-  reverseGeocode,
-  formatCoordinates,
-} from "@/lib/utils";
+import { reverseGeocode, formatCoordinates } from "@/lib/utils";
 import { toast } from "sonner";
-import Image from "next/image";
+import dynamic from "next/dynamic";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
 
-const TILE_SIZE = 256;
-const INITIAL_ZOOM = 11;
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+const Map = dynamic(() => import("./Map"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[60vh] w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-muted/20">
+      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <span className="text-sm font-medium">Loading Select Map...</span>
+    </div>
+  ),
+});
 
 type SearchResult = SelectedLocation & { id: string };
 
@@ -100,8 +96,20 @@ export function LocationSearchBar() {
 
   // Standard input query state, synchronized with selected location name
   const [query, setQuery] = useState(location.name);
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loadingResults, setLoadingResults] = useState(false);
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const shouldSearch = debouncedQuery.trim().length >= 2 && debouncedQuery.trim() !== location.name;
+  const { data: results = [], isFetching: loadingResults } = useLocationSearch(
+    shouldSearch ? debouncedQuery : ""
+  );
+
   const [isLocating, setIsLocating] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -112,13 +120,6 @@ export function LocationSearchBar() {
     lat: location.lat,
     lng: location.lng,
   });
-  const [zoom, setZoom] = useState(INITIAL_ZOOM);
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
-
-  // Dragging state for map panning
-  const [isDragging, setIsDragging] = useState(false);
-  const dragStart = useRef({ x: 0, y: 0, lat: 0, lng: 0 });
-  const [mapElement, setMapElement] = useState<HTMLDivElement | null>(null);
 
   // Client-side mount check to prevent visual lag/layout shifts during hydration
   useEffect(() => {
@@ -129,45 +130,6 @@ export function LocationSearchBar() {
   useEffect(() => {
     setQuery(location.name);
   }, [location.name]);
-
-  // --- SEARCH LOGIC (Debounced) ---
-  useEffect(() => {
-    const trimmed = query.trim();
-    // Do not search if query is empty or matches currently active selection
-    if (trimmed.length < 2 || trimmed === location.name) {
-      setResults([]);
-      return;
-    }
-
-    const controller = new AbortController();
-    // Snappy 150ms debounce delay for fast response times
-    const timeout = window.setTimeout(async () => {
-      try {
-        setLoadingResults(true);
-        const url = new URL("/api/locations", window.location.origin);
-        url.searchParams.set("mode", "search");
-        url.searchParams.set("q", trimmed);
-
-        const response = await fetch(url, {
-          signal: controller.signal,
-          cache: "no-store",
-        });
-        if (!response.ok) throw new Error("Search failed");
-
-        const payload = (await response.json()) as { results: SearchResult[] };
-        setResults(payload.results);
-      } catch (error) {
-        if ((error as Error).name !== "AbortError") setResults([]);
-      } finally {
-        setLoadingResults(false);
-      }
-    }, 150);
-
-    return () => {
-      controller.abort();
-      window.clearTimeout(timeout);
-    };
-  }, [query, location.name]);
 
   // Synchronize map center when dialog opens or location changes
   useEffect(() => {
@@ -185,7 +147,6 @@ export function LocationSearchBar() {
       displayName: next.displayName,
     });
     setQuery(next.name);
-    setResults([]);
     setIsFocused(false);
     setIsMapOpen(false); // Close map if open
   };
@@ -283,125 +244,8 @@ export function LocationSearchBar() {
     );
   };
 
-  // --- MAP VIEWPORT RESIZE HANDLING (using Callback Ref) ---
-  const mapRefCallback = (node: HTMLDivElement | null) => {
-    if (node !== null) {
-      setMapElement(node);
-    }
-  };
-
-  useEffect(() => {
-    if (!mapElement) return;
-
-    const updateSize = () => {
-      const rect = mapElement.getBoundingClientRect();
-      setViewport({ width: rect.width, height: rect.height });
-    };
-
-    updateSize();
-    const observer = new ResizeObserver(updateSize);
-    observer.observe(mapElement);
-    return () => observer.disconnect();
-  }, [mapElement]);
-
-  const tiles = useMemo(() => {
-    if (!viewport.width || !viewport.height) return [];
-    const centerPoint = project(center.lat, center.lng, zoom);
-    const topLeftX = centerPoint.x - viewport.width / 2;
-    const topLeftY = centerPoint.y - viewport.height / 2;
-    const startX = Math.floor(topLeftX / TILE_SIZE);
-    const endX = Math.floor((topLeftX + viewport.width) / TILE_SIZE);
-    const startY = Math.floor(topLeftY / TILE_SIZE);
-    const endY = Math.floor((topLeftY + viewport.height) / TILE_SIZE);
-    const maxTile = 2 ** zoom;
-    const mapTiles = [];
-
-    for (let x = startX; x <= endX; x += 1) {
-      for (let y = startY; y <= endY; y += 1) {
-        if (y < 0 || y >= maxTile) continue;
-        const wrappedX = ((x % maxTile) + maxTile) % maxTile;
-        mapTiles.push({
-          x: wrappedX,
-          y,
-          url: `https://tile.openstreetmap.org/${zoom}/${wrappedX}/${y}.png`,
-          left: x * TILE_SIZE - topLeftX,
-          top: y * TILE_SIZE - topLeftY,
-        });
-      }
-    }
-    return mapTiles;
-  }, [center.lat, center.lng, viewport.height, viewport.width, zoom]);
-
-  // --- MAP DRAG TO PAN HANDLERS ---
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return; // Left click only
-    setIsDragging(true);
-    dragStart.current = {
-      x: e.clientX,
-      y: e.clientY,
-      lat: center.lat,
-      lng: center.lng,
-    };
-  };
-
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
-
-    const dx = e.clientX - dragStart.current.x;
-    const dy = e.clientY - dragStart.current.y;
-
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      const centerPoint = project(
-        dragStart.current.lat,
-        dragStart.current.lng,
-        zoom,
-      );
-      const newWorldX = centerPoint.x - dx;
-      const newWorldY = centerPoint.y - dy;
-      const newCenter = unproject(newWorldX, newWorldY, zoom);
-      setCenter(newCenter);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  // --- TOUCH EVENTS FOR MOBILE PANNING ---
-  const handleTouchStart = (e: TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length !== 1) return; // Ignore multi-touch/pinch gestures for pan
-    const touch = e.touches[0];
-    setIsDragging(true);
-    dragStart.current = {
-      x: touch.clientX,
-      y: touch.clientY,
-      lat: center.lat,
-      lng: center.lng,
-    };
-  };
-
-  const handleTouchMove = (e: TouchEvent<HTMLDivElement>) => {
-    if (!isDragging || e.touches.length !== 1) return;
-    const touch = e.touches[0];
-
-    const dx = touch.clientX - dragStart.current.x;
-    const dy = touch.clientY - dragStart.current.y;
-
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      const centerPoint = project(
-        dragStart.current.lat,
-        dragStart.current.lng,
-        zoom,
-      );
-      const newWorldX = centerPoint.x - dx;
-      const newWorldY = centerPoint.y - dy;
-      const newCenter = unproject(newWorldX, newWorldY, zoom);
-      setCenter(newCenter);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
+  const handleCenterChange = (lat: number, lng: number) => {
+    setCenter({ lat, lng });
   };
 
   const [isConfirmingLocation, setIsConfirmingLocation] = useState(false);
@@ -440,76 +284,85 @@ export function LocationSearchBar() {
     );
   }
 
-  // Determine if the dropdown with search results should be shown
-  const showDropdown =
-    isFocused && query.trim().length >= 2 && query !== location.name;
-
   return (
-    <div className="w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 bg-card p-3 rounded-xl border border-border shadow-sm">
-      {/* 1. SEARCH BAR CONTAINER: Full width on md, fluid expansion on lg */}
-      <div className="relative w-full lg:grow lg:flex-1 min-w-full md:min-w-full lg:min-w-95">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground flex items-center justify-center size-4">
-          {loadingResults ? (
-            <Loader2 className="size-4 animate-spin text-emerald-500" />
-          ) : (
-            <Search className="size-4" />
-          )}
-        </div>
-        <Input
-          value={query}
-          onFocus={() => setIsFocused(true)}
-          onBlur={handleBlur}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={locTrans.searchPlaceholder}
-          className="w-full pl-10 pr-10 bg-background border-border text-foreground focus-visible:ring-primary h-11 rounded-lg"
-        />
-        {query && (
-          <button
-            type="button"
-            onMouseDown={(e) => {
-              // Prevent input from losing focus when clicking the clear button
-              e.preventDefault();
-            }}
-            onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-          >
-            <X className="size-4" />
-          </button>
-        )}
+    <div className="w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-2">
+      <Command shouldFilter={false} className="p-0 rounded-md h-11">
+        <Popover open={isFocused}>
+          <div className="relative w-full lg:grow lg:flex-1 min-w-full md:min-w-full lg:min-w-95">
+            <PopoverAnchor asChild className="h-11">
+              <div className="relative">
+                <CommandInput
+                  value={query}
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={handleBlur}
+                  onValueChange={(value) => setQuery(value)}
+                  placeholder={locTrans.searchPlaceholder}
+                />
 
-        {/* SEARCH RESULTS DROPDOWN */}
-        {showDropdown && (
-          <div className="absolute top-full left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover p-2 shadow-lg max-h-64 overflow-y-auto">
-            {results.length > 0 ? (
-              results.map((res) => (
-                <button
-                  key={res.id}
-                  onMouseDown={(e) => {
-                    // Prevent input blur before click handler processes
-                    e.preventDefault();
-                  }}
-                  onClick={() => updateGlobalLocation(res)}
-                  className="flex w-full items-start gap-3 rounded-md px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                >
-                  <MapPinned className="mt-0.5 size-4 shrink-0 text-primary" />
-                  <div className="flex flex-col min-w-0">
-                    <span className="truncate text-sm font-medium">
-                      {res.name}
-                    </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {res.displayName}
-                    </span>
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="p-3 text-sm text-muted-foreground text-center">
-                {locTrans.noMatches}
+                {query && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setQuery("")}
+                    className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-full"
+                  >
+                    <X className="size-4" />
+                  </Button>
+                )}
               </div>
-            )}
+            </PopoverAnchor>
+
+            <PopoverContent
+              align="start"
+              sideOffset={6}
+              className="w-(--radix-popover-trigger-width) p-2 bg-background"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <CommandList className="max-h-72">
+                {loadingResults ? (
+                  <div className="flex bg-background rounded-xl items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    Searching...
+                  </div>
+                ) : results.length === 0 ? (
+                  <CommandEmpty className="bg-background rounded-xl">
+                    {locTrans.noMatches}
+                  </CommandEmpty>
+                ) : (
+                  <CommandGroup>
+                    {results.map((res, _) => (
+                      <CommandItem
+                        key={_}
+                        value={`${res.id}-${res.name}-${res.lat}-${res.lng}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onSelect={() => {
+                          updateGlobalLocation(res);
+                          setIsFocused(false);
+                        }}
+                        className="cursor-pointer py-3 bg-background rounded-xl"
+                      >
+                        <MapPinned className="mr-3 size-7 shrink-0" />
+
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate font-medium">
+                            {res.name}
+                          </span>
+
+                          <span className="truncate text-xs text-muted-foreground">
+                            {res.displayName}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </PopoverContent>
           </div>
-        )}
-      </div>
+        </Popover>
+      </Command>
 
       {/* 2. ACTION BUTTONS WRAPPER: Flex layout on all screen sizes, two stretchable buttons + one square on mobile */}
       <div className="flex items-center gap-2 w-full lg:w-auto shrink-0">
@@ -556,88 +409,36 @@ export function LocationSearchBar() {
               </span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-175 bg-background border-border p-0 overflow-hidden">
-            <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
-              <DialogTitle className="text-foreground">
-                {locTrans.selectMapBtn}
-              </DialogTitle>
-            </DialogHeader>
-
-            {/* MAP CANVAS */}
-            <div
-              ref={mapRefCallback}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              className="relative h-[60vh] w-full bg-muted cursor-crosshair overflow-hidden select-none touch-none"
-            >
-              {tiles.map((tile) => (
-                <Image
-                  width={TILE_SIZE}
-                  height={TILE_SIZE}
-                  key={`${tile.x}-${tile.y}`}
-                  src={tile.url}
-                  alt=""
-                  className="absolute size-64 max-w-none select-none pointer-events-none"
-                  style={{ left: `${tile.left}px`, top: `${tile.top}px` }}
-                  draggable={false}
-                />
-              ))}
-
-              {/* Center Crosshair Indicator */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                <Crosshair className="size-6 text-primary drop-shadow-md" />
-              </div>
-
-              {/* Zoom Controls */}
-              <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
+          <DialogContent className="p-0 bg-background border-border rounded-xl overflow-hidden w-[80%] sm:max-w-full gap-0">
+            {/* EDGE-TO-EDGE INTUITIVE MAP CONTAINER MODULE */}
+            <Map
+              Icon={MapPinned}
+              initialLat={location.lat}
+              initialLng={location.lng}
+              onCenterChange={handleCenterChange}
+              title={locTrans.selectMapBtn || "Verify Farm Coordinates"}
+              dialog={true}
+              bottomLeftBadge={
+                <Badge className="rounded-sm" variant="outline">
+                  <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse mr-2" />
+                  {formatCoordinates(center.lat, center.lng)}
+                </Badge>
+              }
+              bottomRightAction={
                 <Button
-                  size="icon"
-                  variant="secondary"
-                  className="size-8 rounded-md font-bold shadow-md bg-white hover:bg-slate-100 text-slate-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setZoom((prev) => Math.min(prev + 1, 18));
-                  }}
+                  onClick={handleConfirmCenterLocation}
+                  disabled={isConfirmingLocation}
+                  className="bg-emerald-600 text-white hover:bg-emerald-500 font-medium tracking-wide shadow-md transition-all active:scale-98 cursor-pointer border border-emerald-500/30 h-10 px-4"
                 >
-                  +
+                  {isConfirmingLocation ? (
+                    <Loader2 className="size-4 animate-spin mr-2" />
+                  ) : (
+                    <Crosshair className="size-4 mr-2" />
+                  )}
+                  {locTrans.selectLocation || "Select Location"}
                 </Button>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="size-8 rounded-md font-bold shadow-md bg-white hover:bg-slate-100 text-slate-800"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setZoom((prev) => Math.max(prev - 1, 2));
-                  }}
-                >
-                  -
-                </Button>
-              </div>
-            </div>
-
-            {/* Confirmation Footer Bar */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/20">
-              <span className="text-xs text-muted-foreground truncate max-w-[60%] font-mono">
-                {formatCoordinates(center.lat, center.lng)}
-              </span>
-              <Button
-                onClick={handleConfirmCenterLocation}
-                disabled={isConfirmingLocation}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {isConfirmingLocation ? (
-                  <Loader2 className="size-4 animate-spin mr-2" />
-                ) : (
-                  <Crosshair className="size-4 mr-2" />
-                )}
-                {locTrans.selectLocation || "Select Location"}
-              </Button>
-            </div>
+              }
+            />
           </DialogContent>
         </Dialog>
       </div>

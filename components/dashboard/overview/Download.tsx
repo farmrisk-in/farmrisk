@@ -22,7 +22,12 @@ import {
 import { useLanguage } from "@/hooks/use-language";
 import DownloadTemplate from "./DownloadTemplate";
 import { useLocationContext } from "@/providers/LocationProvider";
-import { useWeather } from "@/hooks/use-weather";
+import { useWeather } from "@/hooks/useWeather";
+import { useForecast } from "@/hooks/useForecast";
+import { useCalendar } from "@/hooks/useCalendar";
+import { useAI } from "@/hooks/useAI";
+import { type CropOption } from "./Overview";
+import { GENERAL_CROP } from "@/types/crops";
 
 // Ensure you have run: npm install html2canvas jspdf
 
@@ -57,7 +62,7 @@ const DOWNLOAD_TRANSLATIONS: Record<
     download: "பதிவிறக்கு",
     generating: "உருவாக்கப்படுகிறது...",
     jpeg: "படம் பதிவிறக்கம் (JPEG)",
-    pdf: "ஆவணம் பதிவிறக்கம் (PDF)",
+    pdf: "ஆவணம் பதிવிறக்கம் (PDF)",
   },
   gu: {
     download: "ડાઉનલોડ કરો",
@@ -73,112 +78,41 @@ const Download = ({ className }: { className?: string }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { location } = useLocationContext();
-  const weatherData = useWeather();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [predictions, setPredictions] = useState<any[]>(() => {
+  const [selectedCrop, setSelectedCrop] = useState<CropOption>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("farmrisk-forecast-predictions");
+      const stored = localStorage.getItem("farmrisk-selected-crop");
       if (stored) {
         try {
           return JSON.parse(stored);
-        } catch (e) {
-          console.error(e);
-        }
+        } catch {}
       }
     }
-    return [];
-  });
-  const [aiSummary, setAiSummary] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("farmrisk-ai-advisory") || "";
-    }
-    return "";
-  });
-  const [calendar, setCalendar] = useState<any[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("farmrisk-crop-calendar");
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-    }
-    return [];
-  });
-
-  const [isForecastLoading, setIsForecastLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("farmrisk-forecast-predictions");
-    }
-    return true;
-  });
-  const [isAiLoading, setIsAiLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("farmrisk-ai-advisory");
-    }
-    return true;
-  });
-  const [isCalendarLoading, setIsCalendarLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      return !localStorage.getItem("farmrisk-crop-calendar");
-    }
-    return true;
+    return GENERAL_CROP;
   });
 
   useEffect(() => {
-    const handleForecastLoading = () => {
-      setIsForecastLoading(true);
-      setPredictions([]);
+    const handleCropChange = (e: any) => {
+      if (e.detail) {
+        setSelectedCrop(e.detail);
+      }
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleForecastLoaded = (e: any) => {
-      setPredictions(e.detail);
-      setIsForecastLoading(false);
-    };
-    const handleAiLoading = () => {
-      setIsAiLoading(true);
-      setAiSummary("");
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleAiLoaded = (e: any) => {
-      setAiSummary(e.detail);
-      setIsAiLoading(false);
-    };
-    const handleCalendarLoading = () => {
-      setIsCalendarLoading(true);
-      setCalendar([]);
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleCalendarLoaded = (e: any) => {
-      setCalendar(e.detail);
-      setIsCalendarLoading(false);
-    };
-
-    window.addEventListener("farmrisk-forecast-loading", handleForecastLoading);
-    window.addEventListener("farmrisk-forecast-loaded", handleForecastLoaded);
-    window.addEventListener("farmrisk-ai-loading", handleAiLoading);
-    window.addEventListener("farmrisk-ai-loaded", handleAiLoaded);
-    window.addEventListener("farmrisk-calendar-loading", handleCalendarLoading);
-    window.addEventListener("farmrisk-calendar-loaded", handleCalendarLoaded);
-
-    return () => {
-      window.removeEventListener("farmrisk-forecast-loading", handleForecastLoading);
-      window.removeEventListener("farmrisk-forecast-loaded", handleForecastLoaded);
-      window.removeEventListener("farmrisk-ai-loading", handleAiLoading);
-      window.removeEventListener("farmrisk-ai-loaded", handleAiLoaded);
-      window.removeEventListener("farmrisk-calendar-loading", handleCalendarLoading);
-      window.removeEventListener("farmrisk-calendar-loaded", handleCalendarLoaded);
-    };
+    window.addEventListener("farmrisk-crop-changed", handleCropChange);
+    return () => window.removeEventListener("farmrisk-crop-changed", handleCropChange);
   }, []);
+
+  const weatherData = useWeather();
+  const { data: predictions = [], isLoading: isForecastLoading } = useForecast(16);
+  const { data: calendarData, isLoading: isCalendarLoading } = useCalendar(selectedCrop.id);
+  const { data: aiSummary = "", isLoading: isAiLoading } = useAI(selectedCrop.id, language);
+
+  const calendar = calendarData?.calendar || [];
 
   const isDataLoading =
     weatherData.isLoading ||
     isForecastLoading ||
-    isAiLoading ||
     isCalendarLoading ||
+    isAiLoading ||
     !weatherData.current ||
     predictions.length === 0 ||
     !aiSummary;
@@ -289,10 +223,7 @@ const Download = ({ className }: { className?: string }) => {
           <DownloadTemplate
             location={location}
             language={language}
-            weather={weatherData}
-            predictions={predictions}
-            aiSummary={aiSummary}
-            calendar={calendar}
+            selectedCrop={selectedCrop}
           />
         </div>
       </div>

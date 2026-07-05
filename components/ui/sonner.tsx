@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/providers/ThemeProvider";
+import { useModeAnimation } from "react-theme-switch-animation";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import {
   RiCheckboxCircleLine,
@@ -9,13 +9,14 @@ import {
   RiCloseCircleLine,
   RiLoaderLine,
 } from "@remixicon/react";
+import { useIsDarkMode } from "@/hooks/use-theme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  const isDark = useIsDarkMode();
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={isDark ? "dark" : "light"}
       className="toaster group"
       icons={{
         success: <RiCheckboxCircleLine className="size-4" />,

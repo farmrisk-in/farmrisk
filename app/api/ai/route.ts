@@ -27,12 +27,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         advisory_summary:
           "This is a mock advisory summary for testing purposes.",
-        location: {
-          latitude,
-          longitude,
-          crop,
-          crop_stage,
-        },
       });
     }
 

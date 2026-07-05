@@ -20,7 +20,6 @@ export default function ChoiceClient() {
       router.replace("/dashboard");
     }
   }, [user, loading, router]);
-  console.log("User from choice page:", user);
   const freeContent = t.choice.free;
   const proContent = t.choice.personalized;
 

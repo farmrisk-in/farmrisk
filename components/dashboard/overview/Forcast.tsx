@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useForecast } from "@/hooks/useForecast";
 import { useLanguage } from "@/hooks/use-language";
-import { useLocationContext } from "@/providers/LocationProvider";
+import { Progress } from "@/components/ui/progress";
 import {
-  CloudRain,
-  CloudSun,
-  CloudLightning,
-  Cloud,
   LoaderCircle,
+  TrendingUpDown,
+  CheckCheck,
+  CloudOff,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface DayPrediction {
   date: string;
@@ -17,17 +21,16 @@ interface DayPrediction {
   corrected: { tmax: number; tmin: number; pcp: number };
 }
 
-interface ForecastAPIResponse {
-  success: boolean;
-  predictions: DayPrediction[];
+interface ForcastProps {
+  isPrintMode?: boolean;
 }
 
 // Helper to determine the right weather icon based on rain volume thresholds
 const getWeatherIcon = (pcp: number) => {
-  if (pcp > 5.0) return <CloudLightning className="w-5 h-5 text-amber-500" />;
-  if (pcp > 1.0) return <CloudRain className="w-5 h-5 text-sky-400" />;
-  if (pcp > 0.1) return <CloudSun className="w-5 h-5 text-slate-400" />;
-  return <Cloud className="w-5 h-5 text-slate-300 dark:text-slate-500" />;
+  if (pcp > 5.0) return "heavy_rain.svg";
+  if (pcp > 1.0) return "showers_rain.svg";
+  if (pcp > 0.1) return "drizzle.svg";
+  return "cloud.svg";
 };
 
 // Simple day name formatting helper
@@ -42,69 +45,99 @@ const formatDateText = (dateStr: string) => {
   return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
 };
 
-const Forcast = () => {
+const Forcast = ({ isPrintMode }: ForcastProps) => {
   const { t } = useLanguage();
-  const { location } = useLocationContext();
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [predictions, setPredictions] = useState<DayPrediction[]>([]);
+  const { data: predictions = [], isLoading } = useForecast(16);
+  const [progressVal, setProgressVal] = useState(0);
 
   useEffect(() => {
-    const controller = new AbortController();
+    let timer: NodeJS.Timeout;
 
-    async function getForecast() {
-      if (!location.lat || !location.lng) return;
-      setLoading(true);
-      localStorage.removeItem("farmrisk-forecast-predictions");
-      window.dispatchEvent(new CustomEvent("farmrisk-forecast-loading"));
-      try {
-        // Fetch via local Next.js proxy route, passing abort signal
-        const res = await fetch(
-          `/api/forecast?lat=${location.lat}&lon=${location.lng}&days=16`,
-          { signal: controller.signal },
-        );
-        const data: ForecastAPIResponse = await res.json();
-        if (data.success) {
-          setPredictions(data.predictions);
-          localStorage.setItem("farmrisk-forecast-predictions", JSON.stringify(data.predictions));
-          window.dispatchEvent(new CustomEvent("farmrisk-forecast-loaded", { detail: data.predictions }));
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("Error compiling meteorological metrics:", err);
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
+    if (isLoading) {
+      // Reset to 0 when loading initiates
+      setProgressVal(0);
+
+      // 6500ms / 99 steps ≈ 65.6ms interval to hit 99% right at 6.5 seconds
+      const intervalTime = 65;
+
+      timer = setInterval(() => {
+        setProgressVal((prev) => {
+          if (prev >= 99) {
+            clearInterval(timer);
+            return 99; // Stall at 99% indefinitely until loading turns false
+          }
+          return prev + 1;
+        });
+      }, intervalTime);
+    } else {
+      // When backend finishes, snap to 100 immediately
+      setProgressVal(100);
     }
 
-    getForecast();
-
-    return () => {
-      controller.abort();
-    };
-  }, [location.lat, location.lng]);
+    return () => clearInterval(timer);
+  }, [isLoading]);
 
   return (
-    <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm select-none">
+    <div className={cn(
+      "w-full bg-card border border-border rounded-xl p-5 pb-2 shadow-sm select-none",
+      isPrintMode && "w-full p-0 border-none bg-transparent shadow-none"
+    )}>
       {/* SECTION SUBTITLE BAR */}
-      <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1.5 mb-4">
+      <div className={cn(
+        "flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2",
+        isPrintMode && "border-none text-slate-500 text-[10px] tracking-wider mb-1.5"
+      )}>
+        <TrendingUpDown className={cn("size-4.5", isPrintMode && "size-3.5 text-emerald-600")} />
         {t.dashboard.forecast16Day}
+        {!isPrintMode && (
+          <Badge variant={"default"} className="text-[10px] ml-auto rounded-sm">
+            <CheckCheck size={15} className="mr-1" />
+            Bias Corrected
+          </Badge>
+        )}
       </div>
 
-      {loading ? (
-        <div className="w-full h-48 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-          <LoaderCircle className="w-8 h-8 animate-spin text-emerald-500" />
-          <span className="text-xs font-medium">
-            Compiling bias-corrected analytics...
+      {predictions.length === 0 && !isLoading ? (
+        <div className="w-full h-25 flex items-center justify-center gap-2 text-muted-foreground select-none">
+          <CloudOff className="size-6" />
+          <span className="text-sm font-medium">
+            Something went wrong while fetching the forecast. Please try again
+            later.
           </span>
         </div>
+      ) : null}
+
+      {progressVal < 100 && !isPrintMode ? (
+        <div className="w-full h-30 flex items-center justify-center gap-2 text-muted-foreground select-none">
+          <div className="w-full md:max-w-[80%] space-y-3">
+            <div className="flex items-center justify-between">
+              <Label
+                htmlFor="progress"
+                className="flex items-center gap-2 text-sm font-medium"
+              >
+                <LoaderCircle className="w-4 h-4 animate-spin text-emerald-500" />
+                {progressVal === 100
+                  ? "Analytics ready!"
+                  : "Compiling bias-corrected analytics..."}
+              </Label>
+              <span className="text-muted-foreground font-mono text-sm tracking-tighter">
+                {progressVal}%
+              </span>
+            </div>
+            <Progress
+              id="progress"
+              value={progressVal}
+              className="h-3 bg-emerald-500/20 transition-all duration-300 [&>div]:bg-emerald-500"
+            />
+          </div>
+        </div>
       ) : (
-        /* HORIZONTAL SCROLL TIMELINE PANEL */
-        <div className="w-full flex overflow-x-auto gap-1 pb-2 custom-scrollbar snap-x">
+        /* HORIZONTAL SCROLL TIMELINE PANEL / GRID */
+        <div className={cn(
+          "w-full flex overflow-x-auto pb-2 custom-scrollbar snap-x scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent",
+          isPrintMode && "overflow-x-visible pb-0 justify-between border border-slate-200/85 rounded-lg p-2.5 bg-white"
+        )}>
           {predictions.map((day, idx) => {
             // Extract the corrected variables from the model bundle payload
             const maxTemp = Math.round(day.corrected.tmax);
@@ -114,40 +147,78 @@ const Forcast = () => {
             return (
               <div
                 key={day.date}
-                className={`shrink-0 w-18 flex flex-col items-center py-3 rounded-lg border border-transparent transition-all snap-start
-                  ${idx === 0 ? "bg-emerald-500/10 border-emerald-500/20" : "hover:bg-muted/50"}`}
+                className={cn(
+                  `shrink-0 w-[77.4px] flex border-r last:border-0 flex-col items-center py-3 first:rounded-l-md last:rounded-r-md transition-all snap-start
+                  ${idx === 0 ? "bg-emerald-500/5" : "hover:bg-muted/50"}`,
+                  isPrintMode && `shrink-0 w-10.5 py-1.5 border-none last:border-none ${
+                    idx === 0
+                      ? "bg-emerald-500/10 border border-emerald-500/15"
+                      : ""
+                  }`
+                )}
               >
-                {/* Day Word Label */}
-                <span className="text-md font-bold text-foreground">
-                  {formatDayName(day.date)}
-                </span>
+                {isPrintMode ? (
+                  <>
+                    <span className="text-[9px] font-bold text-slate-800">
+                      {formatDayName(day.date)}
+                    </span>
+                    <span className="text-[7.5px] text-slate-400 font-medium mb-1 font-sans">
+                      {new Date(day.date).toLocaleDateString("en-US", {
+                        day: "numeric",
+                      })}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    {/* Numeric Calendar Label */}
+                    <span className="text-xs text-muted-foreground font-medium mb-1">
+                      {formatDateText(day.date)}
+                    </span>
 
-                {/* Numeric Calendar Label */}
-                <span className="text-xs text-muted-foreground font-medium mb-2">
-                  {formatDateText(day.date)}
-                </span>
+                    {/* Day Word Label */}
+                    <span className="text-md font-bold text-foreground mb-3">
+                      {formatDayName(day.date)}
+                    </span>
+                  </>
+                )}
 
-                {/* Status Weather Graphic Icon */}
-                <div className="my-1 h-5 flex items-center justify-center">
-                  {getWeatherIcon(rainVolume)}
-                </div>
+                {/* Status Graphic Icon */}
+                <Image
+                  src={"/weatherIcons/" + getWeatherIcon(rainVolume)}
+                  width={isPrintMode ? 16 : 26}
+                  height={isPrintMode ? 16 : 26}
+                  alt=""
+                  className={cn(isPrintMode ? "my-0.5" : "my-0")}
+                />
 
                 {/* Tmax Layout Digit */}
-                <span className="text-md font-extrabold text-orange-600 dark:text-orange-500 mt-1">
+                <span className={cn(
+                  "text-md font-extrabold text-orange-600 dark:text-orange-500 mt-1",
+                  isPrintMode && "text-[10px] font-extrabold text-orange-600 mt-0.5"
+                )}>
                   {maxTemp}°
                 </span>
 
-                {/* Dynamic Height Gradient Indicator bar */}
-                <div className="w-1 h-10 my-2 bg-linear-to-b from-orange-500 via-amber-400 to-sky-500 rounded-full opacity-80" />
+                {/* Height bar graphic */}
+                <div className={cn(
+                  "w-2 h-10 my-2 bg-linear-to-b from-orange-500 via-amber-400 to-sky-500 rounded-full opacity-80",
+                  isPrintMode && "w-0.75 h-7 my-1 opacity-85"
+                )} />
 
                 {/* Tmin Layout Digit */}
-                <span className="text-md font-bold text-sky-600 dark:text-sky-400">
+                <span className={cn(
+                  "text-md font-bold text-sky-600 dark:text-sky-400",
+                  isPrintMode && "text-[9px] font-bold text-sky-600"
+                )}>
                   {minTemp}°
                 </span>
 
-                {/* Corrected Total Precipitation Metrics Label */}
-                <span className="text-[12px] font-semibold text-muted-foreground font-mono mt-2">
-                  {rainVolume > 0 ? `${rainVolume.toFixed(1)}mm` : "—"}
+                {/* Total Precipitation Metrics Label */}
+                <span className={cn(
+                  "text-[12px] font-semibold text-muted-foreground font-mono mt-2",
+                  isPrintMode && "text-[7.5px] font-semibold text-slate-400 mt-1"
+                )}>
+                  {rainVolume > 0 ? (isPrintMode ? `${rainVolume.toFixed(1)}` : `${rainVolume.toFixed(1)}mm`) : "—"}
                 </span>
               </div>
             );

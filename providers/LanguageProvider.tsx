@@ -38,7 +38,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const t = content[language] || content.en;
+  const t = (content[language] || content.en) as TranslationType;
 
   if (!mounted) {
     return (

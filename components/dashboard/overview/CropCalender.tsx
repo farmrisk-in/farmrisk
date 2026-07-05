@@ -1,31 +1,22 @@
 "use client";
 
-import { useLocationContext } from "@/providers/LocationProvider";
 import React, { useState, useEffect } from "react";
 import { type CropOption } from "./Overview";
 import { Badge } from "@/components/ui/badge";
-
-interface CalendarEvent {
-  crop: string;
-  season: string;
-  sowingPeriod: string;
-  harvestingPeriod: string;
-  sowFromMon: number | null;
-  sowToMon: number | null;
-  harvFromMon: number | null;
-  harvToMon: number | null;
-}
-
-interface CalendarAPIResponse {
-  success: boolean;
-  state: string;
-  district: string;
-  districtCode: string | null;
-  calendar: CalendarEvent[];
-}
+import { Calendar } from "lucide-react";
+import { calculateTimelineSegments } from "@/lib/utils";
+import { useCalendar } from "@/hooks/useCalendar";
+import { CalendarAPIResponse } from "@/types/calendar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface CropCalenderProps {
   selectedCrop: CropOption;
+  isPrintMode?: boolean;
 }
 
 const MONTHS_LABELS = [
@@ -43,76 +34,15 @@ const MONTHS_LABELS = [
   "D",
 ];
 
-const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
-  const { location } = useLocationContext();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<CalendarAPIResponse | null>(null);
+const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
+  const { data, isLoading: loading, error } = useCalendar(selectedCrop.id);
+  const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchCalendar() {
-      if (!location.lat || !location.lng) return;
-
-      setLoading(true);
-      setError(null);
-      setData(null);
-      localStorage.removeItem("farmrisk-crop-calendar");
-      window.dispatchEvent(new CustomEvent("farmrisk-calendar-loading"));
-
-      try {
-        console.log(
-          `[CropCalender] Fetching: /api/calender?lat=${location.lat}&lng=${location.lng}&crop=${selectedCrop.id}`,
-        );
-        const response = await fetch(
-          `/api/calender?lat=${location.lat}&lng=${location.lng}&crop=${selectedCrop.id}`,
-          { signal: controller.signal },
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const result: CalendarAPIResponse = await response.json();
-        console.log("[CropCalender] Fetched calendar data:", result);
-        if (result.success) {
-          setData(result);
-          localStorage.setItem("farmrisk-crop-calendar", JSON.stringify(result.calendar));
-          window.dispatchEvent(new CustomEvent("farmrisk-calendar-loaded", { detail: result.calendar }));
-        } else {
-          throw new Error("API responded with success: false");
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
-          console.error("Error fetching crop calendar:", err);
-          setError(err.message || "Failed to load crop calendar");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchCalendar();
-
-    return () => {
-      controller.abort();
-    };
-  }, [location.lat, location.lng, selectedCrop.id]);
-
-  if (loading) {
-    return (
-      <div className="w-full bg-card border border-border rounded-xl p-5 shadow-sm select-none">
-        <p className="text-xs text-muted-foreground animate-pulse pl-1.5">
-          Fetching regional crop calendar matching &quot;{selectedCrop.name}
-          &quot;...
-        </p>
-      </div>
-    );
-  }
+    const handleBodyClick = () => setActiveTooltipId(null);
+    document.body.addEventListener("click", handleBodyClick);
+    return () => document.body.removeEventListener("click", handleBodyClick);
+  }, []);
 
   if (error || !data || !data.calendar || data.calendar.length === 0) {
     return null;
@@ -133,104 +63,323 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
     (currentMonthNum - 1 + currentDayNum / totalDaysInMonth) * (100 / 12);
 
   return (
-    <div className="w-full bg-card border border-border rounded-xl p-5 shadow-sm select-none transition-all">
-      {/* 1. COMPONENT HEADER STRIP */}
-      <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
-        <div className="flex gap-3 items-center justify-between">
-          <h3 className="text-xs font-bold text-foreground tracking-wider uppercase">
-            Crop Calendar
-          </h3>
-          <Badge>{selectedCrop.name}</Badge>
+    <div className={cn(
+      "w-full bg-card border border-border rounded-xl p-5 shadow-sm select-none transition-all",
+      isPrintMode && "bg-slate-50 border border-slate-200/50 p-2.5 rounded-lg shadow-none text-slate-800"
+    )}>
+      {/* HEADER SECTION */}
+      <div className={cn(
+        "flex flex-col sm:flex-row gap-3 sm:items-center justify-between border-b border-border mb-2 pb-2",
+        isPrintMode && "flex-row justify-between pb-1.5 border-slate-200"
+      )}>
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
+          <Calendar className={cn("size-4.5", isPrintMode && "size-3.5 text-emerald-600")} />
+          <span className={cn(isPrintMode && "text-[10px] font-extrabold text-slate-700 uppercase tracking-wider")}>Crop Calendar</span>
+          <Badge
+            variant={"default"}
+            className={cn(
+              "text-[10px] ml-auto rounded-[7px]",
+              isPrintMode && "text-[9px] px-1.5 py-0.25 bg-emerald-500/10 text-emerald-700 font-extrabold rounded-md shadow-none"
+            )}
+          >
+            {data.calendar[0]?.crop || selectedCrop.name}
+          </Badge>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 text-[10px] text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-2 bg-zinc-200 dark:bg-zinc-800 rounded-xs border border-border/40" />
-            <span>Off-Season</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-2 bg-emerald-500 rounded-xs" />
-            <span>Sowing Window</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-2 bg-amber-500/30 rounded-xs border border-amber-500/20" />
-            <span>Growing Stage</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-2 bg-rose-500 rounded-xs" />
-            <span>Harvest Period</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-0.5 h-3 bg-zinc-950 dark:bg-zinc-100" />
-            <span className="font-medium text-foreground/80">Today Pin</span>
-          </div>
+        <div className={cn(
+          "flex items-center text-[10px] text-muted-foreground",
+          isPrintMode && "text-[8px] text-slate-400 font-medium gap-3"
+        )}>
+          {isPrintMode ? (
+            <>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-1.5 bg-slate-100 rounded-xs border border-slate-200" />
+                <span>Off-Season</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-1.5 bg-emerald-600 rounded-xs" />
+                <span>Sowing</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-1.5 bg-amber-500/20 rounded-xs border border-amber-500/10" />
+                <span>Growing</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-1.5 bg-rose-600 rounded-xs" />
+                <span>Harvest</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-0.5 h-2.5 bg-slate-800" />
+                <span>Today</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <Badge
+                variant={"outline"}
+                className="text-[10px] rounded-none gap-2 rounded-l-[7px]"
+              >
+                <div className="w-3 h-2 bg-emerald-500 rounded-xs" />
+                Sowing
+              </Badge>
+              <Badge variant={"outline"} className="text-[10px] rounded-none gap-2">
+                <div className="w-3 h-2 bg-amber-500/30 rounded-xs border border-amber-500/20" />
+                Growing
+              </Badge>
+              <Badge
+                variant={"outline"}
+                className="text-[10px] rounded-none rounded-r-[7px] gap-2"
+              >
+                <div className="w-3 h-2 bg-rose-500 rounded-xs" />
+                Harvesting
+              </Badge>
+            </>
+          )}
         </div>
       </div>
 
-      {/* 2. RENDER EACH CALENDAR SEASON TRACK RECORD */}
       {data.calendar.map((event, idx) => {
-        // Fallback or map standard seasonal bounds
         const startSow = event.sowFromMon || 6;
         const endSow = event.sowToMon || startSow;
         const startHarv = event.harvFromMon || 11;
         const endHarv = event.harvToMon || startHarv;
 
+        // Resolve segment matrices using the tracking calculation helper
+        const sowingSegments = calculateTimelineSegments(startSow, endSow);
+        const harvestingSegments = calculateTimelineSegments(
+          startHarv,
+          endHarv,
+        );
+
+        // Growing period bridges the gap from initial Sowing start to final Harvest finish
+        const growingSegments = calculateTimelineSegments(startSow, endHarv);
+
+        const startSowLabel = MONTHS_LABELS[startSow - 1];
+        const endHarvLabel = MONTHS_LABELS[endHarv - 1];
+
         return (
-          <div key={idx} className="mb-4 last:mb-0">
-            {/* SUBTITLE META DETS */}
+          <div key={idx} className={cn("mb-6 last:mb-0 select-none", isPrintMode && "mb-2")}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-foreground/90">
+              <span className={cn(
+                "text-xs font-semibold text-foreground/90",
+                isPrintMode && "text-[8.5px] font-bold text-slate-700"
+              )}>
                 {event.season || "Kharif"} Season
               </span>
+              {isPrintMode && (
+                <span className="text-[7.5px] text-slate-400 font-medium font-mono">
+                  Sow: Mon {startSow}-{endSow} • Harv: Mon {startHarv}-{endHarv}
+                </span>
+              )}
             </div>
 
-            {/* TIMELINE SLIDER CONTAINER TRACK */}
-            <div className="relative w-full h-8 bg-zinc-100 dark:bg-zinc-900 rounded-lg overflow-hidden border border-border/40">
-              {/* BACKPLANE MONTH SEGMENT COLS FOR ACCURATE GRID TRACKING */}
+            <div className={cn(
+              "relative w-full h-9 bg-zinc-100 dark:bg-zinc-900 rounded-lg border border-border/40",
+              isPrintMode && "h-5 bg-slate-100 rounded-md border border-slate-200/60"
+            )}>
+              {/* MONTHS GRID LAYOUT BACKPLANE */}
               <div className="absolute inset-0 grid grid-cols-12 w-full h-full pointer-events-none">
                 {MONTHS_LABELS.map((m, mIdx) => (
                   <div
                     key={mIdx}
-                    className="flex items-center justify-center border-r border-border/10 last:border-r-0 text-[10px] font-medium text-muted-foreground/40"
+                    className={cn(
+                      "flex items-center justify-center border-r border-border/10 last:border-r-0 text-[10px] font-medium text-muted-foreground/40",
+                      isPrintMode && "border-slate-200/20 text-[7px] font-bold text-slate-400"
+                    )}
                   >
                     {m}
                   </div>
                 ))}
               </div>
 
-              {/* A. GROWING SEASON BACKGROUND FILL LAYER (YELLOW DULL COVERAGE BETWEEN SOW AND HARVEST) */}
-              <div
-                className="absolute h-full bg-amber-500/20 dark:bg-amber-400/10 border-x border-amber-500/10"
-                style={{
-                  left: `${(startSow - 1) * (100 / 12)}%`,
-                  width: `${(endHarv >= startSow ? endHarv - startSow + 1 : 12 - startSow + endHarv + 1) * (100 / 12)}%`,
-                }}
-              />
+              {/* A. GROWING SEASON BLOCKS (YELLOW GRADIENT BACKGROUNDS) */}
+              {growingSegments.map(
+                (seg, sIdx) =>
+                  seg.isVisible && (
+                    isPrintMode ? (
+                      <div
+                        key={`grow-${sIdx}`}
+                        className="absolute h-full bg-amber-500/15 border-x border-amber-500/10 z-0"
+                        style={{
+                          left: `${seg.left}%`,
+                          width: `${seg.width}%`,
+                        }}
+                      />
+                    ) : (
+                      <Tooltip
+                        key={`grow-${sIdx}`}
+                        open={activeTooltipId === `${idx}-grow`}
+                        onOpenChange={(open) =>
+                          open
+                            ? setActiveTooltipId(`${idx}-grow`)
+                            : setActiveTooltipId(null)
+                        }
+                      >
+                        <TooltipTrigger asChild>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTooltipId(
+                                activeTooltipId === `${idx}-grow`
+                                  ? null
+                                  : `${idx}-grow`,
+                              );
+                            }}
+                            className="absolute h-3/5 translate-y-[33%] bg-amber-500/20 dark:bg-amber-400/10 border-x border-amber-500/10 hover:bg-amber-500/30 transition-all duration-200 cursor-pointer z-0"
+                            style={{
+                              left: `${seg.left}%`,
+                              width: `${seg.width}%`,
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                          <p className="font-semibold text-amber-600 dark:text-amber-400">
+                            Growing Window
+                          </p>
+                          <p className="text-muted-foreground text-[11px]">
+                            Est. Duration: {startSowLabel} to {endHarvLabel}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  ),
+              )}
 
-              {/* B. SOWING BLOCK TARGET OVERLAY (GREEN) */}
-              <div
-                className="absolute h-full bg-emerald-600 dark:bg-emerald-500 rounded-l-sm transition-all"
-                style={{
-                  left: `${(startSow - 1) * (100 / 12)}%`,
-                  width: `${(endSow - startSow + 1) * (100 / 12)}%`,
-                }}
-              />
+              {/* B. SOWING BLOCKS (GREEN ACTION TILES) */}
+              {sowingSegments.map(
+                (seg, sIdx) =>
+                  seg.isVisible && (
+                    isPrintMode ? (
+                      <div
+                        key={`sow-${sIdx}`}
+                        className="absolute h-full bg-emerald-600 rounded-l-xs z-10"
+                        style={{
+                          left: `${seg.left}%`,
+                          width: `${seg.width}%`,
+                        }}
+                      />
+                    ) : (
+                      <Tooltip
+                        key={`sow-${sIdx}`}
+                        open={activeTooltipId === `${idx}-sow`}
+                        onOpenChange={(open) =>
+                          open
+                            ? setActiveTooltipId(`${idx}-sow`)
+                            : setActiveTooltipId(null)
+                        }
+                      >
+                        <TooltipTrigger asChild>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTooltipId(
+                                activeTooltipId === `${idx}-sow`
+                                  ? null
+                                  : `${idx}-sow`,
+                              );
+                            }}
+                            className="absolute h-full bg-emerald-600 dark:bg-emerald-500 rounded-sm rounded-r-none transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
+                            style={{
+                              left: `${seg.left}%`,
+                              width: `${seg.width}%`,
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                          <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                            Sowing Window
+                          </p>
+                          <p className="text-muted-foreground text-[11px] font-medium">
+                            {event.sowingPeriod || "Active Phase"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  ),
+              )}
 
-              {/* C. HARVESTING BLOCK TARGET OVERLAY (RED) */}
-              <div
-                className="absolute h-full bg-rose-600 dark:bg-rose-500 rounded-r-sm transition-all"
-                style={{
-                  left: `${(startHarv - 1) * (100 / 12)}%`,
-                  width: `${(endHarv - startHarv + 1) * (100 / 12)}%`,
-                }}
-              />
+              {/* C. HARVESTING BLOCKS (RED ACTION TILES) */}
+              {harvestingSegments.map(
+                (seg, sIdx) =>
+                  seg.isVisible && (
+                    isPrintMode ? (
+                      <div
+                        key={`harv-${sIdx}`}
+                        className="absolute h-full bg-rose-600 rounded-r-xs z-10"
+                        style={{
+                          left: `${seg.left}%`,
+                          width: `${seg.width}%`,
+                        }}
+                      />
+                    ) : (
+                      <Tooltip
+                        key={`harv-${sIdx}`}
+                        open={activeTooltipId === `${idx}-harv`}
+                        onOpenChange={(open) =>
+                          open
+                            ? setActiveTooltipId(`${idx}-harv`)
+                            : setActiveTooltipId(null)
+                        }
+                      >
+                        <TooltipTrigger asChild>
+                          <div
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveTooltipId(
+                                activeTooltipId === `${idx}-harv`
+                                  ? null
+                                  : `${idx}-harv`,
+                              );
+                            }}
+                            className="absolute h-full bg-rose-600 dark:bg-rose-500 rounded-l-none rounded-sm transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
+                            style={{
+                              left: `${seg.left}%`,
+                              width: `${seg.width}%`,
+                            }}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                          <p className="font-semibold text-rose-600 dark:text-rose-400">
+                            Harvest Window
+                          </p>
+                          <p className="text-muted-foreground text-[11px] font-medium">
+                            {event.harvestingPeriod || "Active Phase"}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  ),
+              )}
 
-              {/* D. TODAY INDICATOR VERTICAL PIN LINE LAYER */}
-              <div
-                className="absolute top-0 bottom-0 w-[2px] bg-zinc-900 dark:bg-zinc-100 z-10 shadow-xs flex items-center justify-center"
-                style={{ left: `${todayPercentPosition}%` }}
-              >
-                <span className="absolute -top-1 w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-white" />
-              </div>
+              {/* D. TODAY PIN LAYOUT SECTOR */}
+              {isPrintMode ? (
+                <div
+                  className="absolute top-0 bottom-0 w-[1.5px] bg-slate-800 z-10 flex items-center justify-center pointer-events-none"
+                  style={{ left: `${todayPercentPosition}%` }}
+                >
+                  <div className="absolute -top-0.5 size-1 rounded-full bg-slate-900" />
+                </div>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div
+                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-zinc-900 dark:bg-zinc-100 z-20 shadow-md cursor-ew-resize transition-all duration-200 hover:w-1.5"
+                      style={{ left: `${todayPercentPosition}%` }}
+                    />
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="bottom"
+                    className="bg-zinc-950 text-zinc-50 border border-zinc-800 font-mono text-[11px] p-2 rounded-sm shadow-lg"
+                  >
+                    <span>
+                      Today:{" "}
+                      {new Date().toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
+              )}
             </div>
           </div>
         );

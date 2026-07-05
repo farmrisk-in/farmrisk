@@ -342,6 +342,12 @@ type OpenMeteoResponse = {
     precipitation_probability_max: number[];
     weathercode: number[];
   };
+  lightning: {
+    score: number;
+    category: string;
+    color: string;
+    advisory: string;
+  };
 };
 
 // Helpers
@@ -518,6 +524,52 @@ export async function GET(request: NextRequest) {
     cloudCover: raw.current.cloud_cover,
     surfacePressureMb: Math.round(raw.current.surface_pressure),
   };
+  let score = 0;
+  // WMO codes for thunderstorm: 95, 96, 99
+  if ([95, 96, 99].includes(raw.current.weather_code)) {
+    score += 50;
+  } else if ([80, 81, 82, 85, 86].includes(raw.current.weather_code)) {
+    // Showers
+    score += 20;
+  }
 
-  return Response.json({ current, hourly, forecast });
+  if (raw.current.cloud_cover > 80) score += 15;
+  else if (raw.current.cloud_cover > 50) score += 5;
+
+  if (raw.current.precipitation > 10) score += 20;
+  else if (raw.current.precipitation > 2) score += 10;
+
+  if (raw.current.relative_humidity_2m > 80) score += 5;
+
+  if (raw.current.wind_gusts_10m > 40) score += 10;
+  else if (raw.current.wind_gusts_10m > 20) score += 5;
+
+  score = Math.min(score, 100);
+
+  let category = "Low";
+  let color = "green";
+  let advisory = "Low probability of lightning.";
+
+  if (score >= 75) {
+    category = "Severe";
+    color = "red";
+    advisory = "Thunderstorm conditions likely in your area.";
+  } else if (score >= 50) {
+    category = "High";
+    color = "orange";
+    advisory = "Heavy cloud cover and rainfall increase lightning risk.";
+  } else if (score >= 25) {
+    category = "Moderate";
+    color = "yellow";
+    advisory = "Moderate risk. Keep an eye on the weather.";
+  }
+
+  const lightning = {
+    score,
+    category,
+    color,
+    advisory,
+  };
+
+  return Response.json({ current, hourly, forecast, lightning });
 }

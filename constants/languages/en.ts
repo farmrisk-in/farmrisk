@@ -173,10 +173,10 @@ export const en = {
     smPercentiles: "Percentiles",
     smPercentileLegend: "Percentile (colour = category)",
     smTrend: "Trend",
-    advLow: "Low probability of lightning.",
-    advModerate: "Moderate risk. Keep an eye on the weather.",
-    advHigh: "Heavy cloud cover and rainfall increase lightning risk.",
-    advSevere: "Thunderstorm conditions likely in your area.",
+    advLow: "Low probability",
+    advModerate: "Moderate risk",
+    advHigh: "High risk.",
+    advSevere: "Severe risk.",
   },
 
   profile: {

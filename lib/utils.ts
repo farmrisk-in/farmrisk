@@ -72,17 +72,17 @@ export async function reverseGeocode(lat: number, lng: number) {
  * - 1,000,000+   -> Snap to lower 100,000s, convert to M (e.g., 2,450,000 -> "2.4M+")
  */
 export function formatHeroUserCount(count: number): {
-  userCountRounded: string;
+  userCountRounded: number;
   suffix: string;
 } {
   if (count < 100) {
-    return { userCountRounded: count.toString(), suffix: "+" };
+    return { userCountRounded: count, suffix: "+" };
   }
 
   if (count < 1000) {
     const rounded = Math.floor(count / 10) * 10;
     return {
-      userCountRounded: String(rounded),
+      userCountRounded: rounded,
       suffix: "+",
     };
   }
@@ -90,7 +90,7 @@ export function formatHeroUserCount(count: number): {
   if (count < 10000) {
     const rounded = Math.floor(count / 100) * 100;
     return {
-      userCountRounded: String(rounded / 1000),
+      userCountRounded: rounded / 1000,
       suffix: "K+",
     };
   }
@@ -98,7 +98,7 @@ export function formatHeroUserCount(count: number): {
   if (count < 1000000) {
     const rounded = Math.floor(count / 1000);
     return {
-      userCountRounded: String(rounded),
+      userCountRounded: rounded,
       suffix: "K+",
     };
   }
@@ -108,10 +108,57 @@ export function formatHeroUserCount(count: number): {
   const rounded = Math.floor(count / 100000) * 100000;
 
   // Clean up potential trailing decimal zero bugs (e.g., 2.0M+ becomes 2M+)
-  const formattedNumber = String(Number((rounded / 1000000).toFixed(1)));
+  const formattedNumber = Number((rounded / 1000000).toFixed(1));
 
   return {
     userCountRounded: formattedNumber,
     suffix: "M+",
   };
+}
+
+interface TimelineSegment {
+  left: number;
+  width: number;
+  isVisible: boolean;
+}
+
+/**
+ * Calculates percentage grid locations for elements wrapping around the 12-month timeline.
+ * Returns up to two distinct layout segments (one for the current year, one for the next).
+ */
+export function calculateTimelineSegments(
+  startMon: number,
+  endMon: number,
+): TimelineSegment[] {
+  if (!startMon) return [{ left: 0, width: 0, isVisible: false }];
+
+  const totalMonths = 12;
+  const colPercent = 100 / totalMonths;
+
+  // Normal progression within the same calendar year
+  if (endMon >= startMon) {
+    return [
+      {
+        left: (startMon - 1) * colPercent,
+        width: (endMon - startMon + 1) * colPercent,
+        isVisible: true,
+      },
+    ];
+  }
+
+  // Crosses the year boundary (e.g., Nov [11] to Mar [3])
+  return [
+    // Segment A: From start month to December (End of current year)
+    {
+      left: (startMon - 1) * colPercent,
+      width: (totalMonths - startMon + 1) * colPercent,
+      isVisible: true,
+    },
+    // Segment B: From January to end month (Start of next year)
+    {
+      left: 0,
+      width: endMon * colPercent,
+      isVisible: true,
+    },
+  ];
 }

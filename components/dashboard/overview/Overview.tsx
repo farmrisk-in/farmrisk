@@ -4,12 +4,20 @@ import React, { useState } from "react";
 import AIOverview from "./AIOverview";
 import { LocationSearchBar } from "./LocationSearchBar";
 import Forcast from "./Forcast";
-import { LightningMonitoring } from "./LightningMonitoring";
+import dynamic from "next/dynamic";
+const Lightning = dynamic(
+  () => import("./Lightning").then((mod) => mod.Lightning),
+  {
+    ssr: false,
+  },
+);
 import HourlyWeather from "./HourlyWeather";
 import SoilMoisture from "./SoilMoisture";
 import Weather from "./Weather";
-import { useWeather } from "@/hooks/use-weather";
+import { useWeather } from "@/hooks/useWeather";
 import CropCalender from "./CropCalender";
+
+import { GENERAL_CROP } from "@/types/crops";
 
 export interface CropOption {
   id: string;
@@ -17,16 +25,22 @@ export interface CropOption {
   area: number;
 }
 
-export const GENERAL_CROP: CropOption = {
-  id: "general",
-  name: "General (All Crops)",
-  area: 0,
-};
-
 const Overview = () => {
   const weatherData = useWeather();
   const { hourly, isLoading } = weatherData;
-  const [selectedCrop, setSelectedCrop] = useState<CropOption>(GENERAL_CROP);
+  const [selectedCrop, setSelectedCropState] = useState<CropOption>(GENERAL_CROP);
+
+  const setSelectedCrop = (crop: CropOption) => {
+    setSelectedCropState(crop);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("farmrisk-selected-crop", JSON.stringify(crop));
+      } catch (e) {
+        console.error(e);
+      }
+      window.dispatchEvent(new CustomEvent("farmrisk-crop-changed", { detail: crop }));
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -37,19 +51,22 @@ const Overview = () => {
           <Weather weatherData={weatherData} />
         </div>
         <div className="col-span-1 lg:col-span-2 flex">
-          <AIOverview selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
+          <AIOverview
+            selectedCrop={selectedCrop}
+            setSelectedCrop={setSelectedCrop}
+          />
         </div>
       </div>
       <CropCalender selectedCrop={selectedCrop} />
-      <Forcast />
       <HourlyWeather hourly={hourly} isLoading={isLoading} />
+      <Forcast />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
         <div className="col-span-1 lg:col-span-2 flex">
-          <SoilMoisture />
+          {/* <SoilMoisture /> */}
         </div>
         <div className="col-span-1 flex">
-          <LightningMonitoring />
+          <Lightning />
         </div>
       </div>
     </div>

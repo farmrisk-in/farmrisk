@@ -8,8 +8,9 @@ import {
   Cloud,
   CloudRain,
   Compass,
+  CloudOff,
 } from "lucide-react";
-import { type CurrentWeather } from "@/hooks/use-weather";
+import { type CurrentWeather } from "@/types/weather";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -79,7 +80,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
   if (isError || !current) {
     return (
       <div className="w-full h-full min-h-55 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 flex flex-col items-center justify-center select-none text-center">
-        <CloudSun className="size-12 text-muted-foreground/60 mb-2 animate-bounce" />
+        <CloudOff className="size-12 text-muted-foreground/60 mb-2" />
         <h3 className="font-semibold text-sm">
           {t.dashboard.weatherLoadError}
         </h3>
@@ -90,13 +91,12 @@ const Weather = ({ weatherData }: WeatherProps) => {
     );
   }
 
-  const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
-
   return (
     <div className="@container w-full h-full min-h-fit bg-card border border-border text-foreground rounded-xl shadow-sm p-5 flex flex-col justify-between select-none">
       {/* 1. MODULE SUBTITLE HEADER */}
-      <div className="flex items-center gap-1.5 text-muted-foreground text-xs font-bold uppercase tracking-wider mb-2">
-        <span>{t.dashboard.currentClimate}</span>
+      <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider mb-2">
+        <CloudSun className="size-5" />
+        {t.dashboard.currentClimate}
       </div>
 
       {/* 2. GEOLOCATION RUNTIME HEADER BANNER */}
@@ -112,7 +112,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
       </div>
 
       {/* 3. CORE ADVISORY SEGMENT SPLIT LAYOUT (Using Flex Wrap & Container Queries) */}
-      <div className="flex flex-row flex-wrap gap-4 items-center justify-between flex-1 min-h-0">
+      <div className="flex overflow-hidden flex-row flex-wrap gap-4 items-center justify-between flex-1 min-h-0">
         {/* LEFT COLUMN: THE EXECUTIVE TEMPERATURE HOOK */}
         <div className="flex flex-1 min-w-32.5 justify-between">
           <div className="flex flex-col items-baseline gap-1.5">
@@ -135,6 +135,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               }
               width={40}
               height={40}
+              className="drop-shadow-md dark:drop-shadow-none"
             />
             <span className="text-muted-foreground text-xs font-medium">
               {current.condition[language as keyof typeof current.condition] ||

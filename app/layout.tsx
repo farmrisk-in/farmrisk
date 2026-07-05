@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ThemeProvider } from "@/providers/ThemeProvider";
 import { content } from "../constants/content";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
-
+import QueryProvider from "@/providers/QueryProvider";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 export const metadata: Metadata = {
   title: content.en.title,
   description: content.en.description,
@@ -28,13 +28,14 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-full flex flex-col">
-        <LanguageProvider>
-          <AuthProvider>
-            <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <QueryProvider>
+          <LanguageProvider>
+            <AuthProvider>
               <TooltipProvider>{children}</TooltipProvider>
-            </ThemeProvider>
-          </AuthProvider>
-        </LanguageProvider>
+            </AuthProvider>
+          </LanguageProvider>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryProvider>
       </body>
     </html>
   );

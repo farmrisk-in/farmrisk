@@ -38,7 +38,7 @@ const transitionVariants = {
 };
 
 interface HeroProps {
-  userCount?: string;
+  userCount?: number;
   suffix?: string;
 }
 

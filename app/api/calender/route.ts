@@ -45,7 +45,15 @@ const UI_CROP_TO_CSV_CATEGORIES: Record<string, string[]> = {
   vegetables: ["VEGETABLES"],
   fodder: ["FODDER"],
   castor: ["CASTOR"],
-  oilseeds: ["RAPESEEDANDMUSTARD", "SESAMUM", "LINSEED", "GROUNDNUT", "SOYABEAN", "SAFFLOWER", "CASTOR"],
+  oilseeds: [
+    "RAPESEEDANDMUSTARD",
+    "SESAMUM",
+    "LINSEED",
+    "GROUNDNUT",
+    "SOYABEAN",
+    "SAFFLOWER",
+    "CASTOR",
+  ],
   mustard: ["RAPESEEDANDMUSTARD"],
   rapeseed: ["RAPESEEDANDMUSTARD"],
   sesame: ["SESAMUM"],
@@ -236,14 +244,6 @@ export async function GET(request: NextRequest) {
     const districtParam = searchParams.get("district");
     const cropParam = searchParams.get("crop");
 
-    console.log(">>> [API] GET /api/calender - Request Params:", {
-      latStr,
-      lngStr,
-      stateParam,
-      districtParam,
-      cropParam,
-    });
-
     let state = stateParam || "";
     let district = districtParam || "";
 
@@ -285,11 +285,6 @@ export async function GET(request: NextRequest) {
       calendar,
     };
 
-    console.log(
-      "<<< [API] GET /api/calender - Response Payload:",
-      JSON.stringify(responseData, null, 2),
-    );
-
     return NextResponse.json(responseData);
   } catch (error: any) {
     console.error("!!! [API] GET /api/calender - Error:", error);
@@ -303,7 +298,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log(">>> [API] POST /api/calender - Request Body:", body);
 
     // Support nested location payload (or direct properties)
     const loc = body.location || body;
@@ -348,11 +342,6 @@ export async function POST(request: NextRequest) {
       districtCode: code,
       calendar,
     };
-
-    console.log(
-      "<<< [API] POST /api/calender - Response Payload:",
-      JSON.stringify(responseData, null, 2),
-    );
 
     return NextResponse.json(responseData);
   } catch (error: any) {
