@@ -10,11 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Drawing } from "@/components/ui/drawing";
+import { LightningData } from "@/types/weather";
 
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
   loading: () => {
-    // Cannot easily useLanguage here because it's outside provider in some contexts, but this is fine to hardcode or we could pass it. Let's just hardcode the loading state here as it's a dynamic import fallback.
     return (
       <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
         <LoaderCircle className="w-6 h-6 animate-spin text-primary" />
@@ -27,13 +27,51 @@ const Map = dynamic(() => import("./Map"), {
 export const Lightning = () => {
   const { location, isResolving } = useLocationContext();
   const { t } = useLanguage();
-  const { lightning, isLoading, isError } = useWeather();
+  const { data, isLoading, isError } = useWeather();
+  const lightning = data?.lightning;
   const [isOpen, setIsOpen] = useState(false);
-  let zoom = 14;
-  if (lightning?.color === "green") zoom = 14;
-  if (lightning?.color === "yellow") zoom = 13;
-  if (lightning?.color === "orange") zoom = 12;
-  if (lightning?.color === "red") zoom = 11;
+
+  const getLightningDetails = (category: string | undefined) => {
+    switch (category) {
+      case "Severe":
+        return {
+          color: "#FF040E",
+          advisory: t.dashboard?.advSevere || "Severe risk of lightning.",
+          zoom: 11,
+        };
+      case "High":
+        return {
+          color: "#FF4116",
+          advisory: t.dashboard?.advHigh || "High risk of lightning.",
+          zoom: 12,
+        };
+      case "Moderate":
+        return {
+          color: "##FF9C04",
+          advisory: t.dashboard?.advModerate || "Moderate risk of lightning.",
+          zoom: 13,
+        };
+      case "Low":
+      default:
+        return {
+          color: "#006045",
+          advisory: t.dashboard?.advLow || "Low risk of lightning.",
+          zoom: 14,
+        };
+    }
+  };
+
+  const { color, advisory, zoom } = getLightningDetails(lightning?.category);
+
+  const mappedLightning: LightningData | undefined = lightning
+    ? {
+        score: lightning.score,
+        category: lightning.category,
+        color,
+        advisory,
+      }
+    : undefined;
+
   if (isResolving || isLoading) {
     return (
       <div className="w-full h-80 min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
@@ -52,7 +90,7 @@ export const Lightning = () => {
     );
   }
 
-  if (isError || !lightning || !location) {
+  if (isError || !lightning || !location || !mappedLightning) {
     return (
       <div className="w-full h-80 min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
         {/* HEADER SECTION */}
@@ -86,14 +124,14 @@ export const Lightning = () => {
             bottomLeftBadge={
               <Badge
                 className={`rounded-sm`}
-                style={{ backgroundColor: lightning.color }}
+                style={{ backgroundColor: color }}
               >
                 {(lightning.category === "Low" && t.dashboard?.advLow) ||
                   (lightning.category === "Moderate" &&
                     t.dashboard?.advModerate) ||
                   (lightning.category === "High" && t.dashboard?.advHigh) ||
                   (lightning.category === "Severe" && t.dashboard?.advSevere) ||
-                  lightning.advisory}
+                  advisory}
               </Badge>
             }
             topRightAction={
@@ -108,7 +146,7 @@ export const Lightning = () => {
               </DialogTrigger>
             }
           >
-            <Drawing data={lightning} location={location} t={t} />
+            <Drawing data={mappedLightning} location={location} t={t} />
           </Map>
         )}
         <DialogContent className="p-0 bg-background border-border rounded-xl overflow-hidden w-[80%] sm:max-w-full gap-0">
@@ -123,18 +161,18 @@ export const Lightning = () => {
             bottomLeftBadge={
               <Badge
                 className={`rounded-sm`}
-                style={{ backgroundColor: lightning.color }}
+                style={{ backgroundColor: color }}
               >
                 {(lightning.category === "Low" && t.dashboard?.advLow) ||
                   (lightning.category === "Moderate" &&
                     t.dashboard?.advModerate) ||
                   (lightning.category === "High" && t.dashboard?.advHigh) ||
                   (lightning.category === "Severe" && t.dashboard?.advSevere) ||
-                  lightning.advisory}
+                  advisory}
               </Badge>
             }
           >
-            <Drawing data={lightning} location={location} t={t} />
+            <Drawing data={mappedLightning} location={location} t={t} />
           </Map>
         </DialogContent>
       </Dialog>

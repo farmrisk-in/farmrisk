@@ -24,7 +24,6 @@ import DownloadTemplate from "./DownloadTemplate";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useWeather } from "@/hooks/useWeather";
 import { useForecast } from "@/hooks/useForecast";
-import { useCalendar } from "@/hooks/useCalendar";
 import { useAI } from "@/hooks/useAI";
 import { type CropOption } from "./Overview";
 import { GENERAL_CROP } from "@/types/crops";
@@ -92,28 +91,31 @@ const Download = ({ className }: { className?: string }) => {
   });
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleCropChange = (e: any) => {
       if (e.detail) {
         setSelectedCrop(e.detail);
       }
     };
     window.addEventListener("farmrisk-crop-changed", handleCropChange);
-    return () => window.removeEventListener("farmrisk-crop-changed", handleCropChange);
+    return () =>
+      window.removeEventListener("farmrisk-crop-changed", handleCropChange);
   }, []);
 
   const weatherData = useWeather();
-  const { data: predictions = [], isLoading: isForecastLoading } = useForecast(16);
-  const { data: calendarData, isLoading: isCalendarLoading } = useCalendar(selectedCrop.id);
-  const { data: aiSummary = "", isLoading: isAiLoading } = useAI(selectedCrop.id, language);
-
-  const calendar = calendarData?.calendar || [];
+  const { data: predictions = [], isLoading: isForecastLoading } =
+    useForecast(16);
+  const { data: aiSummary = "", isLoading: isAiLoading } = useAI(
+    selectedCrop.id,
+    language,
+  );
 
   const isDataLoading =
     weatherData.isLoading ||
     isForecastLoading ||
-    isCalendarLoading ||
+    // isCalendarLoading ||
     isAiLoading ||
-    !weatherData.current ||
+    !weatherData.data?.current ||
     predictions.length === 0 ||
     !aiSummary;
 

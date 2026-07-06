@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { useCalendar } from "@/hooks/useCalendar";
-import { CalendarAPIResponse } from "@/types/calendar";
 import {
   Tooltip,
   TooltipContent,
@@ -35,7 +34,7 @@ const MONTHS_LABELS = [
 ];
 
 const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
-  const { data, isLoading: loading, error } = useCalendar(selectedCrop.id);
+  const { data, error } = useCalendar(selectedCrop.id);
   const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,32 +62,52 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
     (currentMonthNum - 1 + currentDayNum / totalDaysInMonth) * (100 / 12);
 
   return (
-    <div className={cn(
-      "w-full bg-card border border-border rounded-xl p-5 shadow-sm select-none transition-all",
-      isPrintMode && "bg-slate-50 border border-slate-200/50 p-2.5 rounded-lg shadow-none text-slate-800"
-    )}>
+    <div
+      className={cn(
+        "w-full bg-card border border-border rounded-xl p-5 shadow-sm select-none transition-all",
+        isPrintMode &&
+          "bg-slate-50 border border-slate-200/50 p-2.5 rounded-lg shadow-none text-slate-800",
+      )}
+    >
       {/* HEADER SECTION */}
-      <div className={cn(
-        "flex flex-col sm:flex-row gap-3 sm:items-center justify-between border-b border-border mb-2 pb-2",
-        isPrintMode && "flex-row justify-between pb-1.5 border-slate-200"
-      )}>
+      <div
+        className={cn(
+          "flex flex-col sm:flex-row gap-3 sm:items-center justify-between border-b border-border mb-2 pb-2",
+          isPrintMode && "flex-row justify-between pb-1.5 border-slate-200",
+        )}
+      >
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
-          <Calendar className={cn("size-4.5", isPrintMode && "size-3.5 text-emerald-600")} />
-          <span className={cn(isPrintMode && "text-[10px] font-extrabold text-slate-700 uppercase tracking-wider")}>Crop Calendar</span>
+          <Calendar
+            className={cn(
+              "size-4.5",
+              isPrintMode && "size-3.5 text-emerald-600",
+            )}
+          />
+          <span
+            className={cn(
+              isPrintMode &&
+                "text-[10px] font-extrabold text-slate-700 uppercase tracking-wider",
+            )}
+          >
+            Crop Calendar
+          </span>
           <Badge
             variant={"default"}
             className={cn(
               "text-[10px] ml-auto rounded-[7px]",
-              isPrintMode && "text-[9px] px-1.5 py-0.25 bg-emerald-500/10 text-emerald-700 font-extrabold rounded-md shadow-none"
+              isPrintMode &&
+                "text-[9px] px-1.5 py-px bg-emerald-500/10 text-emerald-700 font-extrabold rounded-md shadow-none",
             )}
           >
             {data.calendar[0]?.crop || selectedCrop.name}
           </Badge>
         </div>
-        <div className={cn(
-          "flex items-center text-[10px] text-muted-foreground",
-          isPrintMode && "text-[8px] text-slate-400 font-medium gap-3"
-        )}>
+        <div
+          className={cn(
+            "flex items-center text-[10px] text-muted-foreground",
+            isPrintMode && "text-[8px] text-slate-400 font-medium gap-3",
+          )}
+        >
           {isPrintMode ? (
             <>
               <div className="flex items-center gap-1">
@@ -121,7 +140,10 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
                 <div className="w-3 h-2 bg-emerald-500 rounded-xs" />
                 Sowing
               </Badge>
-              <Badge variant={"outline"} className="text-[10px] rounded-none gap-2">
+              <Badge
+                variant={"outline"}
+                className="text-[10px] rounded-none gap-2"
+              >
                 <div className="w-3 h-2 bg-amber-500/30 rounded-xs border border-amber-500/20" />
                 Growing
               </Badge>
@@ -157,12 +179,17 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
         const endHarvLabel = MONTHS_LABELS[endHarv - 1];
 
         return (
-          <div key={idx} className={cn("mb-6 last:mb-0 select-none", isPrintMode && "mb-2")}>
+          <div
+            key={idx}
+            className={cn("mb-6 last:mb-0 select-none", isPrintMode && "mb-2")}
+          >
             <div className="flex justify-between items-center mb-2">
-              <span className={cn(
-                "text-xs font-semibold text-foreground/90",
-                isPrintMode && "text-[8.5px] font-bold text-slate-700"
-              )}>
+              <span
+                className={cn(
+                  "text-xs font-semibold text-foreground/90",
+                  isPrintMode && "text-[8.5px] font-bold text-slate-700",
+                )}
+              >
                 {event.season || "Kharif"} Season
               </span>
               {isPrintMode && (
@@ -172,10 +199,13 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
               )}
             </div>
 
-            <div className={cn(
-              "relative w-full h-9 bg-zinc-100 dark:bg-zinc-900 rounded-lg border border-border/40",
-              isPrintMode && "h-5 bg-slate-100 rounded-md border border-slate-200/60"
-            )}>
+            <div
+              className={cn(
+                "relative w-full h-9 bg-zinc-100 dark:bg-zinc-900 rounded-lg border border-border/40",
+                isPrintMode &&
+                  "h-5 bg-slate-100 rounded-md border border-slate-200/60",
+              )}
+            >
               {/* MONTHS GRID LAYOUT BACKPLANE */}
               <div className="absolute inset-0 grid grid-cols-12 w-full h-full pointer-events-none">
                 {MONTHS_LABELS.map((m, mIdx) => (
@@ -183,7 +213,8 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
                     key={mIdx}
                     className={cn(
                       "flex items-center justify-center border-r border-border/10 last:border-r-0 text-[10px] font-medium text-muted-foreground/40",
-                      isPrintMode && "border-slate-200/20 text-[7px] font-bold text-slate-400"
+                      isPrintMode &&
+                        "border-slate-200/20 text-[7px] font-bold text-slate-400",
                     )}
                   >
                     {m}
@@ -194,160 +225,157 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
               {/* A. GROWING SEASON BLOCKS (YELLOW GRADIENT BACKGROUNDS) */}
               {growingSegments.map(
                 (seg, sIdx) =>
-                  seg.isVisible && (
-                    isPrintMode ? (
-                      <div
-                        key={`grow-${sIdx}`}
-                        className="absolute h-full bg-amber-500/15 border-x border-amber-500/10 z-0"
-                        style={{
-                          left: `${seg.left}%`,
-                          width: `${seg.width}%`,
-                        }}
-                      />
-                    ) : (
-                      <Tooltip
-                        key={`grow-${sIdx}`}
-                        open={activeTooltipId === `${idx}-grow`}
-                        onOpenChange={(open) =>
-                          open
-                            ? setActiveTooltipId(`${idx}-grow`)
-                            : setActiveTooltipId(null)
-                        }
-                      >
-                        <TooltipTrigger asChild>
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveTooltipId(
-                                activeTooltipId === `${idx}-grow`
-                                  ? null
-                                  : `${idx}-grow`,
-                              );
-                            }}
-                            className="absolute h-3/5 translate-y-[33%] bg-amber-500/20 dark:bg-amber-400/10 border-x border-amber-500/10 hover:bg-amber-500/30 transition-all duration-200 cursor-pointer z-0"
-                            style={{
-                              left: `${seg.left}%`,
-                              width: `${seg.width}%`,
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
-                          <p className="font-semibold text-amber-600 dark:text-amber-400">
-                            Growing Window
-                          </p>
-                          <p className="text-muted-foreground text-[11px]">
-                            Est. Duration: {startSowLabel} to {endHarvLabel}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  ),
+                  seg.isVisible &&
+                  (isPrintMode ? (
+                    <div
+                      key={`grow-${sIdx}`}
+                      className="absolute h-full bg-amber-500/15 border-x border-amber-500/10 z-0"
+                      style={{
+                        left: `${seg.left}%`,
+                        width: `${seg.width}%`,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip
+                      key={`grow-${sIdx}`}
+                      open={activeTooltipId === `${idx}-grow`}
+                      onOpenChange={(open) =>
+                        open
+                          ? setActiveTooltipId(`${idx}-grow`)
+                          : setActiveTooltipId(null)
+                      }
+                    >
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveTooltipId(
+                              activeTooltipId === `${idx}-grow`
+                                ? null
+                                : `${idx}-grow`,
+                            );
+                          }}
+                          className="absolute h-3/5 translate-y-[33%] bg-amber-500/20 dark:bg-amber-400/10 border-x border-amber-500/10 hover:bg-amber-500/30 transition-all duration-200 cursor-pointer z-0"
+                          style={{
+                            left: `${seg.left}%`,
+                            width: `${seg.width}%`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                        <p className="font-semibold text-amber-600 dark:text-amber-400">
+                          Growing Window
+                        </p>
+                        <p className="text-muted-foreground text-[11px]">
+                          Est. Duration: {startSowLabel} to {endHarvLabel}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )),
               )}
 
               {/* B. SOWING BLOCKS (GREEN ACTION TILES) */}
               {sowingSegments.map(
                 (seg, sIdx) =>
-                  seg.isVisible && (
-                    isPrintMode ? (
-                      <div
-                        key={`sow-${sIdx}`}
-                        className="absolute h-full bg-emerald-600 rounded-l-xs z-10"
-                        style={{
-                          left: `${seg.left}%`,
-                          width: `${seg.width}%`,
-                        }}
-                      />
-                    ) : (
-                      <Tooltip
-                        key={`sow-${sIdx}`}
-                        open={activeTooltipId === `${idx}-sow`}
-                        onOpenChange={(open) =>
-                          open
-                            ? setActiveTooltipId(`${idx}-sow`)
-                            : setActiveTooltipId(null)
-                        }
-                      >
-                        <TooltipTrigger asChild>
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveTooltipId(
-                                activeTooltipId === `${idx}-sow`
-                                  ? null
-                                  : `${idx}-sow`,
-                              );
-                            }}
-                            className="absolute h-full bg-emerald-600 dark:bg-emerald-500 rounded-sm rounded-r-none transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
-                            style={{
-                              left: `${seg.left}%`,
-                              width: `${seg.width}%`,
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
-                          <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                            Sowing Window
-                          </p>
-                          <p className="text-muted-foreground text-[11px] font-medium">
-                            {event.sowingPeriod || "Active Phase"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  ),
+                  seg.isVisible &&
+                  (isPrintMode ? (
+                    <div
+                      key={`sow-${sIdx}`}
+                      className="absolute h-full bg-emerald-600 rounded-l-xs z-10"
+                      style={{
+                        left: `${seg.left}%`,
+                        width: `${seg.width}%`,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip
+                      key={`sow-${sIdx}`}
+                      open={activeTooltipId === `${idx}-sow`}
+                      onOpenChange={(open) =>
+                        open
+                          ? setActiveTooltipId(`${idx}-sow`)
+                          : setActiveTooltipId(null)
+                      }
+                    >
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveTooltipId(
+                              activeTooltipId === `${idx}-sow`
+                                ? null
+                                : `${idx}-sow`,
+                            );
+                          }}
+                          className="absolute h-full bg-emerald-600 dark:bg-emerald-500 rounded-sm rounded-r-none transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
+                          style={{
+                            left: `${seg.left}%`,
+                            width: `${seg.width}%`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                        <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          Sowing Window
+                        </p>
+                        <p className="text-muted-foreground text-[11px] font-medium">
+                          {event.sowingPeriod || "Active Phase"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )),
               )}
 
               {/* C. HARVESTING BLOCKS (RED ACTION TILES) */}
               {harvestingSegments.map(
                 (seg, sIdx) =>
-                  seg.isVisible && (
-                    isPrintMode ? (
-                      <div
-                        key={`harv-${sIdx}`}
-                        className="absolute h-full bg-rose-600 rounded-r-xs z-10"
-                        style={{
-                          left: `${seg.left}%`,
-                          width: `${seg.width}%`,
-                        }}
-                      />
-                    ) : (
-                      <Tooltip
-                        key={`harv-${sIdx}`}
-                        open={activeTooltipId === `${idx}-harv`}
-                        onOpenChange={(open) =>
-                          open
-                            ? setActiveTooltipId(`${idx}-harv`)
-                            : setActiveTooltipId(null)
-                        }
-                      >
-                        <TooltipTrigger asChild>
-                          <div
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActiveTooltipId(
-                                activeTooltipId === `${idx}-harv`
-                                  ? null
-                                  : `${idx}-harv`,
-                              );
-                            }}
-                            className="absolute h-full bg-rose-600 dark:bg-rose-500 rounded-l-none rounded-sm transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
-                            style={{
-                              left: `${seg.left}%`,
-                              width: `${seg.width}%`,
-                            }}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
-                          <p className="font-semibold text-rose-600 dark:text-rose-400">
-                            Harvest Window
-                          </p>
-                          <p className="text-muted-foreground text-[11px] font-medium">
-                            {event.harvestingPeriod || "Active Phase"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    )
-                  ),
+                  seg.isVisible &&
+                  (isPrintMode ? (
+                    <div
+                      key={`harv-${sIdx}`}
+                      className="absolute h-full bg-rose-600 rounded-r-xs z-10"
+                      style={{
+                        left: `${seg.left}%`,
+                        width: `${seg.width}%`,
+                      }}
+                    />
+                  ) : (
+                    <Tooltip
+                      key={`harv-${sIdx}`}
+                      open={activeTooltipId === `${idx}-harv`}
+                      onOpenChange={(open) =>
+                        open
+                          ? setActiveTooltipId(`${idx}-harv`)
+                          : setActiveTooltipId(null)
+                      }
+                    >
+                      <TooltipTrigger asChild>
+                        <div
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveTooltipId(
+                              activeTooltipId === `${idx}-harv`
+                                ? null
+                                : `${idx}-harv`,
+                            );
+                          }}
+                          className="absolute h-full bg-rose-600 dark:bg-rose-500 rounded-l-none rounded-sm transition-all duration-200 hover:scale-y-110 hover:brightness-110 cursor-pointer z-10"
+                          style={{
+                            left: `${seg.left}%`,
+                            width: `${seg.width}%`,
+                          }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
+                        <p className="font-semibold text-rose-600 dark:text-rose-400">
+                          Harvest Window
+                        </p>
+                        <p className="text-muted-foreground text-[11px] font-medium">
+                          {event.harvestingPeriod || "Active Phase"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )),
               )}
 
               {/* D. TODAY PIN LAYOUT SECTOR */}
@@ -362,7 +390,7 @@ const CropCalender = ({ selectedCrop, isPrintMode }: CropCalenderProps) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
-                      className="absolute top-[-4px] bottom-[-4px] w-1 bg-zinc-900 dark:bg-zinc-100 z-20 shadow-md cursor-ew-resize transition-all duration-200 hover:w-1.5"
+                      className="absolute -top-1 -bottom-1 w-1 bg-zinc-900 dark:bg-zinc-100 z-20 shadow-md cursor-ew-resize transition-all duration-200 hover:w-1.5"
                       style={{ left: `${todayPercentPosition}%` }}
                     />
                   </TooltipTrigger>

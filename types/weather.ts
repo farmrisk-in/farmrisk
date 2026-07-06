@@ -1,60 +1,77 @@
-export type WeatherCondition = {
-  en: string;
-  hi: string;
-  mr: string;
-  ta: string;
-  gu: string;
-};
-
-export type WeatherIcon = {
-  day: string;
-  night?: string;
-};
-
-export type HourlySlot = {
-  time: string;
-  temp: number;
-  condition: WeatherCondition;
-  rainChance: number;
-  windKph: number;
-  icon: WeatherIcon;
-};
-
-export type ForecastSlot = {
-  day: WeatherCondition;
-  date: string;
-  high: number;
-  low: number;
-  condition: WeatherCondition;
-  rainChance: number;
-  icon: WeatherIcon;
+export type WmoEntry = {
+  condition: {
+    en: string;
+    hi: string;
+    mr: string;
+    ta: string;
+    gu: string;
+  };
+  icon: {
+    day: string;
+    night?: string;
+  };
 };
 
 export type CurrentWeather = {
-  temp: number;
-  condition: WeatherCondition;
-  icon: WeatherIcon;
-  humidity: number;
-  apparentTemp: number;
-  windKph: number;
-  windGustsKph: number;
-  pressureMb: number;
+  time: Date;
+  temperature_2m: number;
+  relative_humidity_2m: number;
+  apparent_temperature: number;
+  weather_code: number;
+  pressure_msl: number;
+  surface_pressure: number;
+  wind_speed_10m: number;
+  wind_direction_10m: number;
+  wind_gusts_10m: number;
   precipitation: number;
-  windDirection: number;
-  cloudCover: number;
-  surfacePressureMb: number;
+  cloud_cover: number;
+  icon: string;
+  condition: {
+    en: string;
+    hi: string;
+    mr: string;
+    ta: string;
+    gu: string;
+  };
 };
 
-export type LightnindData = {
+export type HourlyWeather = {
+  time: Date[];
+  temperature_2m: number[];
+  precipitation_probability: number[];
+  wind_speed_10m: number[];
+  weather_code: number[];
+  icon: string[];
+};
+
+export type DailyWeather = {
+  time: Date[];
+  temperature_2m_max: number[];
+  temperature_2m_min: number[];
+  precipitation_sum: number[];
+};
+
+export type Lightning = {
+  score: number;
+  category: string;
+};
+
+export type LightningData = {
   score: number;
   category: string;
   color: string;
   advisory: string;
 };
 
-export type WeatherPayload = {
+export type OpenMeteoResponse = {
+  latitude: number;
+  longitude: number;
+  elevation: number;
+  timezone: string | null;
+  timezoneAbbreviation: string | null;
+  utcOffsetSeconds: number;
   current: CurrentWeather;
-  hourly: HourlySlot[];
-  forecast: ForecastSlot[];
-  lightning: LightnindData;
+  hourly: HourlyWeather;
+  daily: DailyWeather;
+  lightning: Lightning;
 };

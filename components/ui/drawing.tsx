@@ -1,5 +1,5 @@
 import useLanguage from "@/hooks/use-language";
-import { LightnindData } from "@/types/weather";
+import { LightningData } from "@/types/weather";
 import L from "leaflet";
 import { MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -19,7 +19,7 @@ export const Drawing = ({
   location: { lat, lng, name },
   t,
 }: {
-  data: LightnindData;
+  data: LightningData;
   location: { lat: number; lng: number; name?: string };
   t: ReturnType<typeof useLanguage>["t"];
 }) => {

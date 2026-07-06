@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Calendar,
-  MapPin,
-  Leaf,
-} from "lucide-react";
+import { Calendar, MapPin, Leaf } from "lucide-react";
 import { type SelectedLocation } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import AIOverview from "./AIOverview";
@@ -26,6 +22,7 @@ export default function DownloadTemplate({
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -121,10 +118,7 @@ export default function DownloadTemplate({
         <Forcast isPrintMode={true} />
 
         {/* 5. REGIONAL CROP CALENDAR */}
-        <CropCalender
-          selectedCrop={selectedCrop}
-          isPrintMode={true}
-        />
+        <CropCalender selectedCrop={selectedCrop} isPrintMode={true} />
       </div>
 
       {/* 6. REPORT PRINT FOOTER */}

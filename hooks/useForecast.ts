@@ -5,14 +5,17 @@ import { useEffect } from "react";
 import { getForecast } from "@/lib/api/forecast";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { ForecastAPIResponse } from "@/types/forecast";
+import { useWeather } from "./useWeather";
 
 export function useForecast(days: number = 16) {
   const { location, isResolving } = useLocationContext();
+  const { data: weatherData, isLoading: isWeatherLoading } = useWeather();
+  const daily = weatherData?.daily;
 
   const query = useQuery<ForecastAPIResponse, Error>({
-    queryKey: ["forecast", location.lat, location.lng, days],
-    queryFn: () => getForecast(location.lat, location.lng, days),
-    enabled: !isResolving && !!location.lat && !!location.lng,
+    queryKey: ["forecast", location.lat, location.lng, days, daily],
+    queryFn: () => getForecast(location.lat, location.lng, daily),
+    enabled: !isResolving && !!location.lat && !!location.lng && !!daily,
     staleTime: 15 * 60 * 1000, // 15 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
@@ -24,7 +27,7 @@ export function useForecast(days: number = 16) {
       try {
         localStorage.setItem(
           "farmrisk-forecast-predictions",
-          JSON.stringify(query.data.predictions)
+          JSON.stringify(query.data.predictions),
         );
       } catch (e) {
         console.error("Failed to save forecast data to localStorage", e);
@@ -32,14 +35,14 @@ export function useForecast(days: number = 16) {
       window.dispatchEvent(
         new CustomEvent("farmrisk-forecast-loaded", {
           detail: query.data.predictions,
-        })
+        }),
       );
     }
   }, [query.data, query.isFetching]);
 
   return {
     data: query.data?.predictions,
-    isLoading: isResolving || query.isLoading,
+    isLoading: isResolving || isWeatherLoading || query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError,

@@ -12,9 +12,7 @@ const Lightning = dynamic(
   },
 );
 import HourlyWeather from "./HourlyWeather";
-import SoilMoisture from "./SoilMoisture";
 import Weather from "./Weather";
-import { useWeather } from "@/hooks/useWeather";
 import CropCalender from "./CropCalender";
 
 import { GENERAL_CROP } from "@/types/crops";
@@ -26,9 +24,8 @@ export interface CropOption {
 }
 
 const Overview = () => {
-  const weatherData = useWeather();
-  const { hourly, isLoading } = weatherData;
-  const [selectedCrop, setSelectedCropState] = useState<CropOption>(GENERAL_CROP);
+  const [selectedCrop, setSelectedCropState] =
+    useState<CropOption>(GENERAL_CROP);
 
   const setSelectedCrop = (crop: CropOption) => {
     setSelectedCropState(crop);
@@ -38,7 +35,9 @@ const Overview = () => {
       } catch (e) {
         console.error(e);
       }
-      window.dispatchEvent(new CustomEvent("farmrisk-crop-changed", { detail: crop }));
+      window.dispatchEvent(
+        new CustomEvent("farmrisk-crop-changed", { detail: crop }),
+      );
     }
   };
 
@@ -48,7 +47,7 @@ const Overview = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
         <div className="col-span-1 flex">
-          <Weather weatherData={weatherData} />
+          <Weather />
         </div>
         <div className="col-span-1 lg:col-span-2 flex">
           <AIOverview
@@ -58,7 +57,7 @@ const Overview = () => {
         </div>
       </div>
       <CropCalender selectedCrop={selectedCrop} />
-      <HourlyWeather hourly={hourly} isLoading={isLoading} />
+      <HourlyWeather />
       <Forcast />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">

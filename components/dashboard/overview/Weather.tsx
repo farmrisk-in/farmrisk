@@ -10,11 +10,11 @@ import {
   Compass,
   CloudOff,
 } from "lucide-react";
-import { type CurrentWeather } from "@/types/weather";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import { useWeather } from "@/hooks/useWeather";
 // Convert degrees to cardinal directions
 function getWindDirection(deg: number): string {
   const directions = [
@@ -39,19 +39,11 @@ function getWindDirection(deg: number): string {
   return directions[val % 16];
 }
 
-interface WeatherProps {
-  weatherData: {
-    current: CurrentWeather | undefined;
-    isLoading: boolean;
-    isError: boolean;
-    errorMessage?: string;
-  };
-}
-
-const Weather = ({ weatherData }: WeatherProps) => {
+const Weather = () => {
   const { language, t } = useLanguage();
   const { location } = useLocationContext();
-  const { current, isLoading, isError, errorMessage } = weatherData;
+  const { data, isLoading, isError, errorMessage } = useWeather();
+  const current = data?.current;
 
   // Loading skeleton rendering
   if (isLoading) {
@@ -117,22 +109,19 @@ const Weather = ({ weatherData }: WeatherProps) => {
         <div className="flex flex-1 min-w-32.5 justify-between">
           <div className="flex flex-col items-baseline gap-1.5">
             <span className="text-5xl font-extrabold tracking-tighter">
-              {current.temp}°C
+              {current.temperature_2m}°C
             </span>
             <p className="text-xs text-muted-foreground font-medium">
               Feels Like{" "}
               <span className="font-semibold text-foreground">
-                {current.apparentTemp}°C
+                {current.apparent_temperature}°C
               </span>
             </p>
           </div>
           <div className="flex flex-col justify-between items-center">
             <Image
               src={"/weatherIcons/" + current.icon}
-              alt={
-                current.condition[language as keyof typeof current.condition] ||
-                current.condition.en
-              }
+              alt={JSON.stringify(current.icon)}
               width={40}
               height={40}
               className="drop-shadow-md dark:drop-shadow-none"
@@ -164,7 +153,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.wind}</span>
             </div>
             <span className="font-semibold text-right shrink-0 truncate max-w-20">
-              {current.windKph} km/h
+              {current.wind_speed_10m} km/h
             </span>
           </div>
 
@@ -175,7 +164,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.clouds}</span>
             </div>
             <span className="font-semibold text-right shrink-0">
-              {current.cloudCover}%
+              {current.cloud_cover}%
             </span>
           </div>
 
@@ -186,7 +175,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.humidity}</span>
             </div>
             <span className="font-semibold text-right shrink-0">
-              {current.humidity}%
+              {current.relative_humidity_2m}%
             </span>
           </div>
 
@@ -197,7 +186,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.gusts}</span>
             </div>
             <span className="font-medium text-right shrink-0 truncate max-w-20">
-              {current.windGustsKph} km/h
+              {current.wind_gusts_10m} km/h
             </span>
           </div>
 
@@ -208,7 +197,8 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.direction}</span>
             </div>
             <span className="font-semibold text-right shrink-0 font-mono">
-              {current.windDirection}° {getWindDirection(current.windDirection)}
+              {current.wind_direction_10m}°{" "}
+              {getWindDirection(current.wind_direction_10m)}
             </span>
           </div>
 
@@ -219,7 +209,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.pressureMsl}</span>
             </div>
             <span className="font-semibold text-right shrink-0 font-mono">
-              {current.pressureMb} hPa
+              {current.pressure_msl} hPa
             </span>
           </div>
 
@@ -230,7 +220,7 @@ const Weather = ({ weatherData }: WeatherProps) => {
               <span className="truncate">{t.dashboard.pressureSurf}</span>
             </div>
             <span className="font-semibold text-right shrink-0 font-mono">
-              {current.surfacePressureMb} hPa
+              {current.surface_pressure} hPa
             </span>
           </div>
         </div>

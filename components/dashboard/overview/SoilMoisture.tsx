@@ -39,6 +39,7 @@ interface SoilMoistureResponse {
 
 // --- COLOR & CATEGORY MAPPING ---
 // Maps strictly to the "Expert View" table
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCategoryAndColor = (pct: number, t?: any) => {
   if (pct > 98)
     return {
@@ -94,6 +95,7 @@ const getCategoryAndColor = (pct: number, t?: any) => {
 };
 
 // --- CUSTOM DOT ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomDot = (props: any) => {
   const { cx, cy, payload, isDark } = props;
   const { color } = getCategoryAndColor(payload.sm_percentile); // Color doesn't need translation
@@ -111,6 +113,7 @@ const CustomDot = (props: any) => {
 };
 
 // --- CUSTOM TOOLTIP ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload, isDark, t }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -121,7 +124,7 @@ const CustomTooltip = ({ active, payload, isDark, t }: any) => {
 
     return (
       <div
-        className="bg-popover border border-border rounded-md px-4 py-3 shadow-md min-w-[140px]"
+        className="bg-popover border border-border rounded-md px-4 py-3 shadow-md min-w-35"
         style={{
           backgroundColor: isDark ? "#1e293b" : undefined,
           borderColor: isDark ? "rgba(255,255,255,0.2)" : undefined,
@@ -155,7 +158,7 @@ export default function SoilMoisture() {
   const { location } = useLocationContext();
   const { t } = useLanguage();
 
-  const [isDark, setIsDark] = useState(false);
+  const [isDark] = useState(false);
 
   const [data, setData] = useState<SoilMoistureResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -184,6 +187,7 @@ export default function SoilMoisture() {
 
         const result: SoilMoistureResponse = await response.json();
         setData(result);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (err: any) {
         if (err.name === "AbortError") {
         } else {
@@ -200,6 +204,7 @@ export default function SoilMoisture() {
     return () => {
       controller.abort();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.lat, location?.lng]);
 
   const chartData = useMemo(() => {
@@ -228,7 +233,7 @@ export default function SoilMoisture() {
 
   if (!location || !location.lat || !location.lng) {
     return (
-      <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex items-center justify-center min-h-[300px]">
+      <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex items-center justify-center min-h-75">
         <p className="text-muted-foreground text-sm">
           Select a location to view soil moisture.
         </p>
@@ -238,7 +243,7 @@ export default function SoilMoisture() {
 
   if (loading) {
     return (
-      <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex flex-col items-center justify-center min-h-[300px] gap-2 text-muted-foreground">
+      <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex flex-col items-center justify-center min-h-75 gap-2 text-muted-foreground">
         <LoaderCircle className="w-8 h-8 animate-spin text-emerald-500" />
         <span className="text-xs font-medium">Analyzing soil hydrology...</span>
       </div>
@@ -264,6 +269,7 @@ export default function SoilMoisture() {
   };
 
   // Use translations if available, fallback to hardcoded string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const componentTitle = (t.dashboard as any)?.soilMoisture || "SOIL MOISTURE";
 
   const gridColor = isDark ? "rgba(255,255,255,0.2)" : "#e2e8f0";
@@ -280,7 +286,7 @@ export default function SoilMoisture() {
         {componentTitle}
       </div>
 
-      <div className="h-[260px] w-full mt-2">
+      <div className="h-65 w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             key={isDark ? "dark" : "light"}
@@ -344,6 +350,7 @@ export default function SoilMoisture() {
         >
           <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
           <span>
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {(t.dashboard as any)?.smPercentileLegend ||
               "Percentile (colour = category)"}
           </span>
@@ -353,6 +360,7 @@ export default function SoilMoisture() {
           className="flex items-center gap-2 text-[0.75rem] text-muted-foreground font-medium"
         >
           <div className="w-5 h-[1.5px] bg-foreground border border-dashed border-muted-foreground"></div>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <span>{(t.dashboard as any)?.smTrend || "Trend"}</span>
         </div>
         <div
@@ -360,6 +368,7 @@ export default function SoilMoisture() {
           className="flex items-center gap-2 text-[0.75rem] text-muted-foreground font-medium border-l border-border pl-6"
         >
           <div className="w-[1.5px] h-3 bg-foreground border border-dashed border-muted-foreground"></div>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <span>{(t.dashboard as any)?.today || "Today"}</span>
         </div>
       </div>

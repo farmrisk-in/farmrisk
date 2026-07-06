@@ -3,7 +3,7 @@
 import { Clock, CloudOff } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type HourlySlot } from "@/types/weather";
+import { useWeather } from "@/hooks/useWeather";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
@@ -28,18 +28,46 @@ const TRANSLATIONS: Record<string, any> = {
   },
   gu: {
     title: "કલાકદીઠ ટાઈમલાઈન",
-    subtitle: "આગામી 24 કલાક",
+    subtitle: "આગામী 24 કલાક",
   },
 };
 
-interface HourlyWeatherProps {
-  hourly: HourlySlot[] | undefined;
-  isLoading: boolean;
+const formatHour = (dateInput: Date | string) => {
+  const date = new Date(dateInput);
+  const h = date.getUTCHours();
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${String(h12).padStart(2, "0")} ${ampm}`;
+};
+
+function getConditionAlt(code: number): string {
+  if (code === 0) return "Clear";
+  if (code <= 3) return "Cloudy";
+  if (code <= 48) return "Foggy";
+  if (code <= 55) return "Drizzle";
+  if (code <= 65) return "Rainy";
+  if (code <= 77) return "Snowy";
+  if (code <= 82) return "Showers";
+  if (code <= 86) return "Snow Showers";
+  return "Thunderstorm";
 }
 
-const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
+const HourlyWeather = () => {
   const { language } = useLanguage();
   const t = TRANSLATIONS[language] || TRANSLATIONS.en;
+  const { data, isLoading } = useWeather();
+  const hourly = data?.hourly;
+
+  const slots = hourly
+    ? hourly.time.map((time, idx) => ({
+        time: formatHour(time),
+        temp: Math.round(hourly.temperature_2m[idx]),
+        rainChance: hourly.precipitation_probability[idx] ?? 0,
+        windKph: Math.round(hourly.wind_speed_10m[idx]),
+        icon: hourly.icon[idx] || "clear_day.svg",
+        weatherCode: hourly.weather_code[idx] ?? 0,
+      }))
+    : [];
 
   return (
     <div className="w-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none">
@@ -80,7 +108,7 @@ const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
               </div>
             ) : (
               <>
-                {hourly.map((slot, i) => {
+                {slots.map((slot, i) => {
                   return (
                     <div
                       key={i}
@@ -93,8 +121,8 @@ const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
 
                       {/* 2. Weather Icon (Above Temperature) */}
                       <Image
-                        src={`/weatherIcons/${slot.icon.day}`}
-                        alt={slot.condition.en}
+                        src={`/weatherIcons/${slot.icon}`}
+                        alt={getConditionAlt(slot.weatherCode)}
                         width={26}
                         height={26}
                         className="my-0.5 drop-shadow-xs/40 dark:drop-shadow-none"
@@ -127,22 +155,3 @@ const HourlyWeather = ({ hourly, isLoading }: HourlyWeatherProps) => {
 };
 
 export default HourlyWeather;
-
-{
-  /* 
-        {isLoading ? (
-          <>
-            
-          </>
-        ) : (
-          <>
-          {!hourly ? (<></>) : (
-            <>{hourly.map((slot, i) => {
-              return (
-                
-              );
-            })}
-          </>)}
-        )
-       */
-}

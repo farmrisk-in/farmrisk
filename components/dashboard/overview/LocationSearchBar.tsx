@@ -43,8 +43,6 @@ const Map = dynamic(() => import("./Map"), {
   ),
 });
 
-type SearchResult = SelectedLocation & { id: string };
-
 const BUTTON_TRANSLATIONS: Record<
   string,
   {
@@ -105,9 +103,11 @@ export function LocationSearchBar() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const shouldSearch = debouncedQuery.trim().length >= 2 && debouncedQuery.trim() !== location.name;
+  const shouldSearch =
+    debouncedQuery.trim().length >= 2 &&
+    debouncedQuery.trim() !== location.name;
   const { data: results = [], isFetching: loadingResults } = useLocationSearch(
-    shouldSearch ? debouncedQuery : ""
+    shouldSearch ? debouncedQuery : "",
   );
 
   const [isLocating, setIsLocating] = useState(false);
