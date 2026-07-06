@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -37,6 +38,9 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+
+// --- CONFIGURABLE: number of data points visible at once ---
+const VISIBLE_POINTS = 25;
 
 interface CustomDotProps {
   cx?: number;
@@ -266,15 +270,97 @@ export default function SoilMoisture() {
     });
   }, [soilMoistureData]);
 
+  // --- SCROLLABLE WINDOW STATE ---
+  const totalPoints = chartData.length;
+  const maxOffset = Math.max(0, totalPoints - VISIBLE_POINTS);
+
+  // Default: scroll to end so "today" / forecast is visible
+  const [scrollOffset, setScrollOffset] = useState<number | null>(null);
+  const resolvedOffset = useMemo(() => {
+    if (scrollOffset !== null) return scrollOffset;
+    // Auto-position: show the latest data (right-aligned)
+    return maxOffset;
+  }, [scrollOffset, maxOffset]);
+
+  const visibleData = useMemo(() => {
+    if (totalPoints <= VISIBLE_POINTS) return chartData;
+    return chartData.slice(resolvedOffset, resolvedOffset + VISIBLE_POINTS);
+  }, [chartData, resolvedOffset, totalPoints]);
+
+  // --- STEP SCROLL (Arrow buttons) ---
+  const handleStepLeft = useCallback(() => {
+    setScrollOffset((prev) => {
+      const current = prev ?? maxOffset;
+      return Math.max(0, current - 3);
+    });
+  }, [maxOffset]);
+
+  const handleStepRight = useCallback(() => {
+    setScrollOffset((prev) => {
+      const current = prev ?? maxOffset;
+      return Math.min(maxOffset, current + 3);
+    });
+  }, [maxOffset]);
+
+  // --- WHEEL-TO-SCROLL ---
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (totalPoints <= VISIBLE_POINTS) return;
+      e.preventDefault();
+      const delta = e.deltaX !== 0 ? e.deltaX : e.deltaY;
+      const step = delta > 0 ? 2 : -2;
+      setScrollOffset((prev) => {
+        const current = prev ?? maxOffset;
+        return Math.min(maxOffset, Math.max(0, current + step));
+      });
+    },
+    [totalPoints, maxOffset],
+  );
+
+  // --- SCROLLBAR THUMB DRAG ---
+  const trackRef = useRef<HTMLDivElement>(null);
+  const isThumbDragging = useRef(false);
+
+  const thumbWidthPct = totalPoints > 0 ? Math.min(100, (VISIBLE_POINTS / totalPoints) * 100) : 100;
+  const thumbLeftPct = maxOffset > 0 ? (resolvedOffset / maxOffset) * (100 - thumbWidthPct) : 0;
+
+  const handleTrackPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (totalPoints <= VISIBLE_POINTS || !trackRef.current) return;
+      isThumbDragging.current = true;
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      const rect = trackRef.current.getBoundingClientRect();
+      const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
+    },
+    [totalPoints, maxOffset, thumbWidthPct],
+  );
+
+  const handleTrackPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isThumbDragging.current || !trackRef.current) return;
+      const rect = trackRef.current.getBoundingClientRect();
+      const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
+      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
+    },
+    [maxOffset, thumbWidthPct],
+  );
+
+  const handleTrackPointerUp = useCallback(() => {
+    isThumbDragging.current = false;
+  }, []);
+
   const todayRecord = useMemo(() => {
-    if (!chartData.length) return null;
+    if (!visibleData.length) return null;
     const today = new Date();
     const todayStr = today.toISOString().split("T")[0];
     return (
-      chartData.find((d) => d.date === todayStr || d.is_forecast === 1) ||
-      chartData[0]
+      visibleData.find((d) => d.date === todayStr || d.is_forecast === 1) ||
+      null
     );
-  }, [chartData]);
+  }, [visibleData]);
 
   const formatXAxis = (tickItem: string) => {
     const date = new Date(tickItem);
@@ -347,76 +433,122 @@ export default function SoilMoisture() {
       );
     }
 
+    const needsScroll = totalPoints > VISIBLE_POINTS;
+
     return (
-      <div className="h-65 w-full mt-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            key={isDark ? "dark" : "light"}
-            data={chartData}
-            margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
-          >
-            <YAxis hide={true} domain={[0, 100]} scale={"symlog"} />
-            <CartesianGrid
-              stroke={"var(--muted-foreground)"}
-              strokeDasharray="3 3"
-              vertical={true}
-              horizontal={true}
-              opacity={0.35}
-            />
-
-            <XAxis
-              dataKey="date"
-              tickFormatter={formatXAxis}
-              axisLine={false}
-              tickLine={!isDark}
-              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-              dy={10}
-              minTickGap={50}
-            />
-
-            <Tooltip
-              content={<CustomTooltip t={t} />}
-              cursor={{
-                stroke: "var(--muted-foreground)",
-                strokeWidth: 1,
-                strokeDasharray: "4 4",
-              }}
-            />
-
-            {todayRecord && (
-              <ReferenceLine
-                x={todayRecord.date}
+      <div className="w-full mt-2 flex flex-col">
+        {/* Chart area with wheel scroll */}
+        <div
+          className="h-65 w-full"
+          onWheel={handleWheel}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              key={isDark ? "dark" : "light"}
+              data={visibleData}
+              margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
+            >
+              <YAxis hide={true} domain={[0, 100]} scale={"symlog"} />
+              <CartesianGrid
                 stroke={"var(--muted-foreground)"}
-                strokeDasharray="4 4"
-                strokeWidth={1.5}
-                className={isDark ? "stroke-white text-white" : ""}
-                style={{ stroke: "var(--muted-foreground)" }}
+                strokeDasharray="3 3"
+                vertical={true}
+                horizontal={true}
+                opacity={0.35}
               />
-            )}
-            {Object.keys(charts)
-              .filter((key) => charts[key as keyof typeof charts])
-              .map((key) => {
-                const color = SERIES_COLORS[key] || "var(--foreground)";
-                return (
-                  <Line
-                    key={key}
-                    type="linear"
-                    dataKey={key}
-                    stroke={color}
-                    strokeWidth={2}
-                    strokeDasharray={
-                      key === "sm_percentile" ? "6 6" : undefined
-                    }
-                    dot={key === "sm_percentile" ? <CustomDot /> : false}
-                    activeDot={{ r: 5, strokeWidth: 0 }}
-                    isAnimationActive={false}
-                    className={isDark ? "stroke-white text-white" : ""}
-                    style={{ stroke: color }}
-                  />
-                );
-              })}
-          </LineChart>
-        </ResponsiveContainer>
+
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatXAxis}
+                axisLine={false}
+                tickLine={!isDark}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                dy={10}
+                minTickGap={50}
+              />
+
+              <Tooltip
+                content={<CustomTooltip t={t} />}
+                cursor={{
+                  stroke: "var(--muted-foreground)",
+                  strokeWidth: 1,
+                  strokeDasharray: "4 4",
+                }}
+              />
+
+              {todayRecord && (
+                <ReferenceLine
+                  x={todayRecord.date}
+                  stroke={"var(--muted-foreground)"}
+                  strokeDasharray="4 4"
+                  strokeWidth={1.5}
+                  className={isDark ? "stroke-white text-white" : ""}
+                  style={{ stroke: "var(--muted-foreground)" }}
+                />
+              )}
+              {Object.keys(charts)
+                .filter((key) => charts[key as keyof typeof charts])
+                .map((key) => {
+                  const color = SERIES_COLORS[key] || "var(--foreground)";
+                  return (
+                    <Line
+                      key={key}
+                      type="linear"
+                      dataKey={key}
+                      stroke={color}
+                      strokeWidth={2}
+                      strokeDasharray={
+                        key === "sm_percentile" ? "6 6" : undefined
+                      }
+                      dot={key === "sm_percentile" ? <CustomDot /> : false}
+                      activeDot={{ r: 5, strokeWidth: 0 }}
+                      isAnimationActive={false}
+                      className={isDark ? "stroke-white text-white" : ""}
+                      style={{ stroke: color }}
+                    />
+                  );
+                })}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Scrollbar with arrow buttons */}
+        {needsScroll && (
+          <div className="flex items-center gap-1 mt-1.5 mb-1 mx-1">
+            <button
+              onClick={handleStepLeft}
+              disabled={resolvedOffset <= 0}
+              className="shrink-0 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              aria-label="Scroll chart left"
+            >
+              <ChevronLeft className="size-4" />
+            </button>
+            <div
+              ref={trackRef}
+              className="relative flex-1 h-2.5 rounded-full bg-muted/50 cursor-pointer touch-none"
+              onPointerDown={handleTrackPointerDown}
+              onPointerMove={handleTrackPointerMove}
+              onPointerUp={handleTrackPointerUp}
+              onPointerCancel={handleTrackPointerUp}
+            >
+              <div
+                className="absolute top-0.5 h-1.5 rounded-full bg-muted-foreground/60 transition-[left] duration-75 ease-out hover:bg-foreground/70 active:bg-foreground/80"
+                style={{
+                  width: `${thumbWidthPct}%`,
+                  left: `${thumbLeftPct}%`,
+                }}
+              />
+            </div>
+            <button
+              onClick={handleStepRight}
+              disabled={resolvedOffset >= maxOffset}
+              className="shrink-0 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              aria-label="Scroll chart right"
+            >
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        )}
       </div>
     );
   };
