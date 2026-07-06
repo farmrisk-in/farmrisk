@@ -12,7 +12,7 @@ import {
 
 import { useLocationContext } from "@/providers/LocationProvider";
 
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { LoaderCircle } from "lucide-react";
 
 // --- TYPES ---

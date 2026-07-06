@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { normalizePhoneNumber } from "@/lib/auth/phone";
 import { createClient } from "@/supabase/client";
 import { cn } from "@/lib/utils";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 type Mode = "login" | "register";
@@ -263,9 +263,7 @@ export function LoginForm({
             className="text-sm text-emerald-700 hover:underline"
             disabled={isLoading}
           >
-            {mode === "login"
-              ? t.auth.noAccount
-              : t.auth.haveAccount}
+            {mode === "login" ? t.auth.noAccount : t.auth.haveAccount}
           </button>
         </div>
       </form>

@@ -5,7 +5,7 @@ import { useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Locate, BrainCircuit, Zap, Languages, Check } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { WheatScrollWrapper } from "../ui/wheat";
 

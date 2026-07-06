@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Globe } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageCode } from "@/constants/content";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

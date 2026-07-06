@@ -5,7 +5,7 @@ import { Calendar, MapPin, Leaf } from "lucide-react";
 import { type SelectedLocation } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import AIOverview from "./AIOverview";
-import Forcast from "./Forcast";
+import Forcast from "./Forecast";
 import CropCalender from "./CropCalender";
 
 interface DownloadTemplateProps {

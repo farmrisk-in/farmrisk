@@ -4,7 +4,7 @@ import { ExternalLink, Menu } from "lucide-react";
 import { AuthButtons } from "@/components/auth/AuthButtons";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "../ui/button";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { UserBaseCounter } from "@/components/ui/UserCount";
 import Image from "next/image";
 import { NavBar } from "@/components/home/Navbar";

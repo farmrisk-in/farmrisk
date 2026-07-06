@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock, CloudOff } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWeather } from "@/hooks/useWeather";
 import { Badge } from "@/components/ui/badge";

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import AIOverview from "./AIOverview";
 import { LocationSearchBar } from "./LocationSearchBar";
-import Forcast from "./Forcast";
+import Forcast from "./Forecast";
 import dynamic from "next/dynamic";
 const Lightning = dynamic(
   () => import("./Lightning").then((mod) => mod.Lightning),

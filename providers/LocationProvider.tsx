@@ -66,6 +66,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 86400000 },
       );
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsResolving(false);
     }
   }, []);

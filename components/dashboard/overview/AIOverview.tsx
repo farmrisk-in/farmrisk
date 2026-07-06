@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { useCrop } from "@/hooks/useCrop";
 import { useAI } from "@/hooks/useAI";
@@ -24,7 +24,11 @@ interface AIOverviewProps {
   isPrintMode?: boolean;
 }
 
-const AIOverview = ({ selectedCrop, setSelectedCrop, isPrintMode }: AIOverviewProps) => {
+const AIOverview = ({
+  selectedCrop,
+  setSelectedCrop,
+  isPrintMode,
+}: AIOverviewProps) => {
   const { language, t } = useLanguage();
 
   const translateCropName = (crop: CropOption) => {
@@ -94,10 +98,13 @@ const AIOverview = ({ selectedCrop, setSelectedCrop, isPrintMode }: AIOverviewPr
     });
 
   return (
-    <div className={cn(
-      "w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl",
-      isPrintMode && "bg-emerald-500/5 border border-emerald-500/15 p-3 rounded-lg shadow-none text-slate-800 text-[10px]"
-    )}>
+    <div
+      className={cn(
+        "w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl",
+        isPrintMode &&
+          "bg-emerald-500/5 border border-emerald-500/15 p-3 rounded-lg shadow-none text-slate-800 text-[10px]",
+      )}
+    >
       {/* HEADER SECTION: Title block paired with dropdown controls */}
       <div className="flex flex-row sm:items-center justify-between gap-3 border-b pb-2 mb-2 shrink-0">
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
@@ -164,10 +171,13 @@ const AIOverview = ({ selectedCrop, setSelectedCrop, isPrintMode }: AIOverviewPr
           </div>
         ) : (
           <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
-            <p className={cn(
-              "text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300",
-              isPrintMode && "text-[10px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap max-h-none"
-            )}>
+            <p
+              className={cn(
+                "text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300",
+                isPrintMode &&
+                  "text-[10px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap max-h-none",
+              )}
+            >
               {formattedText}
             </p>
           </div>

@@ -162,3 +162,9 @@ export function calculateTimelineSegments(
     },
   ];
 }
+
+export function getVID(lat: number, lng: number): string {
+  const latStr = lat.toFixed(1);
+  const lngStr = lng.toFixed(1);
+  return `${latStr},${lngStr}`;
+}

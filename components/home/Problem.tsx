@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform, type Variants } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { CloudRain, AlertTriangle, TrendingDown } from "lucide-react";
 import Link from "next/link";
 import { LeafAnim } from "../ui/leafAnim";

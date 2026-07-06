@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/supabase/client";
 import { Leaf, LockIcon, LoaderCircle, LogOut } from "lucide-react";
 import {
@@ -17,8 +17,8 @@ import {
   SidebarSeparator,
   SidebarMenuBadge,
 } from "@/components/ui/sidebar";
-import { useLanguage } from "@/hooks/use-language";
-import { useNavigation } from "@/hooks/use-Navigation";
+import { useLanguage } from "@/hooks/useLanguage";
+import { useNavigation } from "@/hooks/useNavigation";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { navigationItems } from "@/constants/navigation";
 

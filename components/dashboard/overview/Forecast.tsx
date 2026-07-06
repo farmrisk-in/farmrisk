@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useForecast } from "@/hooks/useForecast";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { Progress } from "@/components/ui/progress";
+import { DailyForecastCorrection } from "@/types/forecast";
 import {
   LoaderCircle,
   TrendingUpDown,
@@ -15,12 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-
-interface DayPrediction {
-  date: string;
-  raw: { tmax: number; tmin: number; pcp: number };
-  corrected: { tmax: number; tmin: number; pcp: number };
-}
 
 interface ForcastProps {
   isPrintMode?: boolean;
@@ -49,7 +44,8 @@ const formatDateText = (dateStr: string) => {
 const Forcast = ({ isPrintMode }: ForcastProps) => {
   const { t } = useLanguage();
 
-  const { data: predictions = [], isLoading, isError } = useForecast(16);
+  const { data: report, isLoading } = useForecast();
+  const predictions = report?.forecast?.forecast || [];
   const { data: weatherData } = useWeather();
   const daily = weatherData?.daily;
 
@@ -57,19 +53,15 @@ const Forcast = ({ isPrintMode }: ForcastProps) => {
   const [showProgressBar, setShowProgressBar] = useState(true);
 
   // Map uncorrected forecast data as fallback
-  const fallbackPredictions: DayPrediction[] = daily
+  const fallbackPredictions: DailyForecastCorrection[] = daily
     ? daily.time.map((time, idx) => ({
-        date: new Date(time).toISOString(),
-        raw: {
-          tmax: daily.temperature_2m_max[idx],
-          tmin: daily.temperature_2m_min[idx],
-          pcp: daily.precipitation_sum[idx],
-        },
-        corrected: {
-          tmax: daily.temperature_2m_max[idx],
-          tmin: daily.temperature_2m_min[idx],
-          pcp: daily.precipitation_sum[idx],
-        },
+        date: new Date(time).toISOString().split("T")[0],
+        tmax_raw: daily.temperature_2m_max[idx],
+        tmax_corrected: daily.temperature_2m_max[idx],
+        tmin_raw: daily.temperature_2m_min[idx],
+        tmin_corrected: daily.temperature_2m_min[idx],
+        pcp_raw: daily.precipitation_sum[idx],
+        pcp_corrected: daily.precipitation_sum[idx],
       }))
     : [];
 
@@ -82,6 +74,7 @@ const Forcast = ({ isPrintMode }: ForcastProps) => {
     let timer: NodeJS.Timeout;
 
     if (isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowProgressBar(true);
       setProgressVal(0);
 
@@ -188,9 +181,9 @@ const Forcast = ({ isPrintMode }: ForcastProps) => {
           )}
         >
           {finalPredictions.map((day, idx) => {
-            const maxTemp = Math.round(day.corrected.tmax);
-            const minTemp = Math.round(day.corrected.tmin);
-            const rainVolume = day.corrected.pcp;
+            const maxTemp = Math.round(day.tmax_corrected);
+            const minTemp = Math.round(day.tmin_corrected);
+            const rainVolume = day.pcp_corrected;
 
             return (
               <div

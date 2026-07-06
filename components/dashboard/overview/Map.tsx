@@ -7,7 +7,7 @@ import { Crosshair, LucideProps } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { ReactNode } from "react";
-import { useIsDarkMode } from "@/hooks/use-theme";
+import { useIsDarkMode } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
 export interface LeafletSelectMapProps {

@@ -9,7 +9,7 @@ import {
   RiCloseCircleLine,
   RiLoaderLine,
 } from "@remixicon/react";
-import { useIsDarkMode } from "@/hooks/use-theme";
+import { useIsDarkMode } from "@/hooks/useTheme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const isDark = useIsDarkMode();

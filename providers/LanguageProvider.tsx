@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { content, LanguageCode, TranslationType } from "@/constants/content";
 
 interface LanguageContextProps {
@@ -9,9 +9,13 @@ interface LanguageContextProps {
   t: TranslationType;
 }
 
-export const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
+export const LanguageContext = createContext<LanguageContextProps | undefined>(
+  undefined,
+);
 
-export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [language, setLanguageState] = useState<LanguageCode>("en");
   const [mounted, setMounted] = useState(false);
 
@@ -19,6 +23,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       const stored = localStorage.getItem("farmrisk-language") as LanguageCode;
       if (stored && content[stored]) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLanguageState(stored);
       }
     } catch (e) {
@@ -42,7 +47,9 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   if (!mounted) {
     return (
-      <LanguageContext.Provider value={{ language: "en", setLanguage, t: content.en }}>
+      <LanguageContext.Provider
+        value={{ language: "en", setLanguage, t: content.en }}
+      >
         <div style={{ visibility: "hidden" }}>{children}</div>
       </LanguageContext.Provider>
     );

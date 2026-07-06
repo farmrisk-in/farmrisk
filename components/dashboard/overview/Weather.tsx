@@ -11,7 +11,7 @@ import {
   CloudOff,
 } from "lucide-react";
 import { useLocationContext } from "@/providers/LocationProvider";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useWeather } from "@/hooks/useWeather";

@@ -3,7 +3,7 @@ import { LayoutDashboard, Leaf, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "../ThemeChange";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import Link from "next/link";
 import { AuthButtons } from "../auth/AuthButtons";
 

@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import DownloadTemplate from "./DownloadTemplate";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useWeather } from "@/hooks/useWeather";
@@ -103,8 +103,8 @@ const Download = ({ className }: { className?: string }) => {
   }, []);
 
   const weatherData = useWeather();
-  const { data: predictions = [], isLoading: isForecastLoading } =
-    useForecast(16);
+  const { data: report, isLoading: isForecastLoading } = useForecast(16);
+  const predictions = report?.forecast?.forecast || [];
   const { data: aiSummary = "", isLoading: isAiLoading } = useAI(
     selectedCrop.id,
     language,

@@ -1,4 +1,4 @@
-import useLanguage from "@/hooks/use-language";
+import useLanguage from "@/hooks/useLanguage";
 import { LightningData } from "@/types/weather";
 import L from "leaflet";
 import { MapPin } from "lucide-react";

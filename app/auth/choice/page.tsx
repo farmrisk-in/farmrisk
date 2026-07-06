@@ -2,9 +2,9 @@
 import Link from "next/link";
 import { CloudSun, ArrowRight, Sparkles, X, Check } from "lucide-react";
 import { NavBar } from "@/components/home/Navbar";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import Image from "next/image";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

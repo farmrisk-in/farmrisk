@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocationContext } from "@/providers/LocationProvider";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 import { CloudOff, Expand, LoaderCircle, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useWeather } from "@/hooks/useWeather";

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Leaf } from "lucide-react";
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface FooterLink {
   title: string;
