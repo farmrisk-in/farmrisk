@@ -172,7 +172,7 @@ export const ta = {
     smSevereDry: "தீவிர வறட்சி",
     smExceptionalDry: "அசாதாரண வறட்சி",
     smPercentiles: "சதவீதம் (Percentiles)",
-    smPercentileLegend: "சதவீதம் (நிறம் = வகை)",
+    smPercentileLegend: "சதவீதம்",
     smTrend: "போக்கு (Trend)",
     advLow: "மின்னல் தாக்க வாய்ப்பு குறைவு.",
     advModerate: "மிதமான ஆபத்து. வானிலை குறித்து விழிப்புடன் இருங்கள்.",

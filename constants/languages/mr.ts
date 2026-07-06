@@ -173,7 +173,7 @@ export const mr = {
     smSevereDry: "गंभीर कोरडे",
     smExceptionalDry: "असाधारण कोरडे",
     smPercentiles: "टक्केवारी (Percentiles)",
-    smPercentileLegend: "टक्केवारी (रंग = श्रेणी)",
+    smPercentileLegend: "टक्केवारी",
     smTrend: "कल (Trend)",
     advLow: "वीज पडण्याची शक्यता कमी आहे.",
     advModerate: "मध्यम धोका. हवामानावर लक्ष ठेवा.",

@@ -141,7 +141,7 @@ export default function Map({
     : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   const newLocal =
-    "absolute top-0 left-0 w-full pt-4 pb-12 px-6 bg-linear-to-b from-black/70 via-black/40 to-transparent pointer-events-none z-1000 flex items-center justify-between";
+    "absolute top-0 left-0 w-full pt-4 pb-12 px-6 bg-linear-to-b from-black/70 via-black/20 to-transparent pointer-events-none z-1000 flex items-center justify-between";
   return (
     <div
       className={cn(
@@ -195,7 +195,7 @@ export default function Map({
       </div>
 
       {/* BOTTOM VIGNETTE OVERLAY CONTROL LAYER */}
-      <div className="absolute bottom-0 left-0 w-full pt-2 pb-4 px-6 bg-linear-to-t from-black/70 via-black/40 to-transparent pointer-events-none z-1000 flex items-center justify-between">
+      <div className="absolute bottom-0 left-0 w-full pt-2 pb-4 px-6 bg-linear-to-t from-black/70 via-black/20 to-transparent pointer-events-none z-1 flex items-center justify-between">
         {bottomLeftBadge}
         {bottomRightAction}
       </div>

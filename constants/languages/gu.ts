@@ -172,7 +172,7 @@ export const gu = {
     smSevereDry: "ગંભીર સૂકું",
     smExceptionalDry: "અસાધારણ સૂકું",
     smPercentiles: "પર્સેન્ટાઇલ્સ",
-    smPercentileLegend: "પર્સેન્ટાઇલ (રંગ = શ્રેણી)",
+    smPercentileLegend: "પર્સેન્ટાઇલ",
     smTrend: "વલણ (Trend)",
     advLow: "વીજળી પડવાની સંભાવના ઓછી છે.",
     advModerate: "મધ્યમ જોખમ. હવામાન પર નજર રાખો.",

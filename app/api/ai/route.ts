@@ -1,45 +1,54 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCropAdvisory } from "@/lib/advisory-service";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Extract parameters from request body
-    const latitude = Number(body.latitude);
-    const longitude = Number(body.longitude);
-    const crop = body.crop || "general";
-    const language = body.language || "english";
-    const crop_stage = body.crop_stage;
-
-    // Validate coordinates
-    if (isNaN(latitude) || isNaN(longitude)) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid coordinates provided. latitude and longitude must be numbers.",
-        },
-        { status: 400 },
-      );
-    }
-    // DONT WASTE API CALLS WHILE TESTING
-    if (process.env.NODE_ENV === "development") {
+    const modelUrl = process.env.ADVISORY_MODEL_URL;
+    if (!modelUrl) {
       return NextResponse.json({
+        success: true,
         advisory_summary:
-          "This is a mock advisory summary for testing purposes.",
+          "RAG Advisory Model URL is not configured. Please set ADVISORY_MODEL_URL in your environment variables.",
       });
     }
 
-    // Call the agrometeorological RAG pipeline
-    const advisory = await getCropAdvisory({
-      latitude,
-      longitude,
-      crop,
-      language,
-      crop_stage,
+    const response = await fetch(modelUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
     });
 
-    return NextResponse.json(advisory);
+    if (!response.ok) {
+      console.error(
+        `RAG Model Error: ${response.status} ${response.statusText}`,
+      );
+      return NextResponse.json(
+        { error: `Failed to query RAG model: ${response.statusText}` },
+        { status: response.status },
+      );
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    let advisoryText = "";
+
+    if (contentType.includes("application/json")) {
+      const jsonRes = await response.json();
+      advisoryText =
+        jsonRes.advisory_summary ||
+        jsonRes.advisory ||
+        jsonRes.text ||
+        JSON.stringify(jsonRes);
+    } else {
+      advisoryText = await response.text();
+    }
+
+    return NextResponse.json({
+      success: true,
+      advisory_summary: advisoryText,
+    });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error("Error in POST /api/ai:", error);

@@ -1,6 +1,7 @@
 "use client";
-import { useEffect } from "react";
-import { ChevronDown, Check, Bot, Sparkles } from "lucide-react";
+
+import { useEffect, useRef } from "react";
+import { ChevronDown, Check, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoaderFive } from "@/components/ui/loader";
 import {
@@ -16,19 +17,13 @@ import { useAI } from "@/hooks/useAI";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import { GENERAL_CROP } from "@/types/crops";
-import { cn } from "@/lib/utils";
 
 interface AIOverviewProps {
   selectedCrop: CropOption;
   setSelectedCrop: (crop: CropOption) => void;
-  isPrintMode?: boolean;
 }
 
-const AIOverview = ({
-  selectedCrop,
-  setSelectedCrop,
-  isPrintMode,
-}: AIOverviewProps) => {
+const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
   const { language, t } = useLanguage();
 
   const translateCropName = (crop: CropOption) => {
@@ -66,8 +61,16 @@ const AIOverview = ({
   const { isLoading: isWeatherLoading } = weatherData;
   const { crops } = useCrop();
 
+  const lastLocationRef = useRef({ lat: location.lat, lng: location.lng });
+
   useEffect(() => {
-    setSelectedCrop(GENERAL_CROP);
+    if (
+      lastLocationRef.current.lat !== location.lat ||
+      lastLocationRef.current.lng !== location.lng
+    ) {
+      lastLocationRef.current = { lat: location.lat, lng: location.lng };
+      setSelectedCrop(GENERAL_CROP);
+    }
   }, [location.lat, location.lng, setSelectedCrop]);
 
   const {
@@ -98,13 +101,7 @@ const AIOverview = ({
     });
 
   return (
-    <div
-      className={cn(
-        "w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl",
-        isPrintMode &&
-          "bg-emerald-500/5 border border-emerald-500/15 p-3 rounded-lg shadow-none text-slate-800 text-[10px]",
-      )}
-    >
+    <div className="w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl">
       {/* HEADER SECTION: Title block paired with dropdown controls */}
       <div className="flex flex-row sm:items-center justify-between gap-3 border-b pb-2 mb-2 shrink-0">
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
@@ -112,55 +109,47 @@ const AIOverview = ({
           {t.dashboard.aiOverview}
         </div>
 
-        {isPrintMode ? (
-          <div className="flex items-center gap-1 text-[8px] font-bold text-emerald-700 uppercase tracking-wide">
-            <Sparkles className="size-2.5" />
-            AI Recommended
-          </div>
-        ) : (
-          /* CROP SELECTOR DROPDOWN MODULE */
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-auto h-8 text-foreground text-xs font-medium px-2.5 rounded-md flex items-center justify-between gap-1.5 cursor-pointer"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="truncate">
-                    {translateCropName(selectedCrop)}
-                  </span>
-                </div>
-                <ChevronDown className="size-3.5 opacity-60 shrink-0" />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent
-              align="end"
-              className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-auto h-8 text-foreground text-xs font-medium px-2.5 rounded-md flex items-center justify-between gap-1.5 cursor-pointer"
             >
-              {crops.map((option) => {
-                const isSelected = option.id === selectedCrop.id;
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="truncate">
+                  {translateCropName(selectedCrop)}
+                </span>
+              </div>
+              <ChevronDown className="size-3.5 opacity-60 shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
 
-                return (
-                  <DropdownMenuItem
-                    key={option.id}
-                    onClick={() => setSelectedCrop(option)}
-                    className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="truncate font-medium">
-                        {translateCropName(option)}
-                      </span>
-                    </div>
-                    {isSelected && (
-                      <Check className="size-3.5 text-primary shrink-0" />
-                    )}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+          <DropdownMenuContent
+            align="end"
+            className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
+          >
+            {crops.map((option) => {
+              const isSelected = option.id === selectedCrop.id;
+
+              return (
+                <DropdownMenuItem
+                  key={option.id}
+                  onClick={() => setSelectedCrop(option)}
+                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="truncate font-medium">
+                      {translateCropName(option)}
+                    </span>
+                  </div>
+                  {isSelected && (
+                    <Check className="size-3.5 text-primary shrink-0" />
+                  )}
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* CORE CONTENT SLOT: Scrollable container with simulated generation skeleton loaders */}
@@ -171,13 +160,7 @@ const AIOverview = ({
           </div>
         ) : (
           <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
-            <p
-              className={cn(
-                "text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300",
-                isPrintMode &&
-                  "text-[10px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap max-h-none",
-              )}
-            >
+            <p className="text-xs max-h-30 sm:text-sm text-foreground/90 font-medium leading-relaxed tracking-normal whitespace-pre-wrap animate-in fade-in duration-300">
               {formattedText}
             </p>
           </div>

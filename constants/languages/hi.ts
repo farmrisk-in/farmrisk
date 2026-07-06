@@ -173,7 +173,7 @@ export const hi = {
     smSevereDry: "गंभीर रूप से सूखा",
     smExceptionalDry: "असाधारण रूप से सूखा",
     smPercentiles: "प्रतिशतक (Percentiles)",
-    smPercentileLegend: "प्रतिशतक (रंग = श्रेणी)",
+    smPercentileLegend: "प्रतिशतक",
     smTrend: "प्रवृत्ति (Trend)",
     advLow: "बिजली गिरने की संभावना कम है।",
     advModerate: "मध्यम जोखिम। मौसम पर नज़र रखें।",

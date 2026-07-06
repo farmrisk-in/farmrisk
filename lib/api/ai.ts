@@ -1,22 +1,14 @@
-import { AIAPIResponse } from "@/types/ai";
+import { AIAPIResponse, AIAdvisoryRequestPayload } from "@/types/ai";
 
 export async function getAIAdvisory(
-  lat: number,
-  lng: number,
-  crop: string,
-  language: string
+  payload: AIAdvisoryRequestPayload
 ): Promise<AIAPIResponse> {
   const res = await fetch("/api/ai", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      latitude: lat,
-      longitude: lng,
-      crop,
-      language,
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) {

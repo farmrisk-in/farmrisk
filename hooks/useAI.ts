@@ -4,15 +4,42 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { getAIAdvisory } from "@/lib/api/ai";
 import { useLocationContext } from "@/providers/LocationProvider";
+import { useCalendar } from "@/hooks/useCalendar";
+import { useWeather } from "@/hooks/useWeather";
+import { useForecast } from "@/hooks/useForecast";
 import { AIAPIResponse } from "@/types/ai";
 
 export function useAI(cropId: string, language: string) {
   const { location, isResolving } = useLocationContext();
 
+  const calendarData = useCalendar(cropId).data;
+  const weatherData = useWeather().data;
+  const forecastData = useForecast().data;
+
   const query = useQuery<AIAPIResponse, Error>({
     queryKey: ["ai", location.lat, location.lng, cropId, language],
-    queryFn: () => getAIAdvisory(location.lat, location.lng, cropId, language),
-    enabled: !isResolving && !!location.lat && !!location.lng && !!cropId && !!language,
+    queryFn: () => {
+      if (!calendarData || !weatherData || !forecastData) {
+        throw new Error("Context data not available for AI generation");
+      }
+      return getAIAdvisory({
+        location,
+        cropId,
+        calendarData,
+        weatherData,
+        forecastData,
+        language,
+      });
+    },
+    enabled:
+      !isResolving &&
+      !!location.lat &&
+      !!location.lng &&
+      !!cropId &&
+      !!language &&
+      !!calendarData &&
+      !!weatherData &&
+      !!forecastData,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });

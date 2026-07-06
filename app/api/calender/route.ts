@@ -2,7 +2,34 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import csv from "csv-parser";
-import { reverseGeocode } from "@/lib/advisory-service";
+async function reverseGeocode(lat: number, lng: number): Promise<{ state: string; district: string }> {
+  const url = new URL("https://nominatim.openstreetmap.org/reverse");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("addressdetails", "1");
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lng));
+
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "farmrisk-dashboard/1.0",
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Reverse geocoding failed: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const address = data.address || {};
+  
+  // District is usually in county, state_district, or district
+  const district = address.district || address.county || address.state_district || address.city || "";
+  const state = address.state || "";
+
+  return { state, district };
+}
 
 // -------------------------------------------------------------
 // Helper to clean and normalize names for robust matching

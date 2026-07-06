@@ -103,7 +103,7 @@ const Download = ({ className }: { className?: string }) => {
   }, []);
 
   const weatherData = useWeather();
-  const { data: report, isLoading: isForecastLoading } = useForecast(16);
+  const { data: report, isLoading: isForecastLoading } = useForecast();
   const predictions = report?.forecast?.forecast || [];
   const { data: aiSummary = "", isLoading: isAiLoading } = useAI(
     selectedCrop.id,

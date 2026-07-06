@@ -74,7 +74,7 @@ export const Lightning = () => {
 
   if (isResolving || isLoading) {
     return (
-      <div className="w-full h-80 min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
+      <div className="w-full h-90 lg:h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
         {/* HEADER SECTION */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
           <Zap className="size-4.5" />
@@ -92,7 +92,7 @@ export const Lightning = () => {
 
   if (isError || !lightning || !location || !mappedLightning) {
     return (
-      <div className="w-full h-80 min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
+      <div className="w-full h-90 lg:h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
         {/* HEADER SECTION */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
           <Zap className="size-4.5" />
@@ -107,7 +107,7 @@ export const Lightning = () => {
   }
 
   return (
-    <div className="w-full h-80 relative rounded-xl overflow-hidden border border-border bg-muted/20">
+    <div className="w-full h-90 lg:h-full relative rounded-xl overflow-hidden border border-border bg-muted/20">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         {!isOpen && (
           <Map

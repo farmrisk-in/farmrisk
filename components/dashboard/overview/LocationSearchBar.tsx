@@ -419,7 +419,7 @@ export function LocationSearchBar() {
               title={locTrans.selectMapBtn || "Verify Farm Coordinates"}
               dialog={true}
               bottomLeftBadge={
-                <Badge className="rounded-sm" variant="outline">
+                <Badge className="rounded-sm">
                   <span className="inline-block size-2 rounded-full bg-emerald-500 animate-pulse mr-2" />
                   {formatCoordinates(center.lat, center.lng)}
                 </Badge>
@@ -428,7 +428,7 @@ export function LocationSearchBar() {
                 <Button
                   onClick={handleConfirmCenterLocation}
                   disabled={isConfirmingLocation}
-                  className="bg-emerald-600 text-white hover:bg-emerald-500 font-medium tracking-wide shadow-md transition-all active:scale-98 cursor-pointer border border-emerald-500/30 h-10 px-4"
+                  className="bg-emerald-600 text-white hover:bg-emerald-500 font-medium tracking-wide shadow-md transition-all active:scale-98 cursor-pointer border border-emerald-500/30 h-10 px-4 pointer-events-auto"
                 >
                   {isConfirmingLocation ? (
                     <Loader2 className="size-4 animate-spin mr-2" />

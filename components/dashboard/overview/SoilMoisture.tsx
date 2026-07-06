@@ -1,104 +1,116 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   LineChart,
   Line,
   XAxis,
+  YAxis,
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  CartesianGrid,
 } from "recharts";
 
 import { useLocationContext } from "@/providers/LocationProvider";
-
 import { useLanguage } from "@/hooks/useLanguage";
-import { LoaderCircle } from "lucide-react";
+import { useForecast } from "@/hooks/useForecast";
+import {
+  LoaderCircle,
+  CloudOff,
+  Settings,
+  Droplets,
+  Percent,
+  CloudRain,
+  Wind,
+  Sun,
+  Waves,
+  Download,
+} from "lucide-react";
+import { TranslationType } from "@/constants/content";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 
-// --- TYPES ---
-interface SoilMoistureData {
-  date: string;
-  pcp: number;
-  tmax: number;
-  tmin: number;
-  w: number;
-  sm_percentile: number;
-  is_forecast: number;
-}
-
-interface SoilMoistureResponse {
-  metadata: {
-    lat: number;
-    lon: number;
-    WMAX: number;
-    Bm: number;
-    spinup_years_used: number;
+interface CustomDotProps {
+  cx?: number;
+  cy?: number;
+  payload?: {
+    sm_percentile: number;
   };
-  data: SoilMoistureData[];
+  isDark?: boolean;
 }
 
 // --- COLOR & CATEGORY MAPPING ---
-// Maps strictly to the "Expert View" table
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getCategoryAndColor = (pct: number, t?: any) => {
+// Maps strictly to the "Expert View" table, utilizing Tailwind CSS variable values
+const getCategoryAndColor = (pct: number, t?: TranslationType) => {
   if (pct > 98)
     return {
       label: t?.dashboard?.smExceptionalWet || "Exceptional Wet",
-      color: "#0284c7",
+      color: "var(--color-sky-600)",
     };
   if (pct > 95)
     return {
       label: t?.dashboard?.smExtremeWet || "Extreme Wet",
-      color: "#0ea5e9",
+      color: "var(--color-sky-500)",
     };
   if (pct > 90)
     return {
       label: t?.dashboard?.smSevereWet || "Severe Wet",
-      color: "#7dd3fc",
+      color: "var(--color-sky-300)",
     };
   if (pct > 80)
     return {
       label: t?.dashboard?.smModerateWet || "Moderate Wet",
-      color: "#bae6fd",
+      color: "var(--color-sky-200)",
     };
   if (pct > 70)
     return {
       label: t?.dashboard?.smAbnormallyWet || "Abnormally Wet",
-      color: "#e0f2fe",
+      color: "var(--color-sky-100)",
     };
   if (pct > 30)
-    return { label: t?.dashboard?.smNormal || "Normal", color: "#cbd5e1" };
+    return {
+      label: t?.dashboard?.smNormal || "Normal",
+      color: "var(--muted-foreground)",
+    };
   if (pct > 20)
     return {
       label: t?.dashboard?.smAbnormallyDry || "Abnormally Dry",
-      color: "#fed7aa",
+      color: "var(--color-orange-200)",
     };
   if (pct > 10)
     return {
       label: t?.dashboard?.smModerateDry || "Moderate Dry",
-      color: "#fdba74",
+      color: "var(--color-orange-300)",
     };
   if (pct > 5)
     return {
       label: t?.dashboard?.smExtremeDry || "Extreme Dry",
-      color: "#f97316",
+      color: "var(--color-orange-500)",
     };
   if (pct > 2)
     return {
       label: t?.dashboard?.smSevereDry || "Severe Dry",
-      color: "#ea580c",
+      color: "var(--color-orange-600)",
     };
   return {
     label: t?.dashboard?.smExceptionalDry || "Exceptional Dry",
-    color: "#9a3412",
+    color: "var(--color-orange-800)",
   };
 };
 
 // --- CUSTOM DOT ---
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomDot = (props: any) => {
-  const { cx, cy, payload, isDark } = props;
-  const { color } = getCategoryAndColor(payload.sm_percentile); // Color doesn't need translation
+const CustomDot = (props: CustomDotProps) => {
+  const { cx, cy, payload } = props;
+  if (!cx || !cy || !payload) return null;
+  const { color } = getCategoryAndColor(payload.sm_percentile);
 
   return (
     <circle
@@ -106,120 +118,153 @@ const CustomDot = (props: any) => {
       cy={cy}
       r={5}
       fill={color}
-      stroke={isDark ? "hsl(var(--card))" : "#fff"}
-      strokeWidth={1.5}
+      stroke={"var(--foreground)"}
+      strokeWidth={1}
     />
   );
 };
 
 // --- CUSTOM TOOLTIP ---
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload, isDark, t }: any) => {
+interface CustomTooltipPayloadItem {
+  dataKey: string;
+  value: number;
+  stroke: string;
+  payload: {
+    date: string;
+    sm_percentile: number;
+    w: number;
+    P_obs: number;
+    PE: number;
+    E: number;
+    R: number;
+    G: number;
+  };
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: CustomTooltipPayloadItem[];
+  t: TranslationType;
+}
+
+const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const { label: category } = getCategoryAndColor(data.sm_percentile, t);
     const dateStr = new Date(data.date)
       .toLocaleDateString("en-GB", { day: "numeric", month: "short" })
       .toUpperCase();
 
     return (
-      <div
-        className="bg-popover border border-border rounded-md px-4 py-3 shadow-md min-w-35"
-        style={{
-          backgroundColor: isDark ? "#1e293b" : undefined,
-          borderColor: isDark ? "rgba(255,255,255,0.2)" : undefined,
-        }}
-      >
-        <div className="font-bold text-[0.95rem] text-popover-foreground">
+      <div className="bg-popover border border-border rounded-md px-3.5 py-2.5 shadow-md min-w-40 space-y-1.5 text-xs text-popover-foreground">
+        <div className="font-bold text-muted-foreground border-b pb-1">
           {dateStr}
         </div>
-        <div
-          style={{ color: isDark ? "#cbd5e1" : undefined }}
-          className="text-muted-foreground text-[0.85rem] mb-3"
-        >
-          {category}
-        </div>
-        <div className="font-bold text-[1.1rem] text-popover-foreground">
-          {data.sm_percentile.toFixed(2)}%
-        </div>
-        <div
-          style={{ color: isDark ? "#cbd5e1" : undefined }}
-          className="text-foreground text-[0.9rem] font-medium"
-        >
-          {t?.dashboard?.smPercentiles || "Percentiles"}
-        </div>
+        {payload.map((entry) => {
+          const key = entry.dataKey as string;
+          const value = entry.value as number;
+          const color = entry.stroke || "currentColor";
+
+          let name = key;
+          let formattedValue =
+            typeof value === "number" ? value.toFixed(1) : value;
+
+          if (key === "sm_percentile") {
+            const { label: category } = getCategoryAndColor(value, t);
+            name = `Soil Percentile (${category})`;
+            formattedValue = `${value.toFixed(1)}%`;
+          } else if (key === "w") {
+            name = "Soil Volume";
+            formattedValue = `${value.toFixed(1)} mm`;
+          } else if (key === "P_obs") {
+            name = "Precipitation";
+            formattedValue = `${value.toFixed(1)} mm`;
+          } else if (key === "PE") {
+            name = "Potential Evap";
+            formattedValue = `${value.toFixed(1)} mm`;
+          } else if (key === "E") {
+            name = "Actual Evap";
+            formattedValue = `${value.toFixed(1)} mm`;
+          } else if (key === "R") {
+            name = "Runoff";
+            formattedValue = `${value.toFixed(1)} mm`;
+          } else if (key === "G") {
+            name = "Deep Drainage";
+            formattedValue = `${value.toFixed(1)} mm`;
+          }
+
+          return (
+            <div key={key} className="flex justify-between items-center gap-4">
+              <span className="flex items-center gap-1.5 font-medium">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                {name}
+              </span>
+              <span className="font-bold">{formattedValue}</span>
+            </div>
+          );
+        })}
       </div>
     );
   }
   return null;
 };
 
-export default function SoilMoisture() {
-  const { location } = useLocationContext();
-  const { t } = useLanguage();
+const SERIES_COLORS: Record<string, string> = {
+  sm_percentile: "var(--color-emerald-500)",
+  w: "var(--color-sky-500)",
+  P_obs: "var(--color-blue-500)",
+  PE: "var(--color-amber-500)",
+  E: "var(--color-purple-500)",
+  R: "var(--color-rose-500)",
+  G: "var(--color-teal-500)",
+};
 
+const SERIES_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  sm_percentile: Percent,
+  w: Droplets,
+  P_obs: CloudRain,
+  PE: Wind,
+  E: Sun,
+  R: Waves,
+  G: Download,
+};
+
+export default function SoilMoisture() {
+  const { location, isResolving } = useLocationContext();
+  const { t } = useLanguage();
+  const [charts, setCharts] = useState({
+    P_obs: false,
+    PE: false,
+    w: false,
+    E: false,
+    R: false,
+    G: false,
+    sm_percentile: true,
+  });
   const [isDark] = useState(false);
 
-  const [data, setData] = useState<SoilMoistureResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!location || !location.lat || !location.lng) return;
-
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    const fetchSoilMoisture = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `/api/soil-moisture?lat=${location.lat}&lon=${location.lng}&days=16`,
-          { signal },
-        );
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(errText || "Failed to fetch soil moisture data.");
-        }
-
-        const result: SoilMoistureResponse = await response.json();
-        setData(result);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (err: any) {
-        if (err.name === "AbortError") {
-        } else {
-          console.error("Soil moisture fetch error:", err);
-          setError(err.message || "An unexpected error occurred.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSoilMoisture();
-
-    return () => {
-      controller.abort();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location?.lat, location?.lng]);
+  const { data: report, isLoading, isError } = useForecast();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const soilMoistureData = report?.soil_moisture?.soil_moisture || [];
 
   const chartData = useMemo(() => {
-    if (!data || !data.data) return [];
+    if (!soilMoistureData || soilMoistureData.length === 0) return [];
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 30);
 
-    return data.data.filter((d) => {
+    return soilMoistureData.filter((d) => {
       const dDate = new Date(d.date);
       return dDate >= thirtyDaysAgo;
     });
-  }, [data]);
+  }, [soilMoistureData]);
 
   const todayRecord = useMemo(() => {
     if (!chartData.length) return null;
@@ -231,6 +276,32 @@ export default function SoilMoisture() {
     );
   }, [chartData]);
 
+  const formatXAxis = (tickItem: string) => {
+    const date = new Date(tickItem);
+    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  };
+
+  const formatKeyLabel = (key: string) => {
+    switch (key) {
+      case "sm_percentile":
+        return "Soil Percentile (%)";
+      case "w":
+        return "Soil Volume (mm)";
+      case "P_obs":
+        return "Precipitation (mm)";
+      case "PE":
+        return "Potential Evap (mm)";
+      case "E":
+        return "Actual Evap (mm)";
+      case "R":
+        return "Runoff (mm)";
+      case "G":
+        return "Deep Drainage (mm)";
+      default:
+        return key;
+    }
+  };
+
   if (!location || !location.lat || !location.lng) {
     return (
       <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex items-center justify-center min-h-75">
@@ -241,76 +312,72 @@ export default function SoilMoisture() {
     );
   }
 
-  if (loading) {
+  const renderInnerContent = () => {
+    if (isResolving || isLoading) {
+      return (
+        <div className="h-65 w-full flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/5 rounded-lg border border-dashed border-border mt-2">
+          <LoaderCircle className="w-8 h-8 animate-spin text-emerald-500" />
+          <span className="text-xs font-medium">
+            Analyzing soil hydrology...
+          </span>
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="h-65 w-full flex flex-col justify-center items-center text-center gap-2 bg-destructive/5 rounded-lg border border-dashed border-destructive/20 mt-2 p-4 animate-in fade-in duration-300">
+          <CloudOff className="size-8 text-destructive/60 mb-1 animate-pulse" />
+          <h4 className="text-destructive font-semibold text-sm">
+            Analysis Failed
+          </h4>
+          <p className="text-xs text-muted-foreground max-w-64">
+            Failed to retrieve soil moisture data. Please select another
+            location or try again later.
+          </p>
+        </div>
+      );
+    }
+
+    if (chartData.length === 0) {
+      return (
+        <div className="h-65 w-full flex items-center justify-center text-muted-foreground text-xs mt-2 bg-muted/5 rounded-lg border border-dashed border-border">
+          No soil moisture data available.
+        </div>
+      );
+    }
+
     return (
-      <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex flex-col items-center justify-center min-h-75 gap-2 text-muted-foreground">
-        <LoaderCircle className="w-8 h-8 animate-spin text-emerald-500" />
-        <span className="text-xs font-medium">Analyzing soil hydrology...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="w-full bg-card border border-l-4 border-l-red-500 border-border rounded-xl p-4 shadow-sm">
-        <h3 className="text-red-500 font-semibold mb-2">Analysis Failed</h3>
-        <p className="text-muted-foreground text-sm">{error}</p>
-      </div>
-    );
-  }
-
-  if (chartData.length === 0) {
-    return null;
-  }
-
-  const formatXAxis = (tickItem: string) => {
-    const date = new Date(tickItem);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-  };
-
-  // Use translations if available, fallback to hardcoded string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const componentTitle = (t.dashboard as any)?.soilMoisture || "SOIL MOISTURE";
-
-  const gridColor = isDark ? "rgba(255,255,255,0.2)" : "#e2e8f0";
-  const trendColor = isDark ? "#ffffff" : "#0f172a";
-  const todayColor = isDark ? "#ffffff" : "#000";
-  const textColor = isDark ? "#cbd5e1" : "#64748b";
-
-  return (
-    <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm select-none flex flex-col">
-      <div
-        style={{ color: isDark ? textColor : undefined }}
-        className="text-xs font-bold text-muted-foreground uppercase tracking-wider pl-1.5 mb-4"
-      >
-        {componentTitle}
-      </div>
-
       <div className="h-65 w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             key={isDark ? "dark" : "light"}
             data={chartData}
-            margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+            margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
           >
-            <ReferenceLine y={50} stroke={gridColor} strokeDasharray="3 3" />
-            <ReferenceLine y={25} stroke={gridColor} strokeDasharray="3 3" />
-            <ReferenceLine y={75} stroke={gridColor} strokeDasharray="3 3" />
+            <YAxis hide={true} domain={[0, 100]} scale={"symlog"} />
+            <CartesianGrid
+              stroke={"var(--muted-foreground)"}
+              strokeDasharray="3 3"
+              vertical={true}
+              horizontal={true}
+              opacity={0.35}
+            />
 
             <XAxis
               dataKey="date"
               tickFormatter={formatXAxis}
               axisLine={false}
               tickLine={!isDark}
-              tick={{ fill: textColor, fontSize: 12 }}
+              tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
               dy={10}
               minTickGap={50}
             />
 
             <Tooltip
-              content={<CustomTooltip isDark={isDark} t={t} />}
+              content={<CustomTooltip t={t} />}
               cursor={{
-                stroke: isDark ? "#ffffff" : "#cbd5e1",
+                stroke: "var(--muted-foreground)",
                 strokeWidth: 1,
                 strokeDasharray: "4 4",
               }}
@@ -319,59 +386,88 @@ export default function SoilMoisture() {
             {todayRecord && (
               <ReferenceLine
                 x={todayRecord.date}
-                stroke={todayColor}
+                stroke={"var(--muted-foreground)"}
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 className={isDark ? "stroke-white text-white" : ""}
-                style={{ stroke: todayColor }}
+                style={{ stroke: "var(--muted-foreground)" }}
               />
             )}
-
-            <Line
-              type="linear"
-              dataKey="sm_percentile"
-              stroke={trendColor}
-              strokeWidth={2}
-              strokeDasharray="6 6"
-              dot={<CustomDot isDark={isDark} />}
-              activeDot={{ r: 7, strokeWidth: 0 }}
-              isAnimationActive={false}
-              className={isDark ? "stroke-white text-white" : ""}
-              style={{ stroke: trendColor }}
-            />
+            {Object.keys(charts)
+              .filter((key) => charts[key as keyof typeof charts])
+              .map((key) => {
+                const color = SERIES_COLORS[key] || "var(--foreground)";
+                return (
+                  <Line
+                    key={key}
+                    type="linear"
+                    dataKey={key}
+                    stroke={color}
+                    strokeWidth={2}
+                    strokeDasharray={
+                      key === "sm_percentile" ? "6 6" : undefined
+                    }
+                    dot={key === "sm_percentile" ? <CustomDot /> : false}
+                    activeDot={{ r: 5, strokeWidth: 0 }}
+                    isAnimationActive={false}
+                    className={isDark ? "stroke-white text-white" : ""}
+                    style={{ stroke: color }}
+                  />
+                );
+              })}
           </LineChart>
         </ResponsiveContainer>
       </div>
+    );
+  };
 
-      <div className="flex gap-6 items-center mt-6 pl-2">
-        <div
-          style={{ color: isDark ? textColor : undefined }}
-          className="flex items-center gap-2 text-[0.75rem] text-muted-foreground font-medium"
-        >
-          <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-          <span>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {(t.dashboard as any)?.smPercentileLegend ||
-              "Percentile (colour = category)"}
-          </span>
+  return (
+    <div className="w-full bg-card border border-border rounded-xl p-5 pb-2 shadow-sm select-none flex flex-col">
+      {/* SECTION SUBTITLE BAR */}
+      <div className="flex items-center justify-between text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2 relative">
+        <div className="flex items-center gap-2">
+          <Droplets className="size-4.5" />
+          {t.dashboard?.soilMoisture || "SOIL MOISTURE"}
         </div>
-        <div
-          style={{ color: isDark ? textColor : undefined }}
-          className="flex items-center gap-2 text-[0.75rem] text-muted-foreground font-medium"
-        >
-          <div className="w-5 h-[1.5px] bg-foreground border border-dashed border-muted-foreground"></div>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <span>{(t.dashboard as any)?.smTrend || "Trend"}</span>
-        </div>
-        <div
-          style={{ color: isDark ? textColor : undefined }}
-          className="flex items-center gap-2 text-[0.75rem] text-muted-foreground font-medium border-l border-border pl-6"
-        >
-          <div className="w-[1.5px] h-3 bg-foreground border border-dashed border-muted-foreground"></div>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <span>{(t.dashboard as any)?.today || "Today"}</span>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant={"outline"}
+              size={"icon"}
+              className="h-7 w-7 rounded-md cursor-pointer hover:bg-muted"
+            >
+              <Settings className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56 z-9999" align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Chart Series Settings</DropdownMenuLabel>
+              {Object.keys(charts).map((key) => {
+                const Icon = SERIES_ICONS[key];
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={key}
+                    checked={charts[key as keyof typeof charts]}
+                    onCheckedChange={(checked) =>
+                      setCharts({ ...charts, [key]: checked })
+                    }
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    <span className="flex items-center gap-2">
+                      {Icon && (
+                        <Icon className="size-4.5 text-muted-foreground shrink-0" />
+                      )}
+                      {formatKeyLabel(key)}
+                    </span>
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      {renderInnerContent()}
     </div>
   );
 }
