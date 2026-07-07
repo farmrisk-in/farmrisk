@@ -8,7 +8,7 @@ export interface AIAdvisoryRequestPayload {
   cropId: string;
   calendarData: CalendarAPIResponse;
   weatherData: OpenMeteoResponse;
-  forecastData: VillageReportAPIResponse;
+  forecastData?: VillageReportAPIResponse;
   language: string;
 }
 

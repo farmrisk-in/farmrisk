@@ -19,7 +19,7 @@ export function useAI(cropId: string, language: string) {
   const query = useQuery<AIAPIResponse, Error>({
     queryKey: ["ai", location.lat, location.lng, cropId, language],
     queryFn: () => {
-      if (!calendarData || !weatherData || !forecastData) {
+      if (!calendarData || !weatherData) {
         throw new Error("Context data not available for AI generation");
       }
       return getAIAdvisory({
@@ -27,7 +27,7 @@ export function useAI(cropId: string, language: string) {
         cropId,
         calendarData,
         weatherData,
-        forecastData,
+        forecastData: forecastData ?? undefined,
         language,
       });
     },
@@ -38,8 +38,7 @@ export function useAI(cropId: string, language: string) {
       !!cropId &&
       !!language &&
       !!calendarData &&
-      !!weatherData &&
-      !!forecastData,
+      !!weatherData,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });
