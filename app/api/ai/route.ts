@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const response = await fetch(modelUrl, {
+    const response = await fetch(`${modelUrl}/api/advisory`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,23 +31,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const contentType = response.headers.get("content-type") || "";
-    let advisoryText = "";
-
-    if (contentType.includes("application/json")) {
-      const jsonRes = await response.json();
-      advisoryText =
-        jsonRes.advisory_summary ||
-        jsonRes.advisory ||
-        jsonRes.text ||
-        JSON.stringify(jsonRes);
-    } else {
-      advisoryText = await response.text();
-    }
-
+    const data = await response.json();
     return NextResponse.json({
       success: true,
-      advisory_summary: advisoryText,
+      advisory_summary: data,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

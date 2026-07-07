@@ -16,6 +16,7 @@ import Weather from "./Weather";
 import CropCalender from "./CropCalender";
 import SoilMoisture from "./SoilMoisture";
 import { GENERAL_CROP } from "@/types/crops";
+import Greeting from "./Greeting";
 
 export interface CropOption {
   id: string;
@@ -43,6 +44,7 @@ const Overview = () => {
 
   return (
     <div className="flex flex-col gap-4 w-full">
+      <Greeting />
       <LocationSearchBar />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
