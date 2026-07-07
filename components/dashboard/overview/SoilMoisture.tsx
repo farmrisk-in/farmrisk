@@ -16,6 +16,7 @@ import {
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useForecast } from "@/hooks/useForecast";
+import { usePro } from "@/hooks/usePro";
 import {
   LoaderCircle,
   CloudOff,
@@ -241,6 +242,62 @@ const SERIES_ICONS: Record<
 export default function SoilMoisture() {
   const { location, isResolving } = useLocationContext();
   const { t } = useLanguage();
+  const { isPro } = usePro();
+  const [daysBack, setDaysBack] = useState<string | null>(null);
+  const [irrigationMethod, setIrrigationMethod] = useState<string | null>(null);
+  const [questionsAnswered, setQuestionsAnswered] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("irrigation_questions_answered") === "true";
+    }
+    return false;
+  });
+
+  const handleSubmitQuestions = async () => {
+    // 2 - store these answers and route them to backend and send to the forecast model
+    // (since backend isn't ready, just do till possible and comment)
+    const payload = {
+      daysBack,
+      irrigationMethod,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("Submitting irrigation answers to backend:", payload);
+
+    /*
+    // TODO: Send these answers to the backend API when it is ready.
+    // Example implementation:
+    try {
+      const response = await fetch("/api/forecast/irrigation-details", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save irrigation answers");
+      }
+      const data = await response.json();
+      console.log("Backend response:", data);
+    } catch (error) {
+      console.error("Error routing answers to backend:", error);
+    }
+    */
+
+    setQuestionsAnswered(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("irrigation_questions_answered", "true");
+    }
+  };
+
+  const handleSkipQuestions = () => {
+    console.log("User skipped irrigation questions.");
+    setQuestionsAnswered(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("irrigation_questions_answered", "true");
+    }
+  };
+
   const [charts, setCharts] = useState({
     P_obs: false,
     PE: false,
@@ -321,8 +378,10 @@ export default function SoilMoisture() {
   const trackRef = useRef<HTMLDivElement>(null);
   const isThumbDragging = useRef(false);
 
-  const thumbWidthPct = totalPoints > 0 ? Math.min(100, (VISIBLE_POINTS / totalPoints) * 100) : 100;
-  const thumbLeftPct = maxOffset > 0 ? (resolvedOffset / maxOffset) * (100 - thumbWidthPct) : 0;
+  const thumbWidthPct =
+    totalPoints > 0 ? Math.min(100, (VISIBLE_POINTS / totalPoints) * 100) : 100;
+  const thumbLeftPct =
+    maxOffset > 0 ? (resolvedOffset / maxOffset) * (100 - thumbWidthPct) : 0;
 
   const handleTrackPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -331,7 +390,9 @@ export default function SoilMoisture() {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       const rect = trackRef.current.getBoundingClientRect();
       const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      const newOffset = Math.round(
+        (clickPct / (100 - thumbWidthPct)) * maxOffset,
+      );
       setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
     },
     [totalPoints, maxOffset, thumbWidthPct],
@@ -342,7 +403,9 @@ export default function SoilMoisture() {
       if (!isThumbDragging.current || !trackRef.current) return;
       const rect = trackRef.current.getBoundingClientRect();
       const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      const newOffset = Math.round(
+        (clickPct / (100 - thumbWidthPct)) * maxOffset,
+      );
       setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
     },
     [maxOffset, thumbWidthPct],
@@ -399,6 +462,95 @@ export default function SoilMoisture() {
   }
 
   const renderInnerContent = () => {
+    // If the user is Pro and has not answered/skipped the questions, show the questions UI
+    if (isPro && !questionsAnswered) {
+      return (
+        <div className="w-full mt-3 flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="text-xs text-muted-foreground font-medium mb-1">
+            Provide recent irrigation details to customize and improve the soil
+            hydrology forecast model.
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Question 1: How many days back did the user irrigate? */}
+            <div className="flex flex-col space-y-3 p-4 bg-muted/20 border border-border rounded-xl">
+              <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                How many days back did you last irrigate?
+              </h4>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setDaysBack("1-7")}
+                  className={`flex flex-col items-center justify-center py-3.5 px-3 rounded-lg border text-center transition-all duration-200 cursor-pointer ${
+                    daysBack === "1-7"
+                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shadow-sm"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-sm">1 to 7 days</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDaysBack(">7")}
+                  className={`flex flex-col items-center justify-center py-3.5 px-3 rounded-lg border text-center transition-all duration-200 cursor-pointer ${
+                    daysBack === ">7"
+                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shadow-sm"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-sm">More than 7 days</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Question 2: Which method was used for irrigation? */}
+            <div className="flex flex-col space-y-3 p-4 bg-muted/20 border border-border rounded-xl">
+              <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Which method was used for irrigation?
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                {["Drip", "Sprinkler", "Flooding"].map((method) => (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => setIrrigationMethod(method.toLowerCase())}
+                    className={`flex flex-col items-center justify-center py-3.5 px-2 rounded-lg border text-center transition-all duration-200 cursor-pointer ${
+                      irrigationMethod === method.toLowerCase()
+                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium shadow-sm"
+                        : "border-border bg-card text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    }`}
+                  >
+                    <span className="text-sm">{method}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center justify-between border-t border-border pt-3 mt-1">
+            <button
+              type="button"
+              onClick={handleSkipQuestions}
+              className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors px-3 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+            >
+              Skip for now
+            </button>
+            <Button
+              type="button"
+              onClick={handleSubmitQuestions}
+              disabled={!daysBack || !irrigationMethod}
+              className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Submit & Forecast
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     if (isResolving || isLoading) {
       return (
         <div className="h-65 w-full flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/5 rounded-lg border border-dashed border-border mt-2">
@@ -438,10 +590,7 @@ export default function SoilMoisture() {
     return (
       <div className="w-full mt-2 flex flex-col">
         {/* Chart area with wheel scroll */}
-        <div
-          className="h-65 w-full"
-          onWheel={handleWheel}
-        >
+        <div className="h-65 w-full" onWheel={handleWheel}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               key={isDark ? "dark" : "light"}
