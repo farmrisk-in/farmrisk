@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const response = await fetch(`${modelUrl}/api/advisory`, {
+    const response = await fetch(modelUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -34,11 +34,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json({
       success: true,
-      advisory_summary:
-        data.advisory_summary ??
-        data.advisory ??
-        data.text ??
-        JSON.stringify(data),
+      advisory_summary: data.advisory_summary ?? data.advisory ?? data.text ?? JSON.stringify(data),
       translated: data.translated ?? false,
       language: data.language ?? "en",
     });
