@@ -14,10 +14,15 @@ export function useAI(cropId: string, language: string) {
 
   const calendarData = useCalendar(cropId).data;
   const weatherData = useWeather().data;
-  const forecastData = useForecast().data;
+  const { data: forecastData, isLoading: isForecastLoading } = useForecast();
+
+  // Create a stable fingerprint of the forecast data to ensure cache uniqueness
+  const forecastHash = forecastData?.forecast?.success
+    ? forecastData.forecast.forecast.map((d) => `${d.date}:${d.pcp_corrected}`).join(",")
+    : "none";
 
   const query = useQuery<AIAPIResponse, Error>({
-    queryKey: ["ai", location.lat, location.lng, cropId, language],
+    queryKey: ["ai", location.lat, location.lng, cropId, language, forecastHash],
     queryFn: () => {
       if (!calendarData || !weatherData) {
         throw new Error("Context data not available for AI generation");
@@ -33,6 +38,7 @@ export function useAI(cropId: string, language: string) {
     },
     enabled:
       !isResolving &&
+      !isForecastLoading &&
       !!location.lat &&
       !!location.lng &&
       !!cropId &&

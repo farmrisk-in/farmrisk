@@ -14,6 +14,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { useCrop } from "@/hooks/useCrop";
 import { useAI } from "@/hooks/useAI";
+import { useForecast } from "@/hooks/useForecast";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import { GENERAL_CROP } from "@/types/crops";
@@ -59,6 +60,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
   const weatherData = useWeather();
 
   const { isLoading: isWeatherLoading } = weatherData;
+  const { isLoading: isForecastLoading } = useForecast();
   const { crops } = useCrop();
 
   const lastLocationRef = useRef({ lat: location.lat, lng: location.lng });
@@ -154,7 +156,7 @@ const AIOverview = ({ selectedCrop, setSelectedCrop }: AIOverviewProps) => {
 
       {/* CORE CONTENT SLOT: Scrollable container with simulated generation skeleton loaders */}
       <div className="overflow-y-auto flex-1 min-h-0 max-h-full flex flex-col justify-start">
-        {isGenerating || isWeatherLoading || isAiLoading ? (
+        {isGenerating || isWeatherLoading || isAiLoading || isForecastLoading ? (
           <div className="flex flex-col items-center justify-center gap-4 w-full h-full py-6">
             <LoaderFive text={"Generating Overview"} />
           </div>
