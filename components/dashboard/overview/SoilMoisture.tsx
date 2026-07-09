@@ -3,13 +3,15 @@
 import React, { useMemo, useState, useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
+  ReferenceArea,
   CartesianGrid,
 } from "recharts";
 
@@ -443,12 +445,32 @@ export default function SoilMoisture() {
           onWheel={handleWheel}
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
+            <ComposedChart
               key={isDark ? "dark" : "light"}
               data={visibleData}
               margin={{ top: 5, right: 10, left: 10, bottom: 0 }}
             >
-              <YAxis hide={true} domain={[0, 100]} scale={"symlog"} />
+              <YAxis
+                hide={false}
+                domain={[0, 100]}
+                scale="linear"
+                axisLine={false}
+                tickLine={!isDark}
+                tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                width={30}
+              />
+              <ReferenceArea
+                y1={70}
+                y2={100}
+                fill="var(--color-sky-500)"
+                fillOpacity={0.06}
+              />
+              <ReferenceArea
+                y1={0}
+                y2={30}
+                fill="var(--color-orange-500)"
+                fillOpacity={0.06}
+              />
               <CartesianGrid
                 stroke={"var(--muted-foreground)"}
                 strokeDasharray="3 3"
@@ -490,6 +512,19 @@ export default function SoilMoisture() {
                 .filter((key) => charts[key as keyof typeof charts])
                 .map((key) => {
                   const color = SERIES_COLORS[key] || "var(--foreground)";
+                  if (key === "P_obs") {
+                    return (
+                      <Bar
+                        key={key}
+                        dataKey={key}
+                        fill={color}
+                        isAnimationActive={false}
+                        style={{ fill: color }}
+                        barSize={8}
+                        radius={[2, 2, 0, 0]}
+                      />
+                    );
+                  }
                   return (
                     <Line
                       key={key}
@@ -508,7 +543,7 @@ export default function SoilMoisture() {
                     />
                   );
                 })}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
 

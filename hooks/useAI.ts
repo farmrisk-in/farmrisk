@@ -48,14 +48,17 @@ export function useAI(cropId: string, language: string) {
       window.dispatchEvent(new CustomEvent("farmrisk-ai-loading"));
     } else if (query.data?.advisory_summary) {
       try {
-        localStorage.setItem("farmrisk-ai-advisory", query.data.advisory_summary);
+        localStorage.setItem(
+          "farmrisk-ai-advisory",
+          query.data.advisory_summary,
+        );
       } catch (e) {
         console.error("Failed to save AI advisory to localStorage", e);
       }
       window.dispatchEvent(
         new CustomEvent("farmrisk-ai-loaded", {
           detail: query.data.advisory_summary,
-        })
+        }),
       );
     }
   }, [query.data, query.isFetching]);

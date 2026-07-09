@@ -47,7 +47,7 @@ export const Lightning = () => {
         };
       case "Moderate":
         return {
-          color: "##FF9C04",
+          color: "#FF9C04",
           advisory: t.dashboard?.advModerate || "Moderate risk of lightning.",
           zoom: 13,
         };
@@ -105,6 +105,15 @@ export const Lightning = () => {
       </div>
     );
   }
+
+  console.log("Lightning component rendered with data:", {
+    lightning,
+    location,
+    mappedLightning,
+    color,
+    advisory,
+    zoom,
+  });
 
   return (
     <div className="w-full h-90 lg:h-full relative rounded-xl overflow-hidden border border-border bg-muted/20">
