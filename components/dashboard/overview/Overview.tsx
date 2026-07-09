@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import AIOverview from "./AIOverview";
 import { LocationSearchBar } from "./LocationSearchBar";
 import Forcast from "./Forecast";
@@ -17,6 +17,7 @@ import CropCalender from "./CropCalender";
 import SoilMoisture from "./SoilMoisture";
 import { GENERAL_CROP } from "@/types/crops";
 import Greeting from "./Greeting";
+import { useLocationContext } from "@/providers/LocationProvider";
 
 export interface CropOption {
   id: string;
@@ -27,6 +28,9 @@ export interface CropOption {
 const Overview = () => {
   const [selectedCrop, setSelectedCropState] =
     useState<CropOption>(GENERAL_CROP);
+
+  const { location } = useLocationContext();
+  const lastLocationRef = useRef({ lat: location.lat, lng: location.lng });
 
   const setSelectedCrop = (crop: CropOption) => {
     setSelectedCropState(crop);
@@ -42,9 +46,19 @@ const Overview = () => {
     }
   };
 
+  useEffect(() => {
+    if (
+      lastLocationRef.current.lat !== location.lat ||
+      lastLocationRef.current.lng !== location.lng
+    ) {
+      lastLocationRef.current = { lat: location.lat, lng: location.lng };
+      setSelectedCrop(GENERAL_CROP);
+    }
+  }, [location.lat, location.lng]);
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      <Greeting />
+      <Greeting selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
       <LocationSearchBar />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
@@ -52,10 +66,7 @@ const Overview = () => {
           <Weather />
         </div>
         <div className="col-span-1 lg:col-span-2 flex">
-          <AIOverview
-            selectedCrop={selectedCrop}
-            setSelectedCrop={setSelectedCrop}
-          />
+          <AIOverview selectedCrop={selectedCrop} />
         </div>
       </div>
       <CropCalender selectedCrop={selectedCrop} />
