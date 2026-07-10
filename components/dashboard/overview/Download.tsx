@@ -157,14 +157,18 @@ const Download = ({ className }: { className?: string }) => {
       if (!canvas) return;
 
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      
+      // Calculate height in mm to match the canvas aspect ratio dynamically
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: "a4",
+        format: [imgWidth, imgHeight],
       });
 
-      // A4 physical dimensions in millimeters are 210mm x 297mm
-      pdf.addImage(imgData, "JPEG", 0, 0, 210, 297);
+      pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
       pdf.save("FarmRisk_Advisory_Report.pdf");
     } catch (error) {
       console.error("Failed to generate PDF", error);
@@ -220,7 +224,7 @@ const Download = ({ className }: { className?: string }) => {
         <div
           ref={printRef}
           className="relative flex flex-col bg-white"
-          style={{ width: "794px", height: "1123px" }} // Standard 96 DPI A4 Pixel Grid
+          style={{ width: "794px", minHeight: "1123px" }} // Standard 96 DPI A4 Pixel Grid
         >
           <DownloadTemplate
             location={location}

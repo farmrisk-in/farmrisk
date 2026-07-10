@@ -131,7 +131,7 @@ export default function DownloadTemplate({
   if (!mounted) {
     return (
       <div
-        style={{ width: PAGE_W, height: PAGE_H }}
+        style={{ width: PAGE_W, minHeight: PAGE_H }}
         className="bg-white text-slate-800 p-8 flex flex-col justify-center items-center font-sans"
       >
         <p className="text-[13px] font-semibold text-emerald-700">
@@ -562,7 +562,7 @@ export default function DownloadTemplate({
 
   return (
     <div
-      style={{ width: PAGE_W, height: PAGE_H }}
+      style={{ width: PAGE_W, minHeight: PAGE_H }}
       className="bg-white text-slate-800 p-8 flex flex-col justify-between font-sans border-t-10 border-emerald-700 box-border"
     >
       <div className="flex flex-col gap-4">
@@ -624,14 +624,14 @@ export default function DownloadTemplate({
         {/* 3. AI ADVISORY OVERVIEW */}
         <div
           style={{ width: CONTENT_W }}
-          className="bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex flex-col gap-2 h-32"
+          className="bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex flex-col gap-2 min-h-32"
         >
           <div className="flex items-center gap-1.5 text-emerald-800 text-[10px] font-black uppercase tracking-wider border-b border-emerald-300 pb-1.5">
             <Bot className="size-3.5" />
             <span>AI Agronomist Advisory Overview</span>
           </div>
-          <div className="flex-1 overflow-hidden">
-            <p className="text-[10px] text-slate-700 leading-normal line-clamp-5">
+          <div className="flex-1">
+            <p className="text-[10px] text-slate-700 leading-normal whitespace-pre-wrap">
               {formattedText}
             </p>
           </div>
