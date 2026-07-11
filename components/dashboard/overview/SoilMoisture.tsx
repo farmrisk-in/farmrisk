@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import {
   ComposedChart,
   Line,
@@ -18,6 +18,7 @@ import {
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useForecast } from "@/hooks/useForecast";
+import { usePro } from "@/hooks/usePro";
 import {
   LoaderCircle,
   CloudOff,
@@ -39,6 +40,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
 // --- CONFIGURABLE: number of data points visible at once ---
@@ -243,6 +245,37 @@ const SERIES_ICONS: Record<
 export default function SoilMoisture() {
   const { location, isResolving } = useLocationContext();
   const { t } = useLanguage();
+  const { isPro } = usePro();
+  const [daysBack, setDaysBack] = useState<string | null>(null);
+  const [questionsAnswered, setQuestionsAnswered] = useState(() => {
+    if (typeof window !== "undefined") {
+      return sessionStorage.getItem("irrigation_questions_answered") === "true";
+    }
+    return false;
+  });
+
+  const handleSubmitQuestions = async () => {
+    const payload = {
+      daysBack,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("Submitting irrigation answers to backend:", payload);
+
+    setQuestionsAnswered(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("irrigation_questions_answered", "true");
+    }
+  };
+
+  const handleSkipQuestions = () => {
+    console.log("User skipped irrigation questions.");
+    setQuestionsAnswered(true);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("irrigation_questions_answered", "true");
+    }
+  };
+
   const [charts, setCharts] = useState({
     P_obs: false,
     PE: false,
@@ -323,8 +356,10 @@ export default function SoilMoisture() {
   const trackRef = useRef<HTMLDivElement>(null);
   const isThumbDragging = useRef(false);
 
-  const thumbWidthPct = totalPoints > 0 ? Math.min(100, (VISIBLE_POINTS / totalPoints) * 100) : 100;
-  const thumbLeftPct = maxOffset > 0 ? (resolvedOffset / maxOffset) * (100 - thumbWidthPct) : 0;
+  const thumbWidthPct =
+    totalPoints > 0 ? Math.min(100, (VISIBLE_POINTS / totalPoints) * 100) : 100;
+  const thumbLeftPct =
+    maxOffset > 0 ? (resolvedOffset / maxOffset) * (100 - thumbWidthPct) : 0;
 
   const handleTrackPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -333,7 +368,9 @@ export default function SoilMoisture() {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       const rect = trackRef.current.getBoundingClientRect();
       const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      const newOffset = Math.round(
+        (clickPct / (100 - thumbWidthPct)) * maxOffset,
+      );
       setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
     },
     [totalPoints, maxOffset, thumbWidthPct],
@@ -344,7 +381,9 @@ export default function SoilMoisture() {
       if (!isThumbDragging.current || !trackRef.current) return;
       const rect = trackRef.current.getBoundingClientRect();
       const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
-      const newOffset = Math.round((clickPct / (100 - thumbWidthPct)) * maxOffset);
+      const newOffset = Math.round(
+        (clickPct / (100 - thumbWidthPct)) * maxOffset,
+      );
       setScrollOffset(Math.min(maxOffset, Math.max(0, newOffset)));
     },
     [maxOffset, thumbWidthPct],
@@ -401,6 +440,92 @@ export default function SoilMoisture() {
   }
 
   const renderInnerContent = () => {
+    // If the user is Pro and has not answered/skipped the questions, show the questions UI
+    if (isPro && !questionsAnswered) {
+      return (
+        <div className="w-full mt-3 flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="text-xs text-muted-foreground font-medium mb-1">
+            Provide recent irrigation details to customize and improve the soil
+            hydrology forecast model.
+          </div>
+
+          <div className="w-full max-w-md mx-auto flex flex-col space-y-3 p-4 bg-muted/20 border border-border rounded-xl">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              How long ago did you irrigate?
+            </h4>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center justify-between text-left font-normal text-muted-foreground hover:text-foreground cursor-pointer text-xs h-9 px-3 rounded-lg"
+                >
+                  <span
+                    className={
+                      daysBack
+                        ? "text-foreground font-medium"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {daysBack
+                      ? daysBack === "1-7"
+                        ? "1-7 days"
+                        : daysBack === "7-14"
+                          ? "7-14 days"
+                          : "Before that"
+                      : "Select time period..."}
+                  </span>
+                  <ChevronDown className="size-3.5 opacity-60 shrink-0" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="start"
+                className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
+              >
+                <DropdownMenuItem
+                  onClick={() => setDaysBack("1-7")}
+                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                >
+                  1-7 days
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setDaysBack("7-14")}
+                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                >
+                  7-14 days
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setDaysBack(">14")}
+                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                >
+                  Before that
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center justify-between border-t border-border pt-3 mt-1">
+            <button
+              type="button"
+              onClick={handleSkipQuestions}
+              className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors px-3 py-1.5 rounded-md hover:bg-muted cursor-pointer"
+            >
+              Skip for now
+            </button>
+            <Button
+              type="button"
+              onClick={handleSubmitQuestions}
+              disabled={!daysBack}
+              className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Submit & Forecast
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
     if (isResolving || isLoading) {
       return (
         <div className="h-65 w-full flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/5 rounded-lg border border-dashed border-border mt-2">
@@ -440,10 +565,7 @@ export default function SoilMoisture() {
     return (
       <div className="w-full mt-2 flex flex-col">
         {/* Chart area with wheel scroll */}
-        <div
-          className="h-65 w-full"
-          onWheel={handleWheel}
-        >
+        <div className="h-65 w-full" onWheel={handleWheel}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               key={isDark ? "dark" : "light"}

@@ -15,6 +15,7 @@ import { useForecast } from "@/hooks/useForecast";
 import { useWeather } from "@/hooks/useWeather";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useAI } from "@/hooks/useAI";
+import { useLanguage } from "@/hooks/useLanguage";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -74,6 +75,37 @@ export default function DownloadTemplate({
   selectedCrop,
 }: DownloadTemplateProps) {
   const [mounted, setMounted] = useState(false);
+  const { t } = useLanguage();
+
+  const translateCropName = (crop: CropOption) => {
+    const id = crop.id.toLowerCase();
+    switch (id) {
+      case "general":
+        return t.dashboard.cropGeneral;
+      case "cotton":
+        return t.dashboard.cropCotton;
+      case "wheat":
+        return t.dashboard.cropWheat;
+      case "rice":
+        return t.dashboard.cropRice;
+      case "fodder":
+        return t.dashboard.cropFodder;
+      case "pearlmillet":
+        return t.dashboard.cropPearlmillet;
+      case "oilseeds":
+        return t.dashboard.cropOilseeds;
+      case "castor":
+        return t.dashboard.cropCastor;
+      case "sorghum":
+        return t.dashboard.cropSorghum;
+      case "kharifsorghum":
+        return t.dashboard.cropKharifsorghum;
+      case "chickpea":
+        return t.dashboard.cropChickpea;
+      default:
+        return crop.name;
+    }
+  };
 
   const { data: forecastReport } = useForecast();
   const { data: weatherReport } = useWeather();
@@ -180,7 +212,7 @@ export default function DownloadTemplate({
 
     const svgWidth = CONTENT_W - 24; // minus chart card padding
     const svgHeight = 110;
-    const padL = 25;
+    const padL = 32; // Increased to leave space for Y-axis labels
     const padR = 25;
     const padT = 15;
     const padB = 20;
@@ -190,8 +222,9 @@ export default function DownloadTemplate({
 
     const points = chartData.map((d, idx) => {
       const x = padL + (idx / (chartData.length - 1)) * chartW;
-      const y = padT + ((100 - d.sm_percentile) / 100) * chartH;
-      return { x, y, val: d.sm_percentile, date: d.date };
+      const clampedVal = Math.min(100, Math.max(0, d.sm_percentile));
+      const y = padT + ((100 - clampedVal) / 100) * chartH;
+      return { x, y, val: clampedVal, date: d.date };
     });
 
     const pathD =
@@ -236,6 +269,25 @@ export default function DownloadTemplate({
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="overflow-visible"
         >
+          {/* Background area for Wet conditions (70 - 100%) */}
+          <rect
+            x={padL}
+            y={padT}
+            width={chartW}
+            height={chartH * 0.3}
+            fill="#0ea5e9"
+            fillOpacity={0.06}
+          />
+          {/* Background area for Dry conditions (0 - 30%) */}
+          <rect
+            x={padL}
+            y={padT + chartH * 0.7}
+            width={chartW}
+            height={chartH * 0.3}
+            fill="#f97316"
+            fillOpacity={0.06}
+          />
+
           <line
             x1={padL}
             y1={yMax}
@@ -244,6 +296,15 @@ export default function DownloadTemplate({
             stroke="#94a3b8"
             strokeDasharray="3 3"
           />
+          <text
+            x={padL - 6}
+            y={yMax + 3}
+            textAnchor="end"
+            className="text-[8px] fill-slate-500 font-bold"
+          >
+            100
+          </text>
+
           <line
             x1={padL}
             y1={yMid}
@@ -252,6 +313,15 @@ export default function DownloadTemplate({
             stroke="#94a3b8"
             strokeDasharray="3 3"
           />
+          <text
+            x={padL - 6}
+            y={yMid + 3}
+            textAnchor="end"
+            className="text-[8px] fill-slate-500 font-bold"
+          >
+            50
+          </text>
+
           <line
             x1={padL}
             y1={yMin}
@@ -260,6 +330,14 @@ export default function DownloadTemplate({
             stroke="#94a3b8"
             strokeDasharray="3 3"
           />
+          <text
+            x={padL - 6}
+            y={yMin + 3}
+            textAnchor="end"
+            className="text-[8px] fill-slate-500 font-bold"
+          >
+            0
+          </text>
 
           {todayX !== null && (
             <line
@@ -580,12 +658,17 @@ export default function DownloadTemplate({
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.25">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider">
+                Crop:
+              </span>
+              <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800 text-[9px] font-bold uppercase tracking-wide">
+                {translateCropName(selectedCrop)}
+              </span>
+            </div>
             <span className="inline-block px-2.5 py-0.75 rounded-full bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wide">
               Official Diagnostic PDF
             </span>
-            <p className="text-[8.5px] text-slate-600 font-semibold">
-              Generated Locally &middot; Not for Regulatory Submission
-            </p>
           </div>
         </div>
 
@@ -670,6 +753,9 @@ export default function DownloadTemplate({
         <span>© {new Date().getFullYear()} FarmRisk Corporation</span>
         <span>
           Data verified against satellite hydrology and bias corrections
+          <p className="text-[8px] text-slate-600">
+            Generated Locally &middot; Not for Regulatory Submission
+          </p>
         </span>
       </div>
     </div>

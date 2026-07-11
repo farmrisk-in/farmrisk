@@ -83,7 +83,7 @@ export const en = {
     snapshot: "local snapshot",
     livePreview: "Live dashboard preview",
     weatherToday: "Weather Today",
-    hourlyWeather: "Hourly Weather",
+    hourlyWeather: "HOURLY WEATHER FORECAST (24 HOURS)",
     forecast16Day: "16 Day Forecast",
     farmTasks: "Farm Tasks",
     aiOverview: "AI Overview",

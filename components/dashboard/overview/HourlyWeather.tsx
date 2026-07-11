@@ -11,7 +11,7 @@ import Image from "next/image";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TRANSLATIONS: Record<string, any> = {
   en: {
-    title: "Hourly Weather",
+    title: "HOURLY WEATHER FORECAST (24 HOURS)",
     subtitle: "Next 24 Hours",
   },
   hi: {
