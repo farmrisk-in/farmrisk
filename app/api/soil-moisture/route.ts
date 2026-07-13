@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const lat = searchParams.get("lat");
     const lon = searchParams.get("lon");
+    const daysbefore = searchParams.get("daysbefore");
 
     if (!lat || !lon) {
       return NextResponse.json(
@@ -14,7 +15,10 @@ export async function GET(request: NextRequest) {
     }
 
     const backendUrl = process.env.FORECAST_MODEL_URL || "http://127.0.0.1:8000";
-    const url = `${backendUrl}/forecast?lat=${lat}&lon=${lon}`;
+    let url = `${backendUrl}/moisture?lat=${lat}&lon=${lon}`;
+    if (daysbefore) {
+      url += `&daysbefore=${daysbefore}`;
+    }
 
     const response = await fetch(url, {
       method: "GET",
@@ -26,7 +30,7 @@ export async function GET(request: NextRequest) {
     if (!response.ok) {
       const errorText = await response.text();
       return NextResponse.json(
-        { error: `Forecast model API error: ${errorText}` },
+        { error: `Soil moisture model API error: ${errorText}` },
         { status: response.status },
       );
     }
@@ -34,11 +38,11 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: unknown) {
-    console.error("Error in GET /api/forecast:", error);
+    console.error("Error in GET /api/soil-moisture:", error);
     const message =
       error instanceof Error
         ? error.message
-        : "Failed to reach forecast model API";
+        : "Failed to reach soil moisture model API";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

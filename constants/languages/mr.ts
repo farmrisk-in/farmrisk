@@ -30,7 +30,6 @@ export const mr = {
 
   sidebar: {
     overview: "आढावा",
-    farmMap: "शेताचा नकाशा",
     weatherStats: "हवामान आकडेवारी",
     profile: "प्रोफाइल",
     settings: "सेटिंग्ज",

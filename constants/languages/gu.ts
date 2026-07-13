@@ -29,7 +29,6 @@ export const gu = {
 
   sidebar: {
     overview: "સારાંશ",
-    farmMap: "ખેતરનો નકશો",
     weatherStats: "હવામાન આંકડા",
     profile: "પ્રોફાઇલ",
     settings: "સેટિંગ્સ",

@@ -5,7 +5,7 @@ import { useForecast } from "@/hooks/useForecast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { Progress } from "@/components/ui/progress";
-import { DailyForecastCorrection } from "@/types/forecast";
+import { ForecastRow } from "@/types/forecast";
 import {
   LoaderCircle,
   TrendingUpDown,
@@ -40,8 +40,8 @@ const formatDateText = (dateStr: string) => {
 const Forcast = () => {
   const { t } = useLanguage();
 
-  const { data: report, isLoading } = useForecast();
-  const predictions = report?.forecast?.forecast || [];
+  const { data: report, isLoading, isCorrectionFailed } = useForecast();
+  const predictions = report?.forecast || [];
   const { data: weatherData } = useWeather();
   const daily = weatherData?.daily;
 
@@ -49,15 +49,16 @@ const Forcast = () => {
   const [showProgressBar, setShowProgressBar] = useState(true);
 
   // Map uncorrected forecast data as fallback
-  const fallbackPredictions: DailyForecastCorrection[] = daily
+  const fallbackPredictions: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
         date: new Date(time).toISOString().split("T")[0],
-        tmax_raw: daily.temperature_2m_max[idx],
+        tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
-        tmin_raw: daily.temperature_2m_min[idx],
+        tmin: daily.temperature_2m_min[idx],
         tmin_corrected: daily.temperature_2m_min[idx],
-        pcp_raw: daily.precipitation_sum[idx],
+        pcp: daily.precipitation_sum[idx],
         pcp_corrected: daily.precipitation_sum[idx],
+        is_forecast: 1 as const,
       }))
     : [];
 
@@ -70,10 +71,11 @@ const Forcast = () => {
     let timer: NodeJS.Timeout;
 
     if (isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShowProgressBar(true);
       setProgressVal(0);
 
-      // Smoothly decelerate towards 99% over 10 seconds
+      // Smoothly decelerate towards 99% over 5 seconds
       timer = setInterval(() => {
         setProgressVal((prev) => {
           if (prev >= 99) {
@@ -166,7 +168,7 @@ const Forcast = () => {
                 key={day.date}
                 className={cn(
                   `shrink-0 w-[77.4px] flex border-r last:border-0 flex-col items-center py-3 first:rounded-l-md last:rounded-r-md transition-all snap-start
-                  ${idx === 0 ? "bg-emerald-500/5" : "hover:bg-muted/50"}`
+                  ${idx === 0 ? "bg-emerald-500/5" : "hover:bg-muted/50"}`,
                 )}
               >
                 {/* Numeric Calendar Label */}

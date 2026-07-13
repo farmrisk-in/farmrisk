@@ -27,7 +27,6 @@ export const ta = {
 
   sidebar: {
     overview: "கண்ணோட்டம்",
-    farmMap: "விவசாய வரைபடம்",
     weatherStats: "வானிலை புள்ளிவிவரங்கள்",
     profile: "சுயவிவரம்",
     settings: "அமைப்புகள்",

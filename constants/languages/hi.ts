@@ -29,7 +29,6 @@ export const hi = {
 
   sidebar: {
     overview: "अवलोकन",
-    farmMap: "खेत का नक्शा",
     weatherStats: "मौसम के आंकड़े",
     profile: "प्रोफ़ाइल",
     settings: "सेटिंग्स",

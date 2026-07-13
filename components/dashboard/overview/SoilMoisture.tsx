@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from "lucide-react";
 import {
   ComposedChart,
   Line,
@@ -17,7 +17,7 @@ import {
 
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useForecast } from "@/hooks/useForecast";
+import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { usePro } from "@/hooks/usePro";
 import {
   LoaderCircle,
@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 // --- CONFIGURABLE: number of data points visible at once ---
@@ -244,36 +245,59 @@ const SERIES_ICONS: Record<
 
 export default function SoilMoisture() {
   const { location, isResolving } = useLocationContext();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isPro } = usePro();
-  const [daysBack, setDaysBack] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentViewDate, setCurrentViewDate] = useState(() => new Date());
   const [questionsAnswered, setQuestionsAnswered] = useState(() => {
     if (typeof window !== "undefined") {
       return sessionStorage.getItem("irrigation_questions_answered") === "true";
     }
     return false;
   });
+  const [daysbefore, setDaysbefore] = useState<number | undefined>(() => {
+    if (typeof window !== "undefined") {
+      const val = sessionStorage.getItem("irrigation_days_before");
+      return val ? parseInt(val, 10) : undefined;
+    }
+    return undefined;
+  });
 
   const handleSubmitQuestions = async () => {
+    if (!selectedDate) return;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(selectedDate);
+    d.setHours(0, 0, 0, 0);
+
+    const diffTime = today.getTime() - d.getTime();
+    const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+
     const payload = {
-      daysBack,
+      selectedDate: selectedDate.toISOString().split("T")[0],
+      daysBack: diffDays,
       timestamp: new Date().toISOString(),
     };
 
     console.log("Submitting irrigation answers to backend:", payload);
 
-    setQuestionsAnswered(true);
     if (typeof window !== "undefined") {
+      sessionStorage.setItem("irrigation_days_before", String(diffDays));
       sessionStorage.setItem("irrigation_questions_answered", "true");
     }
+    setDaysbefore(diffDays);
+    setQuestionsAnswered(true);
   };
 
   const handleSkipQuestions = () => {
     console.log("User skipped irrigation questions.");
-    setQuestionsAnswered(true);
     if (typeof window !== "undefined") {
+      sessionStorage.removeItem("irrigation_days_before");
       sessionStorage.setItem("irrigation_questions_answered", "true");
     }
+    setDaysbefore(undefined);
+    setQuestionsAnswered(true);
   };
 
   const [charts, setCharts] = useState({
@@ -287,9 +311,8 @@ export default function SoilMoisture() {
   });
   const [isDark] = useState(false);
 
-  const { data: report, isLoading, isError } = useForecast();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const soilMoistureData = report?.soil_moisture?.soil_moisture || [];
+  const { data: report, isLoading, isError } = useSoilMoisture(daysbefore);
+  const soilMoistureData = report?.soil_moisture || [];
 
   const chartData = useMemo(() => {
     if (!soilMoistureData || soilMoistureData.length === 0) return [];
@@ -442,66 +465,239 @@ export default function SoilMoisture() {
   const renderInnerContent = () => {
     // If the user is Pro and has not answered/skipped the questions, show the questions UI
     if (isPro && !questionsAnswered) {
+      const viewYear = currentViewDate.getFullYear();
+      const viewMonth = currentViewDate.getMonth();
+
+      // First day of the viewed month (0 = Sunday, 1 = Monday, etc.)
+      const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay();
+
+      // Total days in viewed month
+      const totalDaysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+      const cells = [];
+
+      // Padding cells
+      for (let i = 0; i < firstDayIndex; i++) {
+        cells.push({ isPadding: true, key: `pad-${i}` });
+      }
+
+      // Days of the month
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const minDate = new Date(today);
+      minDate.setDate(today.getDate() - 30);
+
+      const maxDate = new Date(today);
+
+      for (let day = 1; day <= totalDaysInMonth; day++) {
+        const dateObj = new Date(viewYear, viewMonth, day);
+        const dateCompare = new Date(dateObj);
+        dateCompare.setHours(0, 0, 0, 0);
+
+        const isClickable = dateCompare >= minDate && dateCompare <= maxDate;
+        const isSelected = selectedDate
+          ? selectedDate.getFullYear() === viewYear &&
+            selectedDate.getMonth() === viewMonth &&
+            selectedDate.getDate() === day
+          : false;
+
+        const isToday =
+          today.getFullYear() === viewYear &&
+          today.getMonth() === viewMonth &&
+          today.getDate() === day;
+
+        cells.push({
+          isPadding: false,
+          day,
+          date: dateObj,
+          isClickable,
+          isSelected,
+          isToday,
+          key: `day-${day}`,
+        });
+      }
+
+      const handlePrevMonth = () => {
+        const prevMonthDate = new Date(viewYear, viewMonth - 1, 1);
+        const limitDate = new Date(today);
+        limitDate.setDate(today.getDate() - 30);
+        const endOfPrevMonth = new Date(viewYear, viewMonth, 0);
+        if (limitDate <= endOfPrevMonth) {
+          setCurrentViewDate(prevMonthDate);
+        }
+      };
+
+      const handleNextMonth = () => {
+        const nextMonthDate = new Date(viewYear, viewMonth + 1, 1);
+        if (
+          nextMonthDate <= today ||
+          (nextMonthDate.getFullYear() === today.getFullYear() &&
+            nextMonthDate.getMonth() === today.getMonth())
+        ) {
+          setCurrentViewDate(nextMonthDate);
+        }
+      };
+
+      const getSelectedDateSummary = (date: Date) => {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        const diffTime = today.getTime() - d.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+
+        if (language === "hi") {
+          if (diffDays === 0) return "आज (आज ही सिंचाई की)";
+          if (diffDays === 1) return "कल (1 दिन पहले सिंचाई की)";
+          return `${diffDays} दिन पहले सिंचाई की (${d.toLocaleDateString("hi-IN", { month: "short", day: "numeric" })})`;
+        }
+        if (language === "mr") {
+          if (diffDays === 0) return "आज (आजच पाणी दिले)";
+          if (diffDays === 1) return "काल (1 दिवस पूर्वी पाणी दिले)";
+          return `${diffDays} दिवसांपूर्वी पाणी दिले (${d.toLocaleDateString("mr-IN", { month: "short", day: "numeric" })})`;
+        }
+        if (language === "ta") {
+          if (diffDays === 0) return "இன்று (இன்றே நீர் பாய்ச்சப்பட்டது)";
+          if (diffDays === 1)
+            return "நேற்று (1 நாள் முன்பு நீர் பாய்ச்சப்பட்டது)";
+          return `${diffDays} நாட்களுக்கு முன்பு நீர் பாய்ச்சப்பட்டது (${d.toLocaleDateString("ta-IN", { month: "short", day: "numeric" })})`;
+        }
+        if (language === "gu") {
+          if (diffDays === 0) return "આજે (આજે જ પાણી આપ્યું)";
+          if (diffDays === 1) return "ગઇકાલે (1 દિવસ પહેલા પાણી આપ્યું)";
+          return `${diffDays} દિવસ પહેલા પાણી આપ્યું (${d.toLocaleDateString("gu-IN", { month: "short", day: "numeric" })})`;
+        }
+
+        if (diffDays === 0) return "Today (Irrigated today)";
+        if (diffDays === 1) return "Yesterday (1 day ago)";
+        return `Irrigated ${diffDays} days ago (${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })})`;
+      };
+
+      const questionText = (() => {
+        if (language === "hi") return "आपने पिछली बार सिंचाई कब की थी?";
+        if (language === "mr") return "तुम्ही शेवटचे पाणी कधी दिले होते?";
+        if (language === "ta")
+          return "நீங்கள் கடைசியாக எப்போது நீர் பாய்ச்சினீர்கள்?";
+        if (language === "gu") return "તમે છેલ્લે ક્યારે સિંચાઈ કરી હતી?";
+        return "When did you last irrigate?";
+      })();
+
+      const isPrevDisabled = (() => {
+        const limitDate = new Date(today);
+        limitDate.setDate(today.getDate() - 30);
+        const endOfPrevMonth = new Date(viewYear, viewMonth, 0);
+        return limitDate > endOfPrevMonth;
+      })();
+
+      const isNextDisabled =
+        viewYear === today.getFullYear() && viewMonth === today.getMonth();
+
+      const monthTitle = currentViewDate.toLocaleDateString(
+        language === "hi" ? "hi-IN" : "en-US",
+        {
+          month: "long",
+          year: "numeric",
+        },
+      );
+
       return (
         <div className="w-full mt-3 flex flex-col space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div className="text-xs text-muted-foreground font-medium mb-1">
-            Provide recent irrigation details to customize and improve the soil
-            hydrology forecast model.
-          </div>
-
-          <div className="w-full max-w-md mx-auto flex flex-col space-y-3 p-4 bg-muted/20 border border-border rounded-xl">
-            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+          <div className="w-full max-w-md mx-auto flex flex-col space-y-4 p-4 bg-muted/20 border border-border rounded-xl">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5 border-b border-border pb-2 mb-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              How long ago did you irrigate?
+              {questionText}
             </h4>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center justify-between text-left font-normal text-muted-foreground hover:text-foreground cursor-pointer text-xs h-9 px-3 rounded-lg"
+
+            <div className="flex flex-col space-y-3 bg-card border border-border rounded-xl p-4 shadow-sm">
+              {/* Calendar Month Header */}
+              <div className="flex items-center justify-between pb-2 border-b border-border">
+                <button
+                  type="button"
+                  onClick={handlePrevMonth}
+                  disabled={isPrevDisabled}
+                  className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  <span
-                    className={
-                      daysBack
-                        ? "text-foreground font-medium"
-                        : "text-muted-foreground"
-                    }
-                  >
-                    {daysBack
-                      ? daysBack === "1-7"
-                        ? "1-7 days"
-                        : daysBack === "7-14"
-                          ? "7-14 days"
-                          : "Before that"
-                      : "Select time period..."}
-                  </span>
-                  <ChevronDown className="size-3.5 opacity-60 shrink-0" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="bg-popover border-border text-popover-foreground w-52 p-1 rounded-lg shadow-md z-50"
-              >
-                <DropdownMenuItem
-                  onClick={() => setDaysBack("1-7")}
-                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
+                  <ChevronLeft className="size-4" />
+                </button>
+                <span className="text-xs font-bold text-foreground">
+                  {monthTitle}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  disabled={isNextDisabled}
+                  className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
                 >
-                  1-7 days
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDaysBack("7-14")}
-                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
-                >
-                  7-14 days
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setDaysBack(">14")}
-                  className="flex items-center justify-between px-2.5 py-1.5 text-xs rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer transition-colors"
-                >
-                  Before that
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <ChevronRight className="size-4" />
+                </button>
+              </div>
+
+              {/* Day of Week Labels */}
+              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider">
+                {language === "hi"
+                  ? ["रवि", "सोम", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"].map(
+                      (day) => <div key={day}>{day}</div>,
+                    )
+                  : language === "mr"
+                    ? ["रवि", "सोम", "मंगळ", "बुध", "गुरु", "शुक्र", "शनी"].map(
+                        (day) => <div key={day}>{day}</div>,
+                      )
+                    : language === "ta"
+                      ? ["ஞா", "தி", "செ", "பு", "வி", "வெ", "ச"].map((day) => (
+                          <div key={day}>{day}</div>
+                        ))
+                      : language === "gu"
+                        ? [
+                            "રવિ",
+                            "સોમ",
+                            "મંગળ",
+                            "બુધ",
+                            "ગુરુ",
+                            "શુક્ર",
+                            "શનિ",
+                          ].map((day) => <div key={day}>{day}</div>)
+                        : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                            (day) => <div key={day}>{day}</div>,
+                          )}
+              </div>
+
+              {/* Calendar Grid Cells */}
+              <div className="grid grid-cols-7 gap-1.5 pt-1">
+                {cells.map((cell) => {
+                  if (cell.isPadding) {
+                    return <div key={cell.key} />;
+                  }
+
+                  return (
+                    <button
+                      key={cell.key}
+                      type="button"
+                      disabled={!cell.isClickable}
+                      onClick={() =>
+                        cell.isClickable && setSelectedDate(cell.date)
+                      }
+                      className={`h-8 w-8 mx-auto rounded-full flex flex-col items-center justify-center text-xs font-semibold transition-all cursor-pointer relative ${
+                        cell.isSelected
+                          ? "bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-600/30 scale-105"
+                          : cell.isClickable
+                            ? cell.isToday
+                              ? "border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/20 hover:bg-muted"
+                              : "bg-background hover:bg-muted text-foreground"
+                            : "text-muted-foreground/30 bg-muted/5 cursor-not-allowed"
+                      }`}
+                    >
+                      {cell.day}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedDate && (
+              <div className="flex items-center justify-center gap-2 p-2.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/30 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 font-extrabold animate-in fade-in zoom-in duration-200">
+                <Calendar className="size-4 text-emerald-600 dark:text-emerald-400" />
+                <span>{getSelectedDateSummary(selectedDate)}</span>
+              </div>
+            )}
           </div>
 
           {/* Action buttons */}
@@ -516,7 +712,7 @@ export default function SoilMoisture() {
             <Button
               type="button"
               onClick={handleSubmitQuestions}
-              disabled={!daysBack}
+              disabled={!selectedDate}
               className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-lg shadow-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Submit & Forecast
@@ -752,6 +948,37 @@ export default function SoilMoisture() {
                 );
               })}
             </DropdownMenuGroup>
+            {isPro && questionsAnswered && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setQuestionsAnswered(false);
+                      if (typeof window !== "undefined") {
+                        sessionStorage.removeItem(
+                          "irrigation_questions_answered",
+                        );
+                      }
+                    }}
+                    className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 focus:text-emerald-600 focus:bg-emerald-100/50 dark:focus:bg-emerald-500/10 cursor-pointer"
+                  >
+                    <Calendar className="size-4 text-emerald-500" />
+                    <span>
+                      {language === "hi"
+                        ? "सिंचाई की तारीख अपडेट करें"
+                        : language === "mr"
+                          ? "पाणी दिल्याची तारीख बदला"
+                          : language === "ta"
+                            ? "நீர் பாய்ச்சிய தேதியை மாற்றுக"
+                            : language === "gu"
+                              ? "સિંચાઈ તારીખ અપડેટ કરો"
+                              : "Update Irrigation Date"}
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

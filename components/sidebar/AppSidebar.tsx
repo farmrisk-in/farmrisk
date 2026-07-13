@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient } from "@/supabase/client";
-import { Leaf, LockIcon, LoaderCircle, LogOut } from "lucide-react";
+import { Leaf, LockIcon, LoaderCircle, LogOut, LogIn } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -152,6 +152,31 @@ export function AppSidebar() {
                   )}
                   <div className="text-lg">
                     {isLoading ? loggingOutText : t.sidebar.logout}
+                  </div>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarFooter>
+        )}
+        {user === null && (
+          <SidebarFooter className="flex gap-3 m-0 p-0 mb-6">
+            <SidebarSeparator className="border-slate-200 dark:border-slate-700" />
+            <SidebarMenuItem className="flex mx-3">
+              <SidebarMenuButton
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/auth/login")}
+                tooltip={t.nav.signIn}
+                className="group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:p-3.25! ml-1 hover:scale-105 rounded-sm transition-all text-nowrap p-3 py-1.5 size-12 w-full bg-white hover:bg-emerald-100 dark:bg-white/5 dark:hover:bg-emerald-500/10 border hover:border-emerald-400"
+              >
+                <div className="flex items-center gap-2 h-full">
+                  <LogIn
+                    style={{ height: "100%", width: "22px" }}
+                    className="text-emerald-500"
+                    aria-hidden="true"
+                  />
+                  <div className="text-lg">
+                    {t.nav.signIn}
                   </div>
                 </div>
               </SidebarMenuButton>

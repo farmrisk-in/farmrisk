@@ -28,7 +28,6 @@ export const en = {
 
   sidebar: {
     overview: "Overview",
-    farmMap: "Farm Map",
     weatherStats: "Weather Stats",
     profile: "Profile",
     settings: "Settings",

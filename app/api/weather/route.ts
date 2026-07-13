@@ -390,7 +390,11 @@ export async function GET(request: NextRequest) {
     );
   }
   const url = "https://api.open-meteo.com/v1/forecast";
-  const responses = await fetchWeatherApi(url, params);
+  const responses = await fetchWeatherApi(url, {
+    ...params,
+    latitude: latNum,
+    longitude: lngNum,
+  });
 
   // Process first location. Add a for-loop for multiple locations or weather models
   const response = responses[0];

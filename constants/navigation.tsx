@@ -6,7 +6,7 @@ import { ReactNode, ComponentType } from "react";
 
 export interface NavigationItem {
   name: string;
-  labelKey: "overview" | "farmMap" | "profile";
+  labelKey: "overview" | "profile";
   icon: ComponentType<any>;
   component: ReactNode;
   isLocked: boolean;
@@ -19,13 +19,6 @@ export const navigationItems: NavigationItem[] = [
     icon: LayoutDashboard,
     component: <Overview />,
     isLocked: false,
-  },
-  {
-    name: "Farm",
-    labelKey: "farmMap",
-    icon: Tractor,
-    component: <Farm />,
-    isLocked: true,
   },
   {
     name: "Profile",

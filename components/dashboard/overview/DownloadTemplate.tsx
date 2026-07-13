@@ -12,6 +12,8 @@ import {
 import { type SelectedLocation } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import { useForecast } from "@/hooks/useForecast";
+import { ForecastRow } from "@/types/forecast";
+import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useWeather } from "@/hooks/useWeather";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useAI } from "@/hooks/useAI";
@@ -107,7 +109,16 @@ export default function DownloadTemplate({
     }
   };
 
-  const { data: forecastReport } = useForecast();
+  const daysbefore = useMemo(() => {
+    if (typeof window !== "undefined") {
+      const val = sessionStorage.getItem("irrigation_days_before");
+      return val ? parseInt(val, 10) : undefined;
+    }
+    return undefined;
+  }, []);
+
+  const { forecastRows } = useForecast();
+  const { data: soilMoistureReport } = useSoilMoisture(daysbefore);
   const { data: weatherReport } = useWeather();
   const { data: calendarReport } = useCalendar(selectedCrop.id);
   const { data: aiOverviewText } = useAI(selectedCrop.id, language);
@@ -118,7 +129,7 @@ export default function DownloadTemplate({
   }, []);
 
   const chartData = useMemo(() => {
-    const soilMoistureData = forecastReport?.soil_moisture?.soil_moisture || [];
+    const soilMoistureData = soilMoistureReport?.soil_moisture || [];
     if (soilMoistureData.length === 0) return [];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -128,26 +139,24 @@ export default function DownloadTemplate({
       const dDate = new Date(d.date);
       return dDate >= thirtyDaysAgo;
     });
-  }, [forecastReport]);
+  }, [soilMoistureReport]);
 
-  // Computed once here (not after the early return below) so hook order
-  // stays identical across the "not mounted yet" render and every render after.
   const daily = weatherReport?.daily;
-  const fallbackPredictions = daily
+  const fallbackPredictions: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
         date: new Date(time).toISOString().split("T")[0],
+        tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
+        tmin: daily.temperature_2m_min[idx],
         tmin_corrected: daily.temperature_2m_min[idx],
+        pcp: daily.precipitation_sum[idx],
         pcp_corrected: daily.precipitation_sum[idx],
+        is_forecast: 1 as const,
       }))
     : [];
 
   const finalForecast =
-    forecastReport?.forecast?.forecast &&
-    forecastReport.forecast.forecast.length > 0
-      ? forecastReport.forecast.forecast
-      : fallbackPredictions;
-
+    forecastRows.length > 0 ? forecastRows : fallbackPredictions;
   const forecastDays = finalForecast.slice(0, 16);
 
   // Overall min/max across the visible window, used to scale each day's range bar
@@ -222,7 +231,7 @@ export default function DownloadTemplate({
 
     const points = chartData.map((d, idx) => {
       const x = padL + (idx / (chartData.length - 1)) * chartW;
-      const clampedVal = Math.min(100, Math.max(0, d.sm_percentile));
+      const clampedVal = Math.min(100, Math.max(0, d.sm_percentile ?? 0));
       const y = padT + ((100 - clampedVal) / 100) * chartH;
       return { x, y, val: clampedVal, date: d.date };
     });
