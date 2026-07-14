@@ -288,6 +288,7 @@ export default function SoilMoisture() {
       sessionStorage.setItem("irrigation_questions_answered", "true");
     }
     setDaysbefore(daysBack);
+    window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: daysBack }));
     setQuestionsAnswered(true);
   };
 
@@ -298,6 +299,7 @@ export default function SoilMoisture() {
       sessionStorage.setItem("irrigation_questions_answered", "true");
     }
     setDaysbefore(undefined);
+    window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
     setQuestionsAnswered(true);
   };
 
@@ -956,11 +958,12 @@ export default function SoilMoisture() {
                   <DropdownMenuItem
                     onClick={() => {
                       setQuestionsAnswered(false);
+                      setDaysbefore(undefined);
                       if (typeof window !== "undefined") {
-                        sessionStorage.removeItem(
-                          "irrigation_questions_answered",
-                        );
+                        sessionStorage.removeItem("irrigation_questions_answered");
+                        sessionStorage.removeItem("irrigation_days_before");
                       }
+                      window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
                     }}
                     className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 focus:text-emerald-600 focus:bg-emerald-100/50 dark:focus:bg-emerald-500/10 cursor-pointer"
                   >

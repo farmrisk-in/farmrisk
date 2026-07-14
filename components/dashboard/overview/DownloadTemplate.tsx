@@ -109,16 +109,27 @@ export default function DownloadTemplate({
     }
   };
 
-  const daysbefore = useMemo(() => {
+  const [daysbefore, setDaysbefore] = useState<number | undefined>(() => {
     if (typeof window !== "undefined") {
       const val = sessionStorage.getItem("irrigation_days_before");
       return val ? parseInt(val, 10) : undefined;
     }
     return undefined;
+  });
+
+  useEffect(() => {
+    const handleIrrigationUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setDaysbefore(detail);
+    };
+    window.addEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
+    return () => {
+      window.removeEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
+    };
   }, []);
 
   const { forecastRows } = useForecast();
-  const { data: soilMoistureReport } = useSoilMoisture(daysbefore);
+  const { data: soilMoistureReport } = useSoilMoisture(daysbefore, selectedCrop.id);
   const { data: weatherReport } = useWeather();
   const { data: calendarReport } = useCalendar(selectedCrop.id);
   const { data: aiOverviewText } = useAI(selectedCrop.id, language);

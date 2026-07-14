@@ -7,17 +7,18 @@ import { useLocationContext } from "@/providers/LocationProvider";
 import { SoilMoistureResponse, SoilMoistureRow } from "@/types/forecast";
 import { useForecast } from "./useForecast";
 
-export function useSoilMoisture(daysbefore?: number) {
+export function useSoilMoisture(daysbefore?: number, crop?: string) {
   const { location, isResolving } = useLocationContext();
-  const {
-    isLoading: isForecastLoading,
-    isSuccess: isForecastSuccess,
-    forecastRows,
-  } = useForecast();
+  const { isLoading: isForecastLoading, isSuccess: isForecastSuccess, forecastRows } = useForecast();
 
   const [currentCrop, setCurrentCrop] = useState("general");
 
   useEffect(() => {
+    if (crop) {
+      setCurrentCrop(crop);
+      return;
+    }
+
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("farmrisk-selected-crop");
       if (stored) {
@@ -37,7 +38,7 @@ export function useSoilMoisture(daysbefore?: number) {
     return () => {
       window.removeEventListener("farmrisk-crop-changed", handleCropChange);
     };
-  }, []);
+  }, [crop]);
 
   const query = useQuery<SoilMoistureRow[], Error>({
     queryKey: [
@@ -49,10 +50,8 @@ export function useSoilMoisture(daysbefore?: number) {
       isForecastSuccess,
     ],
     queryFn: () => {
-      const cropParam =
-        currentCrop && currentCrop !== "general" ? currentCrop : undefined;
-      const daysbeforeParam =
-        daysbefore && daysbefore > 0 ? daysbefore : undefined;
+      const cropParam = currentCrop && currentCrop !== "general" ? currentCrop : undefined;
+      const daysbeforeParam = daysbefore && daysbefore > 0 ? daysbefore : undefined;
       return getSoilMoisture(
         location.lat,
         location.lng,
@@ -61,12 +60,7 @@ export function useSoilMoisture(daysbefore?: number) {
       );
     },
     // Gated: only execute after forecast succeeds (ensuring forecast model file is generated)
-    enabled:
-      !isResolving &&
-      !!location.lat &&
-      !!location.lng &&
-      isForecastSuccess &&
-      forecastRows.length > 0,
+    enabled: !isResolving && !!location.lat && !!location.lng && isForecastSuccess && forecastRows.length > 0,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });
