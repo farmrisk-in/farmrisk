@@ -1,6 +1,5 @@
-import { LayoutDashboard, Tractor, UserRound } from "lucide-react";
+import { LayoutDashboard, UserRound } from "lucide-react";
 import Overview from "@/components/dashboard/overview/Overview";
-import Farm from "@/components/dashboard/farm/Farm";
 import Profile from "@/components/dashboard/profile/Profile";
 import { ReactNode, ComponentType } from "react";
 

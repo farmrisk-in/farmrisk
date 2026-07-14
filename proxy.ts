@@ -25,11 +25,11 @@ export async function proxy(request: NextRequest) {
     response.headers.set("Access-Control-Allow-Origin", "*");
     response.headers.set(
       "Access-Control-Allow-Methods",
-      "GET,DELETE,PATCH,POST,PUT,OPTIONS"
+      "GET,DELETE,PATCH,POST,PUT,OPTIONS",
     );
     response.headers.set(
       "Access-Control-Allow-Headers",
-      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+      "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
     );
   }
 
@@ -41,4 +41,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
-
