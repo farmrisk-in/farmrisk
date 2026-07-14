@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { Database } from "@/types/database";
 
@@ -37,3 +38,9 @@ export async function createClient() {
     },
   });
 }
+
+export function createClientReadOnly() {
+  const { url, publishableKey } = getSupabaseConfig();
+  return createSupabaseClient<Database>(url, publishableKey);
+}
+

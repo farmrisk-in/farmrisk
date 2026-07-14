@@ -3,13 +3,15 @@ import { Hero } from "@/components/home/Hero";
 import { Problem } from "@/components/home/Problem";
 import { Solution } from "@/components/home/Solution";
 import { formatHeroUserCount } from "@/lib/utils";
-import { createClient } from "@/supabase/server";
+import { createClientReadOnly } from "@/supabase/server";
+
+export const revalidate = 3600; // Revalidate every hour
 
 export default async function Home() {
   let userCount = 10000;
 
   try {
-    const supabase = await createClient();
+    const supabase = createClientReadOnly();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc("get_user_count");
