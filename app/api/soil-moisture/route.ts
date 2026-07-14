@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const lat = searchParams.get("lat");
     const lon = searchParams.get("lon");
     const daysbefore = searchParams.get("daysbefore");
+    const crop = searchParams.get("crop");
 
     if (!lat || !lon) {
       return NextResponse.json(
@@ -14,10 +15,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const backendUrl = process.env.FORECAST_MODEL_URL || "http://127.0.0.1:8000";
+    const backendUrl =
+      process.env.FORECAST_MODEL_URL || "http://127.0.0.1:8000";
     let url = `${backendUrl}/moisture?lat=${lat}&lon=${lon}`;
+    if (crop && crop !== "general") {
+      url += `&crop=${crop}`;
+    }
     if (daysbefore) {
-      url += `&daysbefore=${daysbefore}`;
+      url += `&daysbefore=${daysbefore}`; // because 16 days are future predicted
     }
 
     const response = await fetch(url, {

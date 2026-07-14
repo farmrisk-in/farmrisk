@@ -7,7 +7,9 @@ export async function getForecast(
   lat: number,
   lon: number,
 ): Promise<ForecastRow[]> {
-  const res = await fetch(`/api/forecast?lat=${lat}&lon=${lon}`, {
+  const url = `/api/forecast?lat=${lat}&lon=${lon}`;
+
+  const res = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -27,9 +29,13 @@ export async function getForecast(
 export async function getSoilMoisture(
   lat: number,
   lon: number,
+  crop?: string,
   daysbefore?: number,
 ): Promise<SoilMoistureRow[]> {
   let url = `/api/soil-moisture?lat=${lat}&lon=${lon}`;
+  if (crop && crop !== "general") {
+    url += `&crop=${crop}`;
+  }
   if (daysbefore !== undefined && daysbefore !== null) {
     url += `&daysbefore=${daysbefore}`;
   }

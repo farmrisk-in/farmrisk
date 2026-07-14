@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { getSoilMoisture } from "@/lib/api/forecast";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { SoilMoistureResponse, SoilMoistureRow } from "@/types/forecast";
@@ -8,25 +9,64 @@ import { useForecast } from "./useForecast";
 
 export function useSoilMoisture(daysbefore?: number) {
   const { location, isResolving } = useLocationContext();
-  const { isLoading: isForecastLoading, isSuccess: isForecastSuccess, forecastRows } = useForecast();
+  const {
+    isLoading: isForecastLoading,
+    isSuccess: isForecastSuccess,
+    forecastRows,
+  } = useForecast();
+
+  const [currentCrop, setCurrentCrop] = useState("general");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("farmrisk-selected-crop");
+      if (stored) {
+        try {
+          setCurrentCrop(JSON.parse(stored).id);
+        } catch {}
+      }
+    }
+
+    const handleCropChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && detail.id) {
+        setCurrentCrop(detail.id);
+      }
+    };
+    window.addEventListener("farmrisk-crop-changed", handleCropChange);
+    return () => {
+      window.removeEventListener("farmrisk-crop-changed", handleCropChange);
+    };
+  }, []);
 
   const query = useQuery<SoilMoistureRow[], Error>({
     queryKey: [
       "soil-moisture",
       location.lat,
       location.lng,
+      currentCrop,
       daysbefore,
       isForecastSuccess,
     ],
     queryFn: () => {
+      const cropParam =
+        currentCrop && currentCrop !== "general" ? currentCrop : undefined;
+      const daysbeforeParam =
+        daysbefore && daysbefore > 0 ? daysbefore : undefined;
       return getSoilMoisture(
         location.lat,
         location.lng,
-        daysbefore,
+        cropParam,
+        daysbeforeParam,
       );
     },
     // Gated: only execute after forecast succeeds (ensuring forecast model file is generated)
-    enabled: !isResolving && !!location.lat && !!location.lng && isForecastSuccess && forecastRows.length > 0,
+    enabled:
+      !isResolving &&
+      !!location.lat &&
+      !!location.lng &&
+      isForecastSuccess &&
+      forecastRows.length > 0,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });

@@ -273,20 +273,21 @@ export default function SoilMoisture() {
 
     const diffTime = today.getTime() - d.getTime();
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
+    const daysBack = diffDays + 15; // Offset by the 15 forecast days (16-day forecast including today)
 
     const payload = {
       selectedDate: selectedDate.toISOString().split("T")[0],
-      daysBack: diffDays,
+      daysBack,
       timestamp: new Date().toISOString(),
     };
 
     console.log("Submitting irrigation answers to backend:", payload);
 
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("irrigation_days_before", String(diffDays));
+      sessionStorage.setItem("irrigation_days_before", String(daysBack));
       sessionStorage.setItem("irrigation_questions_answered", "true");
     }
-    setDaysbefore(diffDays);
+    setDaysbefore(daysBack);
     setQuestionsAnswered(true);
   };
 
@@ -486,7 +487,7 @@ export default function SoilMoisture() {
       today.setHours(0, 0, 0, 0);
 
       const minDate = new Date(today);
-      minDate.setDate(today.getDate() - 30);
+      minDate.setDate(today.getDate() - 50);
 
       const maxDate = new Date(today);
 
@@ -521,7 +522,7 @@ export default function SoilMoisture() {
       const handlePrevMonth = () => {
         const prevMonthDate = new Date(viewYear, viewMonth - 1, 1);
         const limitDate = new Date(today);
-        limitDate.setDate(today.getDate() - 30);
+        limitDate.setDate(today.getDate() - 50);
         const endOfPrevMonth = new Date(viewYear, viewMonth, 0);
         if (limitDate <= endOfPrevMonth) {
           setCurrentViewDate(prevMonthDate);
@@ -583,7 +584,7 @@ export default function SoilMoisture() {
 
       const isPrevDisabled = (() => {
         const limitDate = new Date(today);
-        limitDate.setDate(today.getDate() - 30);
+        limitDate.setDate(today.getDate() - 50);
         const endOfPrevMonth = new Date(viewYear, viewMonth, 0);
         return limitDate > endOfPrevMonth;
       })();
