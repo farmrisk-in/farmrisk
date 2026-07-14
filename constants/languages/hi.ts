@@ -362,5 +362,6 @@ export const hi = {
     errorPasswordMatch: "पासवर्ड मेल नहीं खाते।",
     errorPasswordRequired: "पासवर्ड आवश्यक है।",
     errorUnexpected: "एक अप्रत्याशित त्रुटि हुई।",
+    continueAsGuest: "बिना लॉगिन के मुफ़्त डैशबोर्ड पर जाएँ →",
   },
 };

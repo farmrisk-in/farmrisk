@@ -358,5 +358,6 @@ export const en = {
     errorPasswordMatch: "Passwords do not match.",
     errorPasswordRequired: "Password is required.",
     errorUnexpected: "An unexpected error occurred.",
+    continueAsGuest: "Continue to Free Dashboard →",
   },
 };

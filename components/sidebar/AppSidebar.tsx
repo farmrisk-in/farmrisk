@@ -38,6 +38,14 @@ export function AppSidebar() {
 
   async function logout() {
     setIsLoading(true);
+    
+    // Clear irrigation session storage immediately
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("irrigation_days_before");
+      sessionStorage.removeItem("irrigation_questions_answered");
+      window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
+    }
+
     const supabase = createClient();
     await supabase.auth.signOut({ scope: "local" });
     if (process.env.NODE_ENV === "development") {

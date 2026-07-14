@@ -359,5 +359,6 @@ export const gu = {
     errorPasswordMatch: "પાસવર્ડ મેળ ખાતા નથી.",
     errorPasswordRequired: "પાસવર્ડ જરૂરી છે.",
     errorUnexpected: "અનપેક્ષિત ભૂલ આવી.",
+    continueAsGuest: "લોગિન વગર મફત ડેશબોર્ડ પર જાઓ →",
   },
 };

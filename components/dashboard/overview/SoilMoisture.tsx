@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useCallback } from "react";
+import React, { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from "lucide-react";
 import {
   ComposedChart,
@@ -263,6 +263,21 @@ export default function SoilMoisture() {
     return undefined;
   });
 
+  useEffect(() => {
+    const handleIrrigationUpdate = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setDaysbefore(detail);
+      setQuestionsAnswered(
+        sessionStorage.getItem("irrigation_questions_answered") === "true"
+      );
+    };
+
+    window.addEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
+    return () => {
+      window.removeEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
+    };
+  }, []);
+
   const handleSubmitQuestions = async () => {
     if (!selectedDate) return;
 
@@ -314,7 +329,7 @@ export default function SoilMoisture() {
   });
   const [isDark] = useState(false);
 
-  const { data: report, isLoading, isError } = useSoilMoisture(daysbefore);
+  const { data: report, isLoading, isError } = useSoilMoisture(isPro ? daysbefore : undefined);
   const soilMoistureData = report?.soil_moisture || [];
 
   const chartData = useMemo(() => {

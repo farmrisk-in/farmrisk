@@ -8,19 +8,14 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { useWeather } from "@/hooks/useWeather";
 import { useForecast } from "@/hooks/useForecast";
 import { useSoilMoisture } from "@/hooks/useSoilMoisture";
+import { useIrrigation } from "@/hooks/useIrrigation";
 import { AIAPIResponse } from "@/types/ai";
 import { VillageReportAPIResponse } from "@/types/forecast";
 
 export function useAI(cropId: string, language: string) {
   const { location, isResolving } = useLocationContext();
 
-  const daysbefore = useMemo(() => {
-    if (typeof window !== "undefined") {
-      const val = sessionStorage.getItem("irrigation_days_before");
-      return val ? parseInt(val, 10) : undefined;
-    }
-    return undefined;
-  }, []);
+  const daysbefore = useIrrigation();
 
   const calendarData = useCalendar(cropId).data;
   const weatherData = useWeather().data;

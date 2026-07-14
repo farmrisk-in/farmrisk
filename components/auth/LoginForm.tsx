@@ -253,6 +253,16 @@ export function LoginForm({
               : t.auth.registerBtn}
         </Button>
 
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push("/dashboard")}
+          disabled={isLoading}
+          className="w-full border-slate-200 dark:border-slate-800 text-slate-700 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
+        >
+          {t.auth.continueAsGuest}
+        </Button>
+
         <div className="text-center mt-2">
           <button
             type="button"
@@ -260,7 +270,7 @@ export function LoginForm({
               setMode(mode === "login" ? "register" : "login");
               setError(null);
             }}
-            className="text-sm text-emerald-700 hover:underline"
+            className="text-sm text-emerald-700 hover:underline cursor-pointer"
             disabled={isLoading}
           >
             {mode === "login" ? t.auth.noAccount : t.auth.haveAccount}

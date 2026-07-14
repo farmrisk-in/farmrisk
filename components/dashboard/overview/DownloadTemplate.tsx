@@ -18,6 +18,7 @@ import { useWeather } from "@/hooks/useWeather";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useAI } from "@/hooks/useAI";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useIrrigation } from "@/hooks/useIrrigation";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -109,24 +110,7 @@ export default function DownloadTemplate({
     }
   };
 
-  const [daysbefore, setDaysbefore] = useState<number | undefined>(() => {
-    if (typeof window !== "undefined") {
-      const val = sessionStorage.getItem("irrigation_days_before");
-      return val ? parseInt(val, 10) : undefined;
-    }
-    return undefined;
-  });
-
-  useEffect(() => {
-    const handleIrrigationUpdate = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      setDaysbefore(detail);
-    };
-    window.addEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
-    return () => {
-      window.removeEventListener("farmrisk-irrigation-updated", handleIrrigationUpdate);
-    };
-  }, []);
+  const daysbefore = useIrrigation();
 
   const { forecastRows } = useForecast();
   const { data: soilMoistureReport } = useSoilMoisture(daysbefore, selectedCrop.id);

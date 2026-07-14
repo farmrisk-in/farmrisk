@@ -364,5 +364,6 @@ export const ta = {
     errorPasswordMatch: "கடவுச்சொற்கள் பொருந்தவில்லை.",
     errorPasswordRequired: "கடவுச்சொல் தேவை.",
     errorUnexpected: "எதிர்பாராத பிழை ஏற்பட்டது.",
+    continueAsGuest: "உள்நுழையாமல் இலவச டாஷ்போர்டிற்குச் செல்லவும் →",
   },
 };

@@ -54,6 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refreshInterval = null;
       }
 
+      if (event === "SIGNED_OUT" || !session) {
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("irrigation_days_before");
+          sessionStorage.removeItem("irrigation_questions_answered");
+          window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
+        }
+      }
+
       // Only refresh session if it exists and user is not signing out
       if (session && event !== "SIGNED_OUT") {
         // Refresh the session periodically to keep it alive
@@ -96,6 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("awpl-auth");
       // Clear any other auth-related items
       localStorage.removeItem("supabase.auth.token");
+      
+      // Clear irrigation session storage items
+      sessionStorage.removeItem("irrigation_days_before");
+      sessionStorage.removeItem("irrigation_questions_answered");
+      window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
     }
   };
 

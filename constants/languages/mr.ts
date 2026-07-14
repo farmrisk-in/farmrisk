@@ -359,5 +359,6 @@ export const mr = {
     errorPasswordMatch: "पासवर्ड जुळत नाहीत.",
     errorPasswordRequired: "पासवर्ड आवश्यक आहे.",
     errorUnexpected: "काहीतरी त्रुटी आली.",
+    continueAsGuest: "लॉगिनशिवाय मोफत डॅशबोर्डवर जा →",
   },
 };
