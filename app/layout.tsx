@@ -6,6 +6,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import QueryProvider from "@/providers/QueryProvider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 export const metadata: Metadata = {
   title: content.en.title,
   description: content.en.description,
@@ -54,6 +55,7 @@ export default function RootLayout({
           </LanguageProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
