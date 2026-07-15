@@ -167,7 +167,7 @@ export default function Map({
           zIndex: 0,
           backgroundColor: "var(--background)",
         }}
-        key="map-container"
+        key={`map-container-${initialLat}-${initialLng}-${dialog}`}
       >
         <TileLayer key={isDark ? "dark" : "light"} url={tileUrl} />
         <Recenter lat={initialLat} lng={initialLng} />

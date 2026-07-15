@@ -41,6 +41,7 @@ export async function POST(request: NextRequest) {
         JSON.stringify(data),
       translated: data.translated ?? false,
       language: data.language ?? "en",
+      sources: data.sources ?? [],
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

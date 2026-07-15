@@ -17,10 +17,14 @@ export function useAI(cropId: string, language: string) {
 
   const daysbefore = useIrrigation();
 
-  const calendarData = useCalendar(cropId).data;
-  const weatherData = useWeather().data;
-  const { forecastRows, isLoading: isForecastLoading } = useForecast();
-  const { data: soilMoistureResponse, isLoading: isSoilLoading } = useSoilMoisture(daysbefore);
+  const calendar = useCalendar(cropId);
+  const calendarData = calendar.data;
+  const weather = useWeather();
+  const weatherData = weather.data;
+  const forecast = useForecast();
+  const { forecastRows, isLoading: isForecastLoading } = forecast;
+  const soilMoisture = useSoilMoisture(daysbefore);
+  const { data: soilMoistureResponse, isLoading: isSoilLoading } = soilMoisture;
 
   // Construct the exact original VillageReportAPIResponse schema for AI backend compatibility
   const mockVillageReport: VillageReportAPIResponse | undefined = (forecastRows.length > 0)
@@ -143,10 +147,32 @@ export function useAI(cropId: string, language: string) {
 
   return {
     data: query.data?.advisory_summary,
-    isLoading: isResolving || query.isLoading,
-    isFetching: query.isFetching,
-    error: query.error,
-    isError: query.isError,
+    sources: query.data?.sources || [],
+    isLoading:
+      isResolving ||
+      calendar.isLoading ||
+      weather.isLoading ||
+      isForecastLoading ||
+      isSoilLoading ||
+      query.isLoading,
+    isFetching:
+      calendar.isFetching ||
+      weather.isFetching ||
+      forecast.isFetching ||
+      soilMoisture.isFetching ||
+      query.isFetching,
+    error:
+      query.error ||
+      calendar.error ||
+      (weather.isError
+        ? new Error(weather.errorMessage || "Weather request failed")
+        : null) ||
+      soilMoisture.error,
+    isError:
+      query.isError ||
+      calendar.isError ||
+      weather.isError ||
+      soilMoisture.isError,
     refetch: query.refetch,
   };
 }

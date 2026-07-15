@@ -1,12 +1,20 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { Bot, BookOpen } from "lucide-react";
 import { LoaderFive } from "@/components/ui/loader";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { useAI } from "@/hooks/useAI";
 import { useForecast } from "@/hooks/useForecast";
 import { type CropOption } from "./Overview";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AIOverviewProps {
   selectedCrop: CropOption;
@@ -21,6 +29,7 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
 
   const {
     data: advisoryDataText,
+    sources = [],
     isLoading: isAiLoading,
     isFetching: isGenerating,
     error: aiError,
@@ -53,6 +62,50 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
           <Bot className="size-6" />
           {t.dashboard.aiOverview}
+          {!isGenerating && !isWeatherLoading && !isAiLoading && !isForecastLoading && selectedCrop.id.toLowerCase() !== "general" && (
+            <>
+              <span className="text-muted-foreground/30 font-normal select-none">|</span>
+              {sources.length > 0 ? (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-emerald-500 active:scale-95 transition-all uppercase cursor-pointer py-0.5 px-1.5 rounded hover:bg-emerald-500/10">
+                      <BookOpen className="size-3" />
+                      {t.dashboard.sources}
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto bg-popover border border-border rounded-2xl shadow-xl flex flex-col p-6">
+                    <DialogHeader className="border-b pb-4 mb-4">
+                      <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                        <BookOpen className="size-5 text-emerald-500" />
+                        {t.dashboard.retrievedSources}
+                      </DialogTitle>
+                      <DialogDescription className="text-xs text-muted-foreground mt-1">
+                        {t.dashboard.sourcesDescription}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
+                      {Array.from(
+                        new Set(sources.map((s: any) => s.source || "ICAR Guideline"))
+                      ).map((sourceName: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-lg border border-border bg-emerald-50/5 dark:bg-emerald-950/5 hover:border-emerald-500/20 transition-all font-mono text-xs text-foreground/85 flex items-center gap-2"
+                        >
+                          <span className="text-emerald-500">📄</span>
+                          {sourceName}
+                        </div>
+                      ))}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/40 uppercase select-none py-0.5 px-1.5">
+                  <BookOpen className="size-3 opacity-40" />
+                  {t.dashboard.noSources}
+                </span>
+              )}
+            </>
+          )}
         </div>
       </div>
 
