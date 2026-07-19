@@ -57,61 +57,61 @@ interface CustomDotProps {
 }
 
 // --- COLOR & CATEGORY MAPPING ---
-// Maps strictly to the "Expert View" table, utilizing Tailwind CSS variable values
+// Maps strictly to the "Expert View" table, utilizing standard hex values for consistent rendering
 const getCategoryAndColor = (pct: number, t?: TranslationType) => {
   if (pct > 98)
     return {
       label: t?.dashboard?.smExceptionalWet || "Exceptional Wet",
-      color: "var(--color-sky-600)",
+      color: "#0284c7",
     };
   if (pct > 95)
     return {
       label: t?.dashboard?.smExtremeWet || "Extreme Wet",
-      color: "var(--color-sky-500)",
+      color: "#0ea5e9",
     };
   if (pct > 90)
     return {
       label: t?.dashboard?.smSevereWet || "Severe Wet",
-      color: "var(--color-sky-300)",
+      color: "#38bdf8",
     };
   if (pct > 80)
     return {
       label: t?.dashboard?.smModerateWet || "Moderate Wet",
-      color: "var(--color-sky-200)",
+      color: "#7dd3fc",
     };
   if (pct > 70)
     return {
       label: t?.dashboard?.smAbnormallyWet || "Abnormally Wet",
-      color: "var(--color-sky-100)",
+      color: "#bae6fd",
     };
   if (pct > 30)
     return {
       label: t?.dashboard?.smNormal || "Normal",
-      color: "var(--muted-foreground)",
+      color: "#64748b",
     };
   if (pct > 20)
     return {
       label: t?.dashboard?.smAbnormallyDry || "Abnormally Dry",
-      color: "var(--color-orange-200)",
+      color: "#fed7aa",
     };
   if (pct > 10)
     return {
       label: t?.dashboard?.smModerateDry || "Moderate Dry",
-      color: "var(--color-orange-300)",
+      color: "#fdba74",
     };
   if (pct > 5)
     return {
       label: t?.dashboard?.smExtremeDry || "Extreme Dry",
-      color: "var(--color-orange-500)",
+      color: "#f97316",
     };
   if (pct > 2)
     return {
       label: t?.dashboard?.smSevereDry || "Severe Dry",
-      color: "var(--color-orange-600)",
+      color: "#ea580c",
     };
   return {
     label: t?.dashboard?.smExceptionalDry || "Exceptional Dry",
-    color: "var(--color-orange-800)",
+    color: "#9a3412",
   };
 };
 
@@ -163,10 +163,32 @@ const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
       .toLocaleDateString("en-GB", { day: "numeric", month: "short" })
       .toUpperCase();
 
+    const smValue = data.sm_percentile;
+    const hasSm = typeof smValue === "number";
+    const { label: category, color: categoryColor } = hasSm
+      ? getCategoryAndColor(smValue, t)
+      : { label: "", color: "" };
+
     return (
-      <div className="bg-popover border border-border rounded-md px-3.5 py-2.5 shadow-md min-w-40 space-y-1.5 text-xs text-popover-foreground">
-        <div className="font-bold text-muted-foreground border-b pb-1">
-          {dateStr}
+      <div className="bg-popover border border-border rounded-md px-3.5 py-2.5 shadow-md min-w-44 space-y-2 text-xs text-popover-foreground">
+        <div className="flex items-center justify-between font-bold border-b border-border pb-1.5 gap-3">
+          <span className="text-muted-foreground">{dateStr}</span>
+          {category && (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 shadow-xs shrink-0"
+              style={{
+                color: categoryColor,
+                backgroundColor: `${categoryColor}20`,
+                border: `1px solid ${categoryColor}50`,
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: categoryColor }}
+              />
+              {category}
+            </span>
+          )}
         </div>
         {payload.map((entry) => {
           const key = entry.dataKey as string;
@@ -178,8 +200,7 @@ const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
             typeof value === "number" ? value.toFixed(1) : value;
 
           if (key === "sm_percentile") {
-            const { label: category } = getCategoryAndColor(value, t);
-            name = `Soil Percentile (${category})`;
+            name = "Soil Percentile";
             formattedValue = `${value.toFixed(1)}%`;
           } else if (key === "w") {
             name = "Soil Volume";

@@ -59,12 +59,16 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
     <div className="w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl">
       {/* HEADER SECTION: Title block */}
       <div className="flex flex-row sm:items-center justify-between gap-3 border-b pb-2 mb-2 shrink-0">
-        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider justify-between">
           <Bot className="size-6" />
           {t.dashboard.aiOverview}
-          {!isGenerating && !isWeatherLoading && !isAiLoading && !isForecastLoading && selectedCrop.id.toLowerCase() !== "general" && (
+        </div>
+        {!isGenerating &&
+          !isWeatherLoading &&
+          !isAiLoading &&
+          !isForecastLoading &&
+          selectedCrop.id.toLowerCase() !== "general" && (
             <>
-              <span className="text-muted-foreground/30 font-normal select-none">|</span>
               {sources.length > 0 ? (
                 <Dialog>
                   <DialogTrigger asChild>
@@ -85,7 +89,9 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
                       {Array.from(
-                        new Set(sources.map((s: any) => s.source || "ICAR Guideline"))
+                        new Set(
+                          sources.map((s: any) => s.source || "ICAR Guideline"),
+                        ),
                       ).map((sourceName: any, idx: number) => (
                         <div
                           key={idx}
@@ -106,12 +112,14 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
               )}
             </>
           )}
-        </div>
       </div>
 
       {/* CORE CONTENT SLOT: Scrollable container with simulated generation skeleton loaders */}
       <div className="overflow-y-auto flex-1 min-h-0 max-h-full flex flex-col justify-start">
-        {isGenerating || isWeatherLoading || isAiLoading || isForecastLoading ? (
+        {isGenerating ||
+        isWeatherLoading ||
+        isAiLoading ||
+        isForecastLoading ? (
           <div className="flex flex-col items-center justify-center gap-4 w-full h-full py-6">
             <LoaderFive text={"Generating Overview"} />
           </div>

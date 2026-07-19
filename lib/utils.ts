@@ -50,9 +50,6 @@ export async function reverseGeocode(lat: number, lng: number) {
   url.searchParams.set("lon", String(lng));
 
   const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error("Reverse geocoding failed");
-  }
 
   return (await response.json()) as {
     name: string;
