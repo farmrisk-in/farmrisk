@@ -167,13 +167,11 @@ export function useAI(cropId: string, language: string) {
       calendar.error ||
       (weather.isError
         ? new Error(weather.errorMessage || "Weather request failed")
-        : null) ||
-      soilMoisture.error,
+        : null),
     isError:
       query.isError ||
       calendar.isError ||
-      weather.isError ||
-      soilMoisture.isError,
+      weather.isError,
     refetch: query.refetch,
   };
 }
