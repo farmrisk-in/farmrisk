@@ -23,7 +23,7 @@ import { calculateTimelineSegments } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 interface DownloadTemplateProps {
-  location: SelectedLocation;
+  location: SelectedLocation | null;
   language: string;
   selectedCrop: CropOption;
 }
@@ -687,10 +687,12 @@ export default function DownloadTemplate({
               <span>Target Location</span>
             </div>
             <p className="font-extrabold text-slate-800 text-[12px] pl-4.5 truncate">
-              {location.displayName || location.name}
+              {location?.displayName || location?.name || "Unspecified Location"}
             </p>
             <p className="font-mono text-slate-600 text-[9.5px] pl-4.5">
-              {location.lat.toFixed(4)}°N, {location.lng.toFixed(4)}°E
+              {location
+                ? `${location.lat.toFixed(4)}°N, ${location.lng.toFixed(4)}°E`
+                : "N/A"}
             </p>
           </div>
 

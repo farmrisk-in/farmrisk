@@ -10,9 +10,9 @@ export function useCalendar(cropId: string) {
   const { location, isResolving } = useLocationContext();
 
   const query = useQuery<CalendarAPIResponse, Error>({
-    queryKey: ["calendar", cropId, location.lat, location.lng],
-    queryFn: () => getCalendar(cropId, location.lat, location.lng),
-    enabled: !isResolving && !!location.lat && !!location.lng && !!cropId,
+    queryKey: ["calendar", cropId, location?.lat, location?.lng],
+    queryFn: () => getCalendar(cropId, location!.lat, location!.lng),
+    enabled: !isResolving && !!location?.lat && !!location?.lng && !!cropId,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000, // 1 hour
   });
@@ -39,7 +39,7 @@ export function useCalendar(cropId: string) {
 
   return {
     data: query.data,
-    isLoading: isResolving || query.isLoading,
+    isLoading: isResolving || !location || query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError,

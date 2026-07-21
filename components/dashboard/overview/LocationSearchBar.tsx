@@ -93,7 +93,7 @@ export function LocationSearchBar() {
   const { location, setLocation } = useLocationContext();
 
   // Standard input query state, synchronized with selected location name
-  const [query, setQuery] = useState(location.name);
+  const [query, setQuery] = useState(location?.name || "");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export function LocationSearchBar() {
 
   const shouldSearch =
     debouncedQuery.trim().length >= 2 &&
-    debouncedQuery.trim() !== location.name;
+    debouncedQuery.trim() !== (location?.name || "");
   const { data: results = [], isFetching: loadingResults } = useLocationSearch(
     shouldSearch ? debouncedQuery : "",
   );
@@ -115,10 +115,11 @@ export function LocationSearchBar() {
   const [mounted, setMounted] = useState(false);
 
   // Map Dialog State
+  const DEFAULT_MAP_CENTER = { lat: 20.5937, lng: 78.9629 };
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [center, setCenter] = useState({
-    lat: location.lat,
-    lng: location.lng,
+    lat: location?.lat ?? DEFAULT_MAP_CENTER.lat,
+    lng: location?.lng ?? DEFAULT_MAP_CENTER.lng,
   });
 
   // Client-side mount check to prevent visual lag/layout shifts during hydration
@@ -128,13 +129,18 @@ export function LocationSearchBar() {
 
   // Synchronize input query when the location name changes globally (e.g. from GPS or Map)
   useEffect(() => {
-    setQuery(location.name);
-  }, [location.name]);
+    if (location?.name) {
+      setQuery(location.name);
+    }
+  }, [location?.name]);
 
   // Synchronize map center when dialog opens or location changes
   useEffect(() => {
     if (isMapOpen) {
-      setCenter({ lat: location.lat, lng: location.lng });
+      setCenter({
+        lat: location?.lat ?? DEFAULT_MAP_CENTER.lat,
+        lng: location?.lng ?? DEFAULT_MAP_CENTER.lng,
+      });
     }
   }, [isMapOpen, location]);
 
@@ -272,7 +278,7 @@ export function LocationSearchBar() {
   const handleBlur = () => {
     setIsFocused(false);
     // Revert query back to the active location name if blurred without selecting
-    setQuery(location.name);
+    setQuery(location?.name || "");
   };
 
   // Show loading skeleton while the client-side component initializes
@@ -413,8 +419,8 @@ export function LocationSearchBar() {
             {/* EDGE-TO-EDGE INTUITIVE MAP CONTAINER MODULE */}
             <Map
               Icon={MapPinned}
-              initialLat={location.lat}
-              initialLng={location.lng}
+              initialLat={location?.lat ?? DEFAULT_MAP_CENTER.lat}
+              initialLng={location?.lng ?? DEFAULT_MAP_CENTER.lng}
               onCenterChange={handleCenterChange}
               title={locTrans.selectMapBtn || "Verify Farm Coordinates"}
               dialog={true}

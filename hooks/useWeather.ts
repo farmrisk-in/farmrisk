@@ -9,16 +9,16 @@ export function useWeather() {
   const { location, isResolving } = useLocationContext();
 
   const query = useQuery<OpenMeteoResponse, Error>({
-    queryKey: ["weather", location.lat, location.lng],
-    queryFn: () => getWeather(location.lat, location.lng),
-    enabled: !isResolving,
+    queryKey: ["weather", location?.lat, location?.lng],
+    queryFn: () => getWeather(location!.lat, location!.lng),
+    enabled: !isResolving && !!location,
     staleTime: 60 * 60 * 1000, // 60 minutes
     gcTime: 70 * 60 * 1000, // 70 minutes
   });
 
   return {
-    isLoading: isResolving || query.isLoading,
-    isError: !isResolving && query.isError,
+    isLoading: isResolving || !location || query.isLoading,
+    isError: !isResolving && !!location && query.isError,
     errorMessage:
       !isResolving && query.error
         ? query.error.message || "Weather request failed"

@@ -43,8 +43,8 @@ export function useSoilMoisture(daysbefore?: number, crop?: string) {
   const query = useQuery<SoilMoistureRow[], Error>({
     queryKey: [
       "soil-moisture",
-      location.lat,
-      location.lng,
+      location?.lat,
+      location?.lng,
       currentCrop,
       daysbefore,
       isForecastSuccess,
@@ -53,20 +53,20 @@ export function useSoilMoisture(daysbefore?: number, crop?: string) {
       const cropParam = currentCrop && currentCrop !== "general" ? currentCrop : undefined;
       const daysbeforeParam = daysbefore && daysbefore > 0 ? daysbefore : undefined;
       return getSoilMoisture(
-        location.lat,
-        location.lng,
+        location!.lat,
+        location!.lng,
         cropParam,
         daysbeforeParam,
       );
     },
     // Gated: only execute after forecast succeeds (ensuring forecast model file is generated)
-    enabled: !isResolving && !!location.lat && !!location.lng && isForecastSuccess && forecastRows.length > 0,
+    enabled: !isResolving && !!location?.lat && !!location?.lng && isForecastSuccess && forecastRows.length > 0,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });
 
   // Construct wrapped backward-compatible SoilMoistureResponse structure
-  const wrappedResponse: SoilMoistureResponse | undefined = query.data
+  const wrappedResponse: SoilMoistureResponse | undefined = (query.data && location)
     ? {
         success: true,
         location: { lat: location.lat, lon: location.lng },
@@ -83,7 +83,7 @@ export function useSoilMoisture(daysbefore?: number, crop?: string) {
   return {
     data: wrappedResponse,
     // Stay in loading state until forecast completes and soil moisture completes
-    isLoading: isForecastLoading || query.isLoading || !isForecastSuccess,
+    isLoading: isResolving || !location || isForecastLoading || query.isLoading || !isForecastSuccess,
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError,

@@ -29,13 +29,13 @@ export function useForecast() {
   const query = useQuery<any[], Error>({
     queryKey: [
       "forecast",
-      location.lat,
-      location.lng,
+      location?.lat,
+      location?.lng,
     ],
     queryFn: async () => {
-      return getForecast(location.lat, location.lng);
+      return getForecast(location!.lat, location!.lng);
     },
-    enabled: !isResolving && !!location.lat && !!location.lng,
+    enabled: !isResolving && !!location?.lat && !!location?.lng,
     staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000, // 70 minutes
   });
@@ -75,7 +75,7 @@ export function useForecast() {
   }, [forecastRows, query.isFetching, isSuccess]);
 
   // Construct wrapped backward-compatible ForecastResponse structure for components/AI
-  const wrappedResponse: ForecastResponse | undefined = query.data
+  const wrappedResponse: ForecastResponse | undefined = (query.data && location)
     ? {
         success: true,
         location: { lat: location.lat, lon: location.lng },
@@ -88,7 +88,7 @@ export function useForecast() {
   return {
     data: wrappedResponse,
     forecastRows,
-    isLoading: isResolving || isWeatherLoading || query.isLoading,
+    isLoading: isResolving || !location || isWeatherLoading || query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError && rawForecastRows.length === 0,

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   getWeatherSummary,
@@ -27,7 +26,7 @@ export function useWeatherSummary(language: string) {
 
   // Construct the exact original VillageReportAPIResponse schema for AI backend compatibility
   const villageReport: VillageReportAPIResponse | undefined =
-    forecastRows.length > 0
+    (forecastRows.length > 0 && location)
       ? {
           requested_lat: location.lat,
           requested_lon: location.lng,
@@ -95,13 +94,13 @@ export function useWeatherSummary(language: string) {
   const query = useQuery<WeatherSummaryResponse, Error>({
     queryKey: [
       "weather-summary",
-      location.lat,
-      location.lng,
+      location?.lat,
+      location?.lng,
       language,
       forecastHash,
     ],
     queryFn: () => {
-      if (!calendarData || !weatherData) {
+      if (!calendarData || !weatherData || !location) {
         throw new Error(
           "Context data not available for weather summary generation",
         );
@@ -119,8 +118,8 @@ export function useWeatherSummary(language: string) {
       !isResolving &&
       !isForecastLoading &&
       !isSoilLoading &&
-      !!location.lat &&
-      !!location.lng &&
+      !!location?.lat &&
+      !!location?.lng &&
       !!language &&
       !!calendarData &&
       !!weatherData,
@@ -133,6 +132,7 @@ export function useWeatherSummary(language: string) {
     data: query.data?.weather_summary,
     isLoading:
       isResolving ||
+      !location ||
       query.isLoading ||
       isForecastLoading ||
       isSoilLoading ||

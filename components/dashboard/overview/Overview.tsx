@@ -31,7 +31,9 @@ const Overview = () => {
     useState<CropOption>(GENERAL_CROP);
 
   const { location } = useLocationContext();
-  const lastLocationRef = useRef({ lat: location.lat, lng: location.lng });
+  const lastLocationRef = useRef<{ lat: number; lng: number } | null>(
+    location ? { lat: location.lat, lng: location.lng } : null,
+  );
 
   const setSelectedCrop = (crop: CropOption) => {
     setSelectedCropState(crop);
@@ -48,14 +50,16 @@ const Overview = () => {
   };
 
   useEffect(() => {
+    if (!location) return;
     if (
+      !lastLocationRef.current ||
       lastLocationRef.current.lat !== location.lat ||
       lastLocationRef.current.lng !== location.lng
     ) {
       lastLocationRef.current = { lat: location.lat, lng: location.lng };
       setSelectedCrop(GENERAL_CROP);
     }
-  }, [location.lat, location.lng]);
+  }, [location?.lat, location?.lng]);
 
   return (
     <div className="flex flex-col gap-4 w-full">

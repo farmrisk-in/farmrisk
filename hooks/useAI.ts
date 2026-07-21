@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { getAIAdvisory } from "@/lib/api/ai";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useCalendar } from "@/hooks/useCalendar";
@@ -27,7 +27,7 @@ export function useAI(cropId: string, language: string) {
   const { data: soilMoistureResponse, isLoading: isSoilLoading } = soilMoisture;
 
   // Construct the exact original VillageReportAPIResponse schema for AI backend compatibility
-  const mockVillageReport: VillageReportAPIResponse | undefined = (forecastRows.length > 0)
+  const mockVillageReport: VillageReportAPIResponse | undefined = (forecastRows.length > 0 && location)
     ? {
         requested_lat: location.lat,
         requested_lon: location.lng,
@@ -92,14 +92,14 @@ export function useAI(cropId: string, language: string) {
   const query = useQuery<AIAPIResponse, Error>({
     queryKey: [
       "ai",
-      location.lat,
-      location.lng,
+      location?.lat,
+      location?.lng,
       cropId,
       language,
       forecastHash,
     ],
     queryFn: () => {
-      if (!calendarData || !weatherData) {
+      if (!calendarData || !weatherData || !location) {
         throw new Error("Context data not available for AI generation");
       }
       return getAIAdvisory({
@@ -115,8 +115,8 @@ export function useAI(cropId: string, language: string) {
       !isResolving &&
       !isForecastLoading &&
       !isSoilLoading &&
-      !!location.lat &&
-      !!location.lng &&
+      !!location?.lat &&
+      !!location?.lng &&
       !!cropId &&
       !!language &&
       !!calendarData &&
@@ -150,6 +150,7 @@ export function useAI(cropId: string, language: string) {
     sources: query.data?.sources || [],
     isLoading:
       isResolving ||
+      !location ||
       calendar.isLoading ||
       weather.isLoading ||
       isForecastLoading ||

@@ -9,9 +9,9 @@ export function useCrop() {
   const { location, isResolving } = useLocationContext();
 
   const query = useQuery<CropsAPIResponse, Error>({
-    queryKey: ["crop", location.lat, location.lng],
-    queryFn: () => getCrops(location.lat, location.lng),
-    enabled: !isResolving && !!location.lat && !!location.lng,
+    queryKey: ["crop", location?.lat, location?.lng],
+    queryFn: () => getCrops(location!.lat, location!.lng),
+    enabled: !isResolving && !!location?.lat && !!location?.lng,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000, // 1 hour
   });
@@ -24,7 +24,7 @@ export function useCrop() {
   return {
     data: query.data,
     crops,
-    isLoading: isResolving || query.isLoading,
+    isLoading: isResolving || !location || query.isLoading,
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError,

@@ -17,27 +17,19 @@ export type SelectedLocation = {
 };
 
 type LocationContextValue = {
-  location: SelectedLocation;
+  location: SelectedLocation | null;
   setLocation: (location: SelectedLocation) => void;
   isResolving: boolean;
 };
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
-// Static fallback default location (Dholka, Ahmedabad, Gujarat, India)
-const DEFAULT_LOCATION: SelectedLocation = {
-  lat: 22.7214,
-  lng: 72.2741,
-  name: "Dholka",
-  displayName: "Dholka, Ahmedabad, Gujarat, India",
-};
-
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<SelectedLocation>(DEFAULT_LOCATION);
+  const [location, setLocation] = useState<SelectedLocation | null>(null);
   const [isResolving, setIsResolving] = useState(true);
 
   useEffect(() => {
-    // Attempt to request GPS location on mount to override development default location
+    // Request GPS location on mount; if denied or unavailable, location stays null until user searches or picks on map
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
@@ -52,7 +44,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
             });
           } catch (error) {
             console.error(
-              "Failed to reverse-geocode default location on load:",
+              "Failed to reverse-geocode GPS location on load:",
               error,
             );
           } finally {
@@ -66,7 +58,6 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 86400000 },
       );
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsResolving(false);
     }
   }, []);
