@@ -28,15 +28,6 @@ export const Drawing = ({
   if (color === "yellow") radius = 5000;
   if (color === "orange") radius = 8000;
   if (color === "red") radius = 12000;
-  console.log("Drawing component rendered with data:", {
-    score,
-    category,
-    color,
-    lat,
-    lng,
-    name,
-    radius,
-  });
   return (
     <>
       <Circle

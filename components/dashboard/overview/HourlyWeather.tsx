@@ -66,6 +66,7 @@ const HourlyWeather = () => {
         windKph: Math.round(hourly.wind_speed_10m[idx]),
         icon: hourly.icon[idx] || "clear_day.svg",
         weatherCode: hourly.weather_code[idx] ?? 0,
+        rainfall: hourly.rain[idx] ?? 0,
       }))
     : [];
 
@@ -134,12 +135,17 @@ const HourlyWeather = () => {
                       </span>
 
                       {/* 4. Precipitation & Wind (Below Temperature) */}
-                      <div className="flex flex-col items-center text-[12px] gap-2 text-muted-foreground font-medium leading-normal mt-0.5">
+                      <div className="flex flex-col items-center text-[12px] gap-2 text-muted-foreground font-medium leading-normal">
                         <span className="text-blue-500 font-semibold">
                           {slot.rainChance}%
                         </span>
-                        <span className="truncate max-w-16.25 text-center font-mono">
-                          {slot.windKph}kph
+                        <span className="text-[12px] font-semibold text-muted-foreground">
+                          {slot.rainfall}
+                          <span className="text-[11px]">mm</span>
+                        </span>
+                        <span className="truncate max-w-16.25 text-center">
+                          {slot.windKph}
+                          <span className="text-[11px]">kph</span>
                         </span>
                       </div>
                     </div>

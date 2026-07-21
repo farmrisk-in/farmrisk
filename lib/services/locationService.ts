@@ -426,75 +426,52 @@ export async function searchLocationsWithFallback(
   const olaApiKey = process.env.OLA_MAPS_API_KEY;
   const locationIqApiKey = process.env.LOCATIONIQ_API_KEY;
 
-  console.log(`\n🔍 [LocationService] Search requested for: "${trimmed}"`);
-
   // 1. Try Ola Maps
   if (olaApiKey) {
-    console.log(
-      `📍 [LocationService] [1/3] Querying Primary Provider: OLA MAPS...`,
-    );
     try {
       const results = await searchOlaMaps(trimmed, olaApiKey);
       if (results.length > 0) {
-        console.log(
-          `✅ [LocationService] SUCCESS via OLA MAPS! Returned ${results.length} results.`,
-        );
         return results;
       }
-      console.warn(
-        `⚠️ [LocationService] Ola Maps returned 0 results for "${trimmed}". Proceeding to Fallback 1...`,
-      );
     } catch (error: any) {
       console.warn(
-        `❌ [LocationService] Primary Provider (Ola Maps) failed: ${error?.message || error}. Falling back to LocationIQ...`,
+        `[LocationService] Primary Provider (Ola Maps) failed: ${error?.message || error}. Falling back to LocationIQ...`,
       );
     }
   } else {
-    console.log(
-      `ℹ️ [LocationService] OLA_MAPS_API_KEY not configured in .env. Skipping Ola Maps.`,
+    console.warn(
+      `[LocationService] OLA_MAPS_API_KEY not configured in .env. Skipping Ola Maps.`,
     );
   }
 
   // 2. Try LocationIQ
   if (locationIqApiKey) {
-    console.log(
-      `📍 [LocationService] [2/3] Querying Fallback 1 Provider: LOCATIONIQ...`,
-    );
     try {
       const results = await searchLocationIQ(trimmed, locationIqApiKey);
       if (results.length > 0) {
-        console.log(
-          `✅ [LocationService] SUCCESS via LOCATIONIQ! Returned ${results.length} results.`,
-        );
         return results;
       }
       console.warn(
-        `⚠️ [LocationService] LocationIQ returned 0 results for "${trimmed}". Proceeding to Fallback 2...`,
+        `[LocationService] LocationIQ returned 0 results for "${trimmed}". Proceeding to Fallback 2...`,
       );
     } catch (error: any) {
       console.warn(
-        `❌ [LocationService] Fallback 1 Provider (LocationIQ) failed: ${error?.message || error}. Falling back to Nominatim...`,
+        `[LocationService] Fallback 1 Provider (LocationIQ) failed: ${error?.message || error}. Falling back to Nominatim...`,
       );
     }
   } else {
-    console.log(
-      `ℹ️ [LocationService] LOCATIONIQ_API_KEY not configured in .env. Skipping LocationIQ.`,
+    console.warn(
+      `[LocationService] LOCATIONIQ_API_KEY not configured in .env. Skipping LocationIQ.`,
     );
   }
 
   // 3. Final Fallback: Nominatim
-  console.log(
-    `📍 [LocationService] [3/3] Querying Fallback 2 Provider: NOMINATIM (OSM)...`,
-  );
   try {
     const results = await searchNominatim(trimmed);
-    console.log(
-      `✅ [LocationService] SUCCESS via NOMINATIM! Returned ${results.length} results.`,
-    );
     return results;
   } catch (error: any) {
     console.error(
-      `❌ [LocationService] All location search providers failed:`,
+      `[LocationService] All location search providers failed:`,
       error?.message || error,
     );
     return [];
@@ -508,77 +485,56 @@ export async function reverseGeocodeWithFallback(
   const olaApiKey = process.env.OLA_MAPS_API_KEY;
   const locationIqApiKey = process.env.LOCATIONIQ_API_KEY;
 
-  console.log(
-    `\n🗺️ [LocationService] Reverse Geocode requested for coords: (${lat}, ${lng})`,
-  );
-
   // 1. Try Ola Maps
   if (olaApiKey) {
-    console.log(
-      `📍 [LocationService] [1/3] Reverse Geocoding with Primary Provider: OLA MAPS...`,
-    );
     try {
       const result = await reverseGeocodeOlaMaps(lat, lng, olaApiKey);
       if (result) {
-        console.log(
-          `✅ [LocationService] SUCCESS via OLA MAPS! Result: "${result.name}" (${result.displayName})`,
-        );
         return result;
       }
       console.warn(
-        `⚠️ [LocationService] Ola Maps reverse geocode returned empty. Proceeding to Fallback 1...`,
+        `[LocationService] Ola Maps reverse geocode returned empty. Proceeding to Fallback 1...`,
       );
     } catch (error: any) {
       console.warn(
-        `❌ [LocationService] Primary Provider (Ola Maps) reverse geocode failed: ${error?.message || error}. Falling back to LocationIQ...`,
+        `[LocationService] Primary Provider (Ola Maps) reverse geocode failed: ${error?.message || error}. Falling back to LocationIQ...`,
       );
     }
   } else {
-    console.log(
-      `ℹ️ [LocationService] OLA_MAPS_API_KEY not configured in .env. Skipping Ola Maps.`,
+    console.warn(
+      `[LocationService] OLA_MAPS_API_KEY not configured in .env. Skipping Ola Maps.`,
     );
   }
 
   // 2. Try LocationIQ
   if (locationIqApiKey) {
-    console.log(
-      `📍 [LocationService] [2/3] Reverse Geocoding with Fallback 1 Provider: LOCATIONIQ...`,
-    );
     try {
       const result = await reverseGeocodeLocationIQ(lat, lng, locationIqApiKey);
       if (result) {
-        console.log(
-          `✅ [LocationService] SUCCESS via LOCATIONIQ! Result: "${result.name}" (${result.displayName})`,
-        );
         return result;
       }
       console.warn(
-        `⚠️ [LocationService] LocationIQ reverse geocode returned empty. Proceeding to Fallback 2...`,
+        `[LocationService] LocationIQ reverse geocode returned empty. Proceeding to Fallback 2...`,
       );
     } catch (error: any) {
       console.warn(
-        `❌ [LocationService] Fallback 1 Provider (LocationIQ) reverse geocode failed: ${error?.message || error}. Falling back to Nominatim...`,
+        `[LocationService] Fallback 1 Provider (LocationIQ) reverse geocode failed: ${error?.message || error}. Falling back to Nominatim...`,
       );
     }
   } else {
-    console.log(
-      `ℹ️ [LocationService] LOCATIONIQ_API_KEY not configured in .env. Skipping LocationIQ.`,
+    console.warn(
+      `[LocationService] LOCATIONIQ_API_KEY not configured in .env. Skipping LocationIQ.`,
     );
   }
 
   // 3. Final Fallback: Nominatim
-  console.log(
-    `📍 [LocationService] [3/3] Reverse Geocoding with Fallback 2 Provider: NOMINATIM (OSM)...`,
-  );
+
   try {
     const result = await reverseGeocodeNominatim(lat, lng);
-    console.log(
-      `✅ [LocationService] SUCCESS via NOMINATIM! Result: "${result.name}" (${result.displayName})`,
-    );
     return result;
   } catch (error: any) {
     console.error(
-      `❌ [LocationService] All reverse geocode providers failed:`,
+      `[LocationService] All reverse geocode providers failed:`,
       error?.message || error,
     );
     return {

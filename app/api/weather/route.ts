@@ -463,6 +463,7 @@ export async function GET(request: NextRequest) {
         hourly.variables(3)!.valuesArray(),
         0,
       ).splice(-24),
+      rain: normalizeArray(hourly.variables(0)!.valuesArray(), 0).splice(-24),
       icon: normalizeArray(hourly.variables(3)!.valuesArray(), 0)
         .map((code) => {
           const isDay = normalizeArray(

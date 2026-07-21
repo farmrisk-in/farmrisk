@@ -106,15 +106,6 @@ export const Lightning = () => {
     );
   }
 
-  console.log("Lightning component rendered with data:", {
-    lightning,
-    location,
-    mappedLightning,
-    color,
-    advisory,
-    zoom,
-  });
-
   return (
     <div className="w-full h-90 lg:h-full relative rounded-xl overflow-hidden border border-border bg-muted/20">
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
