@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigation } from "@/hooks/useNavigation";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useProfile } from "@/hooks/useProfile";
 import { navigationItems } from "@/constants/navigation";
 
 export function AppSidebar() {
@@ -27,8 +28,14 @@ export function AppSidebar() {
   const { isMobile: isSidebarMobile, state, setOpenMobile } = useSidebar();
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { profile } = useProfile();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || "";
+  const firstName = profile?.first_name || user?.user_metadata?.first_name || "";
+  const lastName = profile?.last_name || user?.user_metadata?.last_name || "";
+  const displayName = `${firstName} ${lastName}`.trim() || user?.email?.split("@")[0] || "Farmer";
 
   function redirectToLogin() {
     if (!user) {
@@ -124,16 +131,25 @@ export function AppSidebar() {
         {user !== null && (
           <SidebarFooter className="flex gap-3 m-0 p-0 mb-6">
             <SidebarSeparator className="border-slate-200 dark:border-slate-700" />
-            <SidebarMenuItem className="flex items-center px-3 py-2 text-lg text-nowrap">
+            <SidebarMenuItem className="flex items-center px-3 py-2 text-base text-nowrap overflow-hidden">
               {/* Upper Section: Avatar + Name Details */}
-              <Avatar size="lg" className="mr-3 ml-1">
-                <AvatarFallback className="text-lg">
-                  {user.user_metadata.first_name?.[0]?.toUpperCase() ?? ""}
-                  {user.user_metadata.last_name?.[0]?.toUpperCase() ?? ""}
+              <Avatar size="lg" className="mr-3 ml-1 shrink-0 border border-emerald-500/30">
+                {avatarUrl && (
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="object-cover"
+                  />
+                )}
+                <AvatarFallback className="text-base font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  {firstName?.[0]?.toUpperCase() ?? displayName?.[0]?.toUpperCase() ?? "F"}
+                  {lastName?.[0]?.toUpperCase() ?? ""}
                 </AvatarFallback>
               </Avatar>
               {/* Name and Metadata Layout */}
-              {user.user_metadata.first_name} {user.user_metadata.last_name}
+              <span className="truncate font-semibold text-foreground text-sm">
+                {displayName}
+              </span>
             </SidebarMenuItem>
 
             <SidebarMenuItem className="flex mx-3">

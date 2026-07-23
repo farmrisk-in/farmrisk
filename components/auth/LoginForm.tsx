@@ -2,14 +2,22 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, KeyRound, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { normalizePhoneNumber } from "@/lib/auth/phone";
 import { createClient } from "@/supabase/client";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { toast } from "sonner";
 
 type Mode = "login" | "register";
 
@@ -26,7 +34,7 @@ export function LoginForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("login");
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   // Form fields
   const [name, setName] = useState("");
@@ -34,6 +42,12 @@ export function LoginForm({
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Forgot Password Modal States
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [resetPhone, setResetPhone] = useState("");
+  const [resetPassword, setResetPassword] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -110,12 +124,64 @@ export function LoginForm({
 
       router.replace(getSafeNextPath(searchParams.get("next")));
       router.refresh();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err?.message || t.auth.errorUnexpected);
       setIsLoading(false);
     }
   }
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const normalizedPhone = normalizePhoneNumber(resetPhone);
+    if (!normalizedPhone) {
+      toast.error(
+        language === "hi"
+          ? "कृपया 10 अंकों का वैध फोन नंबर दर्ज करें"
+          : "Please enter a valid 10-digit Indian phone number",
+      );
+      return;
+    }
+
+    if (!resetPassword || resetPassword.length < 6) {
+      toast.error(
+        language === "hi"
+          ? "नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"
+          : "New password must be at least 6 characters long",
+      );
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      const res = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: normalizedPhone,
+          newPassword: resetPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to reset password");
+      }
+
+      toast.success(
+        language === "hi"
+          ? "पासवर्ड रीसेट लिंक भेजा गया!"
+          : "Password reset instructions sent for this account!",
+      );
+      setIsForgotOpen(false);
+      setResetPhone("");
+      setResetPassword("");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to reset password");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <div
@@ -195,12 +261,24 @@ export function LoginForm({
         </div>
 
         <div className="grid gap-2">
-          <label
-            htmlFor="password"
-            className="text-sm font-medium text-muted-foreground"
-          >
-            {t.auth.passwordLabel}
-          </label>
+          <div className="flex items-center justify-between">
+            <label
+              htmlFor="password"
+              className="text-sm font-medium text-muted-foreground"
+            >
+              {t.auth.passwordLabel}
+            </label>
+
+            {mode === "login" && (
+              <button
+                type="button"
+                onClick={() => setIsForgotOpen(true)}
+                className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium cursor-pointer"
+              >
+                {language === "hi" ? "पासवर्ड भूल गए?" : "Forgot Password?"}
+              </button>
+            )}
+          </div>
           <Input
             id="password"
             type="password"
@@ -277,6 +355,78 @@ export function LoginForm({
           </button>
         </div>
       </form>
+
+      {/* FORGOT PASSWORD DIALOG MODAL */}
+      <Dialog open={isForgotOpen} onOpenChange={setIsForgotOpen}>
+        <DialogContent className="sm:max-w-md border border-border p-4 rounded-md gap-3">
+          <DialogHeader className="pb-2 border-b border-border">
+            <DialogTitle className="text-sm font-bold flex items-center gap-2">
+              <KeyRound className="size-4 text-emerald-500" />
+              {language === "hi" ? "पासवर्ड रीसेट करें" : "Reset Password"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={handleResetSubmit} className="space-y-3 py-1">
+            <div className="space-y-1">
+              <label htmlFor="resetPhone" className="text-xs font-semibold text-foreground">
+                {language === "hi" ? "फ़ोन नंबर" : "Registered Phone Number"}
+              </label>
+              <Input
+                id="resetPhone"
+                type="tel"
+                required
+                value={resetPhone}
+                onChange={(e) => setResetPhone(e.target.value)}
+                placeholder="9876543210"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="resetPassword" className="text-xs font-semibold text-foreground">
+                {language === "hi" ? "नया पासवर्ड" : "New Password"}
+              </label>
+              <Input
+                id="resetPassword"
+                type="password"
+                required
+                minLength={6}
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                placeholder="••••••••"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            <DialogFooter className="border-t border-border pt-3 flex justify-between gap-2 sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsForgotOpen(false)}
+                className="text-xs h-8 rounded-md"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isResetting}
+                className="text-xs h-8 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5"
+              >
+                {isResetting ? (
+                  <>
+                    <LoaderCircle className="size-3.5 animate-spin" />
+                    <span>Resetting...</span>
+                  </>
+                ) : (
+                  <span>Reset Password</span>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

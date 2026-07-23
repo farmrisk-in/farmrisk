@@ -11,30 +11,36 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
-          age: number | null;
-          created_at: string;
-          full_name: string | null;
           id: string;
+          first_name: string | null;
+          last_name: string | null;
+          full_name: string | null;
+          age: number | null;
           location: string | null;
           metadata: Json;
+          created_at: string;
           updated_at: string;
         };
         Insert: {
-          age?: number | null;
-          created_at?: string;
-          full_name?: string | null;
           id: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          full_name?: string | null;
+          age?: number | null;
           location?: string | null;
           metadata?: Json;
+          created_at?: string;
           updated_at?: string;
         };
         Update: {
-          age?: number | null;
-          created_at?: string;
-          full_name?: string | null;
           id?: string;
+          first_name?: string | null;
+          last_name?: string | null;
+          full_name?: string | null;
+          age?: number | null;
           location?: string | null;
           metadata?: Json;
+          created_at?: string;
           updated_at?: string;
         };
         Relationships: [
@@ -49,7 +55,14 @@ export type Database = {
       };
     };
     Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Functions: {
+      update_user_phone: {
+        Args: {
+          new_phone: string;
+        };
+        Returns: void;
+      };
+    };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
   };
@@ -58,4 +71,3 @@ export type Database = {
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type ProfileUpdate =
   Database["public"]["Tables"]["profiles"]["Update"];
-

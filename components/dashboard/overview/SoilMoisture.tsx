@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, {
@@ -17,6 +18,7 @@ import {
   Line,
   Bar,
   XAxis,
+  YAxis,
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
@@ -216,9 +218,6 @@ const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
           if (key === "sm_percentile") {
             name = "Soil Percentile";
             formattedValue = `${value.toFixed(1)}%`;
-          } else if (key === "w") {
-            name = "Soil Volume";
-            formattedValue = `${value.toFixed(1)} mm`;
           } else if (key === "P_obs") {
             name = "Precipitation";
             formattedValue = `${value.toFixed(1)} mm`;
@@ -257,7 +256,6 @@ const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
 
 const SERIES_COLORS: Record<string, string> = {
   sm_percentile: "var(--color-emerald-500)",
-  w: "var(--color-sky-500)",
   P_obs: "var(--color-blue-500)",
   PE: "var(--color-amber-500)",
   E: "var(--color-purple-500)",
@@ -270,7 +268,6 @@ const SERIES_ICONS: Record<
   React.ComponentType<{ className?: string }>
 > = {
   sm_percentile: Percent,
-  w: Droplets,
   P_obs: CloudRain,
   PE: Wind,
   E: Sun,
@@ -362,7 +359,6 @@ export default function SoilMoisture() {
   const [charts, setCharts] = useState({
     P_obs: false,
     PE: false,
-    w: false,
     E: false,
     R: false,
     G: false,
@@ -497,8 +493,6 @@ export default function SoilMoisture() {
     switch (key) {
       case "sm_percentile":
         return "Soil Percentile (%)";
-      case "w":
-        return "Soil Volume (mm)";
       case "P_obs":
         return "Precipitation (mm)";
       case "PE":
@@ -630,6 +624,7 @@ export default function SoilMoisture() {
               data={visibleData}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
+              <YAxis domain={[0, 100]} allowDataOverflow={false} hide={true} />
               <ReferenceArea
                 y1={70}
                 y2={100}

@@ -34,6 +34,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!error) {
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Sanitize legacy bloated avatar_url from Auth metadata if present
+        if (session?.user?.user_metadata?.avatar_url?.length > 500) {
+          console.warn("[AuthProvider] Cleaning up bloated avatar_url from Supabase Auth metadata...");
+          supabase.auth.updateUser({
+            data: { avatar_url: null },
+          });
+        }
       }
       setLoading(false);
     };
