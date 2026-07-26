@@ -8,19 +8,15 @@ export async function POST(request: NextRequest) {
     if (!modelUrl) {
       console.error("ADVISORY_MODEL_URL is not set in env variables");
       return NextResponse.json(
-        { error: "Advisory Model URL is not configured. Please set ADVISORY_MODEL_URL in environment variables." },
+        {
+          error:
+            "Advisory Model URL is not configured. Please set ADVISORY_MODEL_URL in environment variables.",
+        },
         { status: 500 },
       );
     }
 
-    let targetUrl = "";
-    if (modelUrl.endsWith("/api/advisory")) {
-      targetUrl = modelUrl + "/weather-summary";
-    } else if (modelUrl.endsWith("/api/advisory/")) {
-      targetUrl = modelUrl + "weather-summary";
-    } else {
-      targetUrl = `${modelUrl.replace(/\/$/, "")}/api/advisory/weather-summary`;
-    }
+    const targetUrl = `${modelUrl.replace(/\/$/, "")}/api/advisory/weather-summary`;
 
     const response = await fetch(targetUrl, {
       method: "POST",
@@ -35,7 +31,9 @@ export async function POST(request: NextRequest) {
         `Weather Summary Model Error: ${response.status} ${response.statusText}`,
       );
       return NextResponse.json(
-        { error: `Failed to query weather summary model: ${response.statusText}` },
+        {
+          error: `Failed to query weather summary model: ${response.statusText}`,
+        },
         { status: response.status },
       );
     }

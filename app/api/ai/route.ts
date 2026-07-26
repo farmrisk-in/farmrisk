@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const response = await fetch(`${modelUrl}/api/advisory`, {
+    const response = await fetch(`${modelUrl.replace(/\/$/, "")}/api/advisory`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

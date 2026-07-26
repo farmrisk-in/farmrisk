@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const backendUrl = process.env.FORECAST_MODEL_URL || "http://127.0.0.1:8000";
+    const backendUrl = (process.env.FORECAST_MODEL_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
     const url = `${backendUrl}/forecast?lat=${lat}&lon=${lon}`;
 
     const response = await fetch(url, {
