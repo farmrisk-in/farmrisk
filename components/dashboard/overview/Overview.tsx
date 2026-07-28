@@ -19,6 +19,7 @@ import { GENERAL_CROP } from "@/types/crops";
 import Greeting from "./Greeting";
 import { useLocationContext } from "@/providers/LocationProvider";
 import WeatherSummary from "./WeatherSummary";
+import Risk from "./Risk";
 
 export interface CropOption {
   id: string;
@@ -65,7 +66,14 @@ const Overview = () => {
     <div className="flex flex-col gap-4 w-full">
       <Greeting selectedCrop={selectedCrop} setSelectedCrop={setSelectedCrop} />
       <LocationSearchBar />
-      <WeatherSummary />
+      <div className="flex flex-col xl:flex-row items-stretch w-full gap-3">
+        <div className="w-full xl:w-90 2xl:w-105 shrink-0 flex">
+          <WeatherSummary />
+        </div>
+        <div className="w-full xl:flex-1 flex">
+          <Risk />
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full items-stretch">
         <div className="col-span-1 flex">

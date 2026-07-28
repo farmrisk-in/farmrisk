@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion, MotionValue, useTransform, useSpring } from "framer-motion"; // 👈 Added useSpring
-import Image from "next/image";
+import { motion, MotionValue, useTransform, useSpring } from "framer-motion";
 
 interface WheatScrollWrapperProps {
   scrollProgress: MotionValue<number>;

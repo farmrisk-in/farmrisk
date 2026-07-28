@@ -40,6 +40,7 @@ export type HourlyWeather = {
   temperature_2m: number[];
   precipitation_probability: number[];
   wind_speed_10m: number[];
+  wind_gusts_10m: number[];
   weather_code: number[];
   icon: string[];
   rain: number[];

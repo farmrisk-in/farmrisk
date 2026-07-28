@@ -290,6 +290,7 @@ const params = {
     "weather_code",
     "is_day",
     "rain",
+    "wind_gusts_10m",
   ],
   current: [
     "temperature_2m",
@@ -510,6 +511,10 @@ export async function GET(request: NextRequest) {
         0,
       ).splice(-24),
       rain: normalizeArray(hourly.variables(5)!.valuesArray(), 1).splice(-24),
+      wind_gusts_10m: normalizeArray(
+        hourly.variables(6)!.valuesArray(),
+        0,
+      ).splice(-24),
       icon: normalizeArray(hourly.variables(3)!.valuesArray(), 0)
         .map((code) => {
           const isDay = normalizeArray(
@@ -555,9 +560,6 @@ export async function GET(request: NextRequest) {
       current.variables(9)!.value(),
     ),
   };
-
-  // REMOVE
-  console.log(hourly.variables(0)?.valuesArray());
 
   return Response.json(weatherData);
 }

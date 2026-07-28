@@ -4,6 +4,7 @@ import React from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeatherSummary } from "@/hooks/useWeatherSummary";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Summary } from "lucide-react";
 
 const TITLE_TRANSLATIONS: Record<string, string> = {
   en: "24-Hour Weather Summary",
@@ -37,11 +38,14 @@ export default function WeatherSummary() {
   const title = TITLE_TRANSLATIONS[language] || TITLE_TRANSLATIONS.en;
 
   return (
-    <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm">
+    <div className="w-full bg-card border border-border rounded-xl p-4 pb-2 shadow-sm select-none">
+      {/* SECTION SUBTITLE BAR */}
+      <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
+        <Summary className="size-4.5" />
+        {title}
+      </div>
+
       <div className="flex-1 min-w-0">
-        <h4 className="text-xs sm:text-sm font-semibold tracking-tight text-foreground mb-0.5">
-          {title}
-        </h4>
         <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
           {summary}
         </p>
