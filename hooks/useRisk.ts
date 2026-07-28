@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getRiskScores, type RiskAPIResponse } from "@/lib/api/risk";
 import { useWeather } from "@/hooks/useWeather";
+import { useForecast } from "@/hooks/useForecast";
 import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useLocationContext } from "@/providers/LocationProvider";
 
@@ -10,17 +11,19 @@ import { useLocationContext } from "@/providers/LocationProvider";
  * useRisk
  *
  * Computes all six agricultural risk scores (heavy_rain, heat_stress, pest,
- * lightning, wind, frost) plus an overall score by assembling inputs from the
- * weather and soil-moisture hooks and posting to /api/risk.
+ * lightning, wind, frost) plus an overall score.
  *
  * Data flow:
- *   useWeather()      → daily temps, precipitation, current humidity/gusts,
- *                       lightning score, hourly wind gusts
+ *   useForecast()     → BIAS-CORRECTED rainfall (pcp_corrected) and temperatures
+ *                       (tmax_corrected, tmin_corrected)
  *   useSoilMoisture() → soil moisture percentile (antecedent wetness amplifier)
+ *   useWeather()      → current humidity, wind speed/gusts, lightning score,
+ *                       and hourly wind gusts
  */
 export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains") {
   const { location, isResolving } = useLocationContext();
   const { data: weatherData, isLoading: isWeatherLoading } = useWeather();
+  const { forecastRows, isLoading: isForecastLoading } = useForecast();
   const { data: soilData, isLoading: isSoilLoading } = useSoilMoisture();
 
   // ---- derive soil percentile from the most recent historical row ----
@@ -31,32 +34,60 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
   const soil_percentile = latestHistoricalRow?.sm_percentile ?? null;
   const soil_moisture_available = soil_percentile !== null;
 
-  // ---- derive risk inputs from weather data ----
-  const daily = weatherData?.daily;
+  // ---- derive BIAS-CORRECTED rain and temperature inputs from useForecast() ----
+  // Take the next 5 days from forecastRows
+  const next5Rows = forecastRows.slice(0, 5);
+
+  const rain_next5 =
+    next5Rows.length > 0
+      ? next5Rows.map((r) => r.pcp_corrected ?? r.pcp ?? 0)
+      : weatherData?.daily?.precipitation_sum?.slice(0, 5) ?? null;
+
+  const rain_dates =
+    next5Rows.length > 0
+      ? next5Rows.map((r) => r.date)
+      : weatherData?.daily?.time
+          ?.slice(0, 5)
+          .map((t) => new Date(t).toISOString().slice(0, 10)) ?? null;
+
+  const max_temp =
+    next5Rows.length > 0
+      ? (next5Rows[0]?.tmax_corrected ?? next5Rows[0]?.tmax ?? null)
+      : (weatherData?.daily?.temperature_2m_max?.[0] ?? null);
+
+  const min_temp =
+    next5Rows.length > 0
+      ? (next5Rows[0]?.tmin_corrected ?? next5Rows[0]?.tmin ?? null)
+      : (weatherData?.daily?.temperature_2m_min?.[0] ?? null);
+
+  const avg_max_temp =
+    next5Rows.length > 0
+      ? next5Rows.reduce(
+          (sum, r) => sum + (r.tmax_corrected ?? r.tmax ?? 0),
+          0
+        ) / next5Rows.length
+      : weatherData?.daily?.temperature_2m_max &&
+        weatherData.daily.temperature_2m_max.length > 0
+      ? weatherData.daily.temperature_2m_max.reduce((a, b) => a + b, 0) /
+        weatherData.daily.temperature_2m_max.length
+      : null;
+
+  const avg_min_temp =
+    next5Rows.length > 0
+      ? next5Rows.reduce(
+          (sum, r) => sum + (r.tmin_corrected ?? r.tmin ?? 0),
+          0
+        ) / next5Rows.length
+      : weatherData?.daily?.temperature_2m_min &&
+        weatherData.daily.temperature_2m_min.length > 0
+      ? weatherData.daily.temperature_2m_min.reduce((a, b) => a + b, 0) /
+        weatherData.daily.temperature_2m_min.length
+      : null;
+
+  // ---- derive current & real-time weather inputs from useWeather() ----
   const current = weatherData?.current;
   const hourly = weatherData?.hourly;
   const lightning = weatherData?.lightning;
-
-  // Next 5 days of daily precipitation
-  const rain_next5 = daily?.precipitation_sum?.slice(0, 5) ?? null;
-  const rain_dates =
-    daily?.time
-      ?.slice(0, 5)
-      .map((t) => new Date(t).toISOString().slice(0, 10)) ?? null;
-
-  // Daily temperature stats
-  const max_temp = daily?.temperature_2m_max?.[0] ?? null;
-  const min_temp = daily?.temperature_2m_min?.[0] ?? null;
-  const avg_max_temp =
-    daily?.temperature_2m_max && daily.temperature_2m_max.length > 0
-      ? daily.temperature_2m_max.reduce((a, b) => a + b, 0) /
-        daily.temperature_2m_max.length
-      : null;
-  const avg_min_temp =
-    daily?.temperature_2m_min && daily.temperature_2m_min.length > 0
-      ? daily.temperature_2m_min.reduce((a, b) => a + b, 0) /
-        daily.temperature_2m_min.length
-      : null;
 
   // Current conditions
   const humidity = current?.relative_humidity_2m ?? null;
@@ -74,6 +105,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
 
   // ---- stable cache key fingerprint ----
   const rainHash = rain_next5?.map((v) => v?.toFixed(1)).join(",") ?? "none";
+  const tempHash = `${max_temp?.toFixed(1) ?? "none"}_${min_temp?.toFixed(1) ?? "none"}`;
 
   const payload = {
     rain_next5,
@@ -100,6 +132,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
       location?.lat,
       location?.lng,
       rainHash,
+      tempHash,
       soil_percentile,
       station_type,
     ],
@@ -107,9 +140,10 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
     enabled:
       !isResolving &&
       !isWeatherLoading &&
+      !isForecastLoading &&
       !!location &&
-      !!weatherData,
-    staleTime: 60 * 60 * 1000, // 1 hour — same cadence as weather
+      (next5Rows.length > 0 || !!weatherData),
+    staleTime: 60 * 60 * 1000, // 1 hour
     gcTime: 70 * 60 * 1000,
   });
 
@@ -119,6 +153,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
       isResolving ||
       !location ||
       isWeatherLoading ||
+      isForecastLoading ||
       isSoilLoading ||
       query.isLoading,
     isFetching: query.isFetching,
