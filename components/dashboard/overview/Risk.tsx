@@ -17,19 +17,19 @@ import {
 } from "lucide-react";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/hooks/useLanguage";
 
-// Human-readable labels and Lucide icons for each hazard key
-const HAZARD_META: Record<string, { label: string; icon: React.ReactElement }> =
-  {
-    heavy_rain: { label: "Heavy Rain", icon: <CloudRainWind /> },
-    heat_stress: { label: "Heat Stress", icon: <Flame /> },
-    pest: { label: "Pest & Disease", icon: <Bug /> },
-    lightning: { label: "Lightning", icon: <Zap /> },
-    wind: { label: "Wind", icon: <Wind /> },
-    frost: { label: "Frost", icon: <Snowflake /> },
-  };
+// Human-readable labels and Lucide icons for each hazard key — labels are resolved via t at render time
+const HAZARD_ICONS: Record<string, React.ReactElement> = {
+  heavy_rain: <CloudRainWind />,
+  heat_stress: <Flame />,
+  pest: <Bug />,
+  lightning: <Zap />,
+  wind: <Wind />,
+  frost: <Snowflake />,
+};
 
-const HAZARD_KEYS = Object.keys(HAZARD_META) as (keyof typeof HAZARD_META)[];
+const HAZARD_KEYS = Object.keys(HAZARD_ICONS) as (keyof typeof HAZARD_ICONS)[];
 
 // ------------------------------------------------------------------ skeleton
 
@@ -62,6 +62,7 @@ function RiskSkeleton() {
 export default function Risk() {
   const { location, isResolving } = useLocationContext();
   const { data, isLoading, isError } = useRisk();
+  const { t } = useLanguage();
 
   if (isLoading || isResolving || !location) {
     return <RiskSkeleton />;
@@ -71,7 +72,7 @@ export default function Risk() {
     return (
       <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm flex items-center gap-2 text-muted-foreground text-xs">
         <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-        <span>Agricultural risk scores currently unavailable.</span>
+        <span>{t.dashboard?.agricultureRiskUnavailable || "Agricultural risk scores currently unavailable."}</span>
       </div>
     );
   }
@@ -83,7 +84,7 @@ export default function Risk() {
       {/* Header row */}
       <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
         <Gauge className="size-4.5" />
-        Agricultural Risk
+        {t.dashboard?.agricultureRisk || "Agricultural Risk"}
         {overall && (
           <Badge
             variant={"default"}
@@ -93,7 +94,7 @@ export default function Risk() {
               color: overallFg(overall.score),
             }}
           >
-            Overall: {overall.band}
+            {t.dashboard?.overall || "Overall"}: {overall.band}
           </Badge>
         )}
       </div>
@@ -116,13 +117,26 @@ export default function Risk() {
 
           if (!hazard) return null;
 
-          const meta = HAZARD_META[key];
+          const icon = HAZARD_ICONS[key];
+          const label = key === "heavy_rain"
+            ? (t.dashboard?.hazardHeavyRain || "Heavy Rain")
+            : key === "heat_stress"
+            ? (t.dashboard?.hazardHeatStress || "Heat Stress")
+            : key === "pest"
+            ? (t.dashboard?.hazardPest || "Pest & Disease")
+            : key === "lightning"
+            ? (t.dashboard?.hazardLightning || "Lightning")
+            : key === "wind"
+            ? (t.dashboard?.hazardWind || "Wind")
+            : key === "frost"
+            ? (t.dashboard?.hazardFrost || "Frost")
+            : key;
 
           return (
             <RiskChart
               key={key}
-              icon={meta.icon}
-              title={meta.label}
+              icon={icon}
+              title={label}
               score={hazard.score}
               major_factor={hazard.major_factor}
               reasons={hazard.reasons}

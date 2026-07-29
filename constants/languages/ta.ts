@@ -5,6 +5,11 @@ export const ta = {
   heroEyebrow: "செயற்கைக்கோள் நுண்ணறிவு",
   heading: "ஆபத்து வருவதற்குள் {வயலைப்} பாருங்கள்.",
   heroHeading: "ஆபத்து வருவதற்குள் வயலைப் பாருங்கள்.",
+  heroSubheadingPart1:
+    "2025 ஆம் ஆண்டில் 99% நாட்களில் இந்தியா தீவிர வானிலை நிகழ்வுகளை அனுபவித்தது",
+  heroSubheadingPart2: ", இது நேரடியாக இந்தியாவின் ",
+  heroSubheadingPart3:
+    "முழுக்க முழுக்க மழையை நம்பியுள்ள 50% பயிர் பகுதியை அச்சுறுத்துகிறது",
   heroSubheading:
     "வேகமான முடிவுகளுக்கு பயிர் நிலைமைகள், வானிலை அழுத்தம் மற்றும் வயல் மாற்றங்களை ஒரே நேரடி பார்வையில் கண்காணிக்கவும்.",
   heroCta: "டாஷ்போர்டைத் திறக்கவும்",
@@ -85,6 +90,22 @@ export const ta = {
     livePreview: "நேரடி டாஷ்போர்டு முன்னோட்டம்",
     weatherToday: "இன்றைய வானிலை",
     hourlyWeather: "மணிநேர வானிலை",
+
+    goodMorning: "காலை வணக்கம்",
+    goodAfternoon: "மதிய வணக்கம்",
+    goodEvening: "மாலை வணக்கம்",
+    goodNight: "இரவு வணக்கம்",
+    personalisedDashboard: "தனிப்பயனாக்கப்பட்ட டாஷ்போர்டு",
+
+    agricultureRisk: "விவசாய அபாயம்",
+    agricultureRiskUnavailable: "விவசாய அபாய மதிப்பெண்கள் தற்போது கிடைக்கவில்லை.",
+    overall: "மொத்தம்",
+    hazardHeavyRain: "கனமழை",
+    hazardHeatStress: "வெப்ப அழுத்தம்",
+    hazardPest: "பூச்சி மற்றும் நோய்",
+    hazardLightning: "மின்னல்",
+    hazardWind: "காற்று",
+    hazardFrost: "பனி",
     forecast16Day: "16 நாள் முன்னறிவிப்பு",
     farmTasks: "விவசாய பணிகள்",
     aiOverview: "AI கண்ணோட்டம்",

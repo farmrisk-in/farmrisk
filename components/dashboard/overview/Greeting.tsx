@@ -18,13 +18,13 @@ interface GreetingProps {
   setSelectedCrop: (crop: CropOption) => void;
 }
 
-function getGreeting(): string {
+function getGreeting(t: { dashboard: { goodMorning: string; goodAfternoon: string; goodEvening: string; goodNight: string } }): string {
   const hour = new Date().getHours();
-  if (hour < 5) return "Good Night";
-  if (hour < 12) return "Good Morning";
-  if (hour < 17) return "Good Afternoon";
-  if (hour < 21) return "Good Evening";
-  return "Good Night";
+  if (hour < 5) return t.dashboard.goodNight;
+  if (hour < 12) return t.dashboard.goodMorning;
+  if (hour < 17) return t.dashboard.goodAfternoon;
+  if (hour < 21) return t.dashboard.goodEvening;
+  return t.dashboard.goodNight;
 }
 
 export default function Greeting({ selectedCrop, setSelectedCrop }: GreetingProps) {
@@ -62,7 +62,7 @@ export default function Greeting({ selectedCrop, setSelectedCrop }: GreetingProp
     }
   };
 
-  const greeting = getGreeting();
+  const greeting = getGreeting(t);
   const displayName = [firstName, lastName].filter(Boolean).join(" ") || "there";
 
   return (
@@ -78,7 +78,7 @@ export default function Greeting({ selectedCrop, setSelectedCrop }: GreetingProp
             </h2>
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <Sparkles className="size-3 text-amber-500" />
-              Personalised Dashboard
+              {t.dashboard.personalisedDashboard}
             </p>
           </div>
         )}
