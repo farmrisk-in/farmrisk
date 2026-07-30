@@ -15,20 +15,20 @@ const TRANSLATIONS: Record<string, any> = {
     subtitle: "Next 24 Hours",
   },
   hi: {
-    title: "प्रति घंटा समयरेखा",
+    title: "प्रति घंटा पूर्वानुमान",
     subtitle: "अगले 24 घंटे",
   },
   mr: {
     title: "वेळापत्रक अंदाज",
-    subtitle: "पुढील २४ तास",
+    subtitle: "पुढील 24 तास",
   },
   ta: {
-    title: "மணிநேர காலவரிசை",
+    title: "மணிநேர வானிலை முன்னறிவிப்பு",
     subtitle: "அடுத்த 24 மணிநேரம்",
   },
   gu: {
-    title: "કલાકદીઠ ટાઈમલાઈન",
-    subtitle: "આગામী 24 કલાક",
+    title: "કલાકદીઠ હવામાન",
+    subtitle: "આગામી 24 કલાક",
   },
 };
 

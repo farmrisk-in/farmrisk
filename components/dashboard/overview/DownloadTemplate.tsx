@@ -43,11 +43,8 @@ const MONTHS_LABELS = [
   "D",
 ];
 
-// A4 canvas + shared layout constants (fixed px, no responsive behavior)
-const PAGE_W = 794;
-const PAGE_H = 1123;
-const PAGE_PAD = 32; // p-8
-const CONTENT_W = PAGE_W - PAGE_PAD * 2; // 730
+// The only fixed dimension is the export canvas width (A4 at 96dpi).
+// Every container grows naturally — no fixed heights, no hidden overflow.
 
 // Helper to determine the right weather icon based on rain volume thresholds
 const getWeatherIcon = (pcp: number) => {
@@ -166,28 +163,26 @@ export default function DownloadTemplate({
 
   if (!mounted) {
     return (
-      <div
-        style={{ width: PAGE_W, minHeight: PAGE_H }}
-        className="bg-white text-slate-800 p-8 flex flex-col justify-center items-center font-sans"
-      >
+      <div className="w-[794px] bg-white text-slate-800 p-8 flex flex-col justify-center items-center font-sans">
         <p className="text-[13px] font-semibold text-emerald-700">
-          Loading report template context...
+          {t.export.loading}
         </p>
       </div>
     );
   }
 
+  const dateLocale = t.locale || (language === "hi" ? "hi-IN" : "en-US");
   const dateStr = new Date().toLocaleDateString(
-    language === "hi" ? "hi-IN" : "en-US",
+    dateLocale,
     { weekday: "long", year: "numeric", month: "long", day: "numeric" },
   );
   const timeStr = new Date().toLocaleTimeString(
-    language === "hi" ? "hi-IN" : "en-US",
+    dateLocale,
     { hour: "2-digit", minute: "2-digit" },
   );
 
   const advisoryText =
-    aiOverviewText || "Agricultural RAG overview generated successfully.";
+    aiOverviewText || t.export.advisoryFallback;
   const formattedText = advisoryText
     .split(/(\*[^*]+\*)/g)
     .map((part, index) => {
@@ -205,16 +200,13 @@ export default function DownloadTemplate({
   const renderSoilChart = () => {
     if (chartData.length === 0) {
       return (
-        <div
-          style={{ width: CONTENT_W }}
-          className="h-24 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic"
-        >
-          No hydrology data compiled for this coordinates range.
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
+          {t.export.noSoilData}
         </div>
       );
     }
 
-    const svgWidth = CONTENT_W - 24; // minus chart card padding
+    const svgWidth = 706;
     const svgHeight = 110;
     const padL = 32; // Increased to leave space for Y-axis labels
     const padR = 25;
@@ -263,10 +255,7 @@ export default function DownloadTemplate({
     }
 
     return (
-      <div
-        style={{ width: CONTENT_W }}
-        className="bg-white border border-slate-300 rounded-lg p-3"
-      >
+      <div className="w-full bg-white border border-slate-300 rounded-lg p-3">
         <svg
           width={svgWidth}
           height={svgHeight}
@@ -372,15 +361,15 @@ export default function DownloadTemplate({
             );
           })}
 
-          {xTicks.map((t, idx) => {
-            const label = new Date(t.date).toLocaleDateString("en-US", {
+          {xTicks.map((tick, idx) => {
+            const label = new Date(tick.date).toLocaleDateString(dateLocale, {
               day: "numeric",
               month: "short",
             });
             return (
               <text
                 key={idx}
-                x={t.x}
+                x={tick.x}
                 y={svgHeight - 4}
                 textAnchor="middle"
                 className="text-[8px] fill-slate-600 font-bold"
@@ -394,9 +383,9 @@ export default function DownloadTemplate({
         {/* Legend so the dot colors are actually decodable */}
         <div className="flex items-center gap-3.5 mt-2 pt-2 border-t border-slate-300">
           {[
-            { label: "Dry", color: "#f97316" },
-            { label: "Normal", color: "#64748b" },
-            { label: "Wet", color: "#0ea5e9" },
+            { label: t.export.soilDry, color: "#f97316" },
+            { label: t.export.soilNormal, color: "#64748b" },
+            { label: t.export.soilWet, color: "#0ea5e9" },
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1.25">
               <span
@@ -419,11 +408,8 @@ export default function DownloadTemplate({
   const renderForecastList = () => {
     if (forecastDays.length === 0) {
       return (
-        <div
-          style={{ width: CONTENT_W }}
-          className="h-15 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic"
-        >
-          No forecast data available for this location.
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
+          {t.export.noForecast}
         </div>
       );
     }
@@ -432,10 +418,7 @@ export default function DownloadTemplate({
     const span = max - min;
 
     return (
-      <div
-        style={{ width: CONTENT_W }}
-        className="border border-slate-300 rounded-lg bg-white p-2.5"
-      >
+      <div className="w-full border border-slate-300 rounded-lg bg-white p-2.5">
         <div
           style={{ gridTemplateColumns: `repeat(${forecastDays.length}, 1fr)` }}
           className="grid"
@@ -445,11 +428,11 @@ export default function DownloadTemplate({
             const minTemp = Math.round(day.tmin_corrected);
             const rain = day.pcp_corrected;
             const date = new Date(day.date);
-            const dayName = date.toLocaleDateString("en-US", {
+            const dayName = date.toLocaleDateString(dateLocale, {
               weekday: "short",
             });
             const dayNum = date.getDate();
-            const monthShort = date.toLocaleDateString("en-US", {
+            const monthShort = date.toLocaleDateString(dateLocale, {
               month: "short",
             });
 
@@ -537,20 +520,14 @@ export default function DownloadTemplate({
     const calendar = calendarReport?.calendar || [];
     if (calendar.length === 0) {
       return (
-        <div
-          style={{ width: CONTENT_W }}
-          className="h-12 border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic"
-        >
-          No crop cycle calendar configured.
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
+          {t.export.noCalendar}
         </div>
       );
     }
 
     return (
-      <div
-        style={{ width: CONTENT_W }}
-        className="bg-slate-50 border border-slate-300 rounded-lg p-3 flex flex-col gap-3"
-      >
+      <div className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 flex flex-col gap-3">
         {calendar.map((event, idx) => {
           const startSow = event.sowFromMon || 6;
           const endSow = event.sowToMon || startSow;
@@ -567,13 +544,13 @@ export default function DownloadTemplate({
           return (
             <div key={idx} className="flex flex-col gap-1">
               <div className="flex justify-between items-baseline text-[8.5px] font-extrabold text-slate-600 uppercase tracking-wide">
-                <span>{event.season} Season Lifecycle</span>
+                <span>{event.season} {t.export.seasonLifecycle}</span>
                 <span className="font-semibold text-slate-600 normal-case tracking-normal">
-                  Sow: Mon {startSow}–{endSow} &nbsp;•&nbsp; Harvest: Mon{" "}
+                  {t.export.sowLabel} {t.export.monthAbbr} {startSow}–{endSow} &nbsp;•&nbsp; {t.export.harvestLabel} {t.export.monthAbbr}{" "}
                   {startHarv}–{endHarv}
                 </span>
               </div>
-              <div className="relative w-full h-4.5 bg-slate-200/60 rounded-sm border border-slate-300/50 overflow-hidden">
+              <div className="relative w-full h-4.5 bg-slate-200/60 rounded-sm border border-slate-300/50">
                 <div className="absolute inset-0 grid grid-cols-12 w-full h-full pointer-events-none">
                   {MONTHS_LABELS.map((m, mIdx) => (
                     <div
@@ -621,12 +598,12 @@ export default function DownloadTemplate({
 
         <div className="flex items-center gap-3.5 pt-1 border-t border-slate-200">
           {[
-            { label: "Sowing", color: "bg-emerald-600" },
+            { label: t.export.sowing, color: "bg-emerald-600" },
             {
-              label: "Growing",
+              label: t.export.growing,
               color: "bg-amber-400/40 border border-amber-500/40",
             },
-            { label: "Harvest", color: "bg-rose-600" },
+            { label: t.export.harvest, color: "bg-rose-600" },
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1.25">
               <span
@@ -643,10 +620,7 @@ export default function DownloadTemplate({
   };
 
   return (
-    <div
-      style={{ width: PAGE_W, minHeight: PAGE_H }}
-      className="bg-white text-slate-800 p-8 flex flex-col justify-between font-sans border-t-10 border-emerald-700 box-border"
-    >
+    <div data-export-root className="w-[794px] bg-white text-slate-800 p-8 flex flex-col font-sans border-t-10 border-emerald-700 box-border">
       <div className="flex flex-col gap-4">
         {/* 1. HEADER */}
         <div className="flex justify-between items-start pb-3.5 border-b-2 border-emerald-700/30">
@@ -654,73 +628,67 @@ export default function DownloadTemplate({
             <div className="flex items-center gap-2">
               <Leaf size={20} className="text-emerald-700" />
               <h1 className="text-[22px] font-black tracking-tight text-emerald-800 leading-none">
-                FARMRISK ADVISORY
+                {t.export.reportTitle}
               </h1>
             </div>
             <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
-              Climate Intelligence &amp; Risk Report
+              {t.export.reportSubtitle}
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.25">
             <div className="flex items-center gap-1.5">
               <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider">
-                Crop:
+                {t.export.cropLabel}
               </span>
               <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800 text-[9px] font-bold uppercase tracking-wide">
                 {translateCropName(selectedCrop)}
               </span>
             </div>
             <span className="inline-block px-2.5 py-0.75 rounded-full bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wide">
-              Official Diagnostic PDF
+              {t.export.officialBadge}
             </span>
           </div>
         </div>
 
         {/* 2. REGION & RUNTIME METADATA */}
-        <div
-          style={{ width: CONTENT_W }}
-          className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-300 p-3.5 rounded-lg"
-        >
+        <div className="w-full grid grid-cols-2 gap-4 bg-slate-50 border border-slate-300 p-3.5 rounded-lg">
           <div className="flex flex-col gap-0.75">
             <div className="flex items-center gap-1.5 text-slate-600 font-bold uppercase tracking-wider text-[9px]">
               <MapPin className="size-3 text-emerald-700" />
-              <span>Target Location</span>
+              <span>{t.export.targetLocation}</span>
             </div>
-            <p className="font-extrabold text-slate-800 text-[12px] pl-4.5 truncate">
-              {location?.displayName || location?.name || "Unspecified Location"}
+            <p className="font-extrabold text-slate-800 text-[12px] pl-4.5 break-words whitespace-normal">
+              {location?.displayName || location?.name || t.export.unspecifiedLocation}
             </p>
             <p className="font-mono text-slate-600 text-[9.5px] pl-4.5">
               {location
                 ? `${location.lat.toFixed(4)}°N, ${location.lng.toFixed(4)}°E`
-                : "N/A"}
+                : t.export.notAvailable}
             </p>
           </div>
 
           <div className="flex flex-col gap-0.75 border-l border-slate-300 pl-4">
             <div className="flex items-center gap-1.5 text-slate-600 font-bold uppercase tracking-wider text-[9px]">
               <Calendar className="size-3 text-emerald-700" />
-              <span>Compilation Timestamp</span>
+              <span>{t.export.compilationTimestamp}</span>
             </div>
             <p className="font-bold text-slate-800 text-[11px] pl-4.5">
               {dateStr}
             </p>
             <p className="font-mono text-slate-600 text-[9.5px] pl-4.5">
-              {timeStr} Local Time
+              {timeStr} {t.export.localTime}
             </p>
           </div>
         </div>
 
         {/* 3. AI ADVISORY OVERVIEW */}
-        <div
-          style={{ width: CONTENT_W }}
-          className="bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex flex-col gap-2 min-h-32"
-        >
+        <div className="w-full bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-emerald-800 text-[10px] font-black uppercase tracking-wider border-b border-emerald-300 pb-1.5">
             <Bot className="size-3.5" />
-            <span>AI Agronomist Advisory Overview</span>
+            <span>{t.export.advisoryTitle}</span>
           </div>
           <div className="flex-1">
-            <p className="text-[10px] text-slate-700 leading-normal whitespace-pre-wrap">
+            <p className="text-[10px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
               {formattedText}
             </p>
           </div>
@@ -730,7 +698,7 @@ export default function DownloadTemplate({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
             <TrendingUpDown className="size-3.5 text-emerald-700" />
-            <span>16-Day Weather Forecast Timeline</span>
+            <span>{t.export.forecastTitle}</span>
           </div>
           {renderForecastList()}
         </div>
@@ -739,7 +707,7 @@ export default function DownloadTemplate({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
             <Droplets className="size-3.5 text-emerald-700" />
-            <span>Soil Hydrology &amp; Hydrometry (30-Day Trend)</span>
+            <span>{t.export.soilTitle}</span>
           </div>
           {renderSoilChart()}
         </div>
@@ -748,7 +716,7 @@ export default function DownloadTemplate({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
             <Leaf className="size-3.5 text-emerald-700" />
-            <span>Crop Seasonal Calendar Cycles</span>
+            <span>{t.export.calendarTitle}</span>
           </div>
           {renderCalendarGrid()}
         </div>
@@ -756,11 +724,11 @@ export default function DownloadTemplate({
 
       {/* 7. FOOTER */}
       <div className="border-t border-slate-300 pt-2.5 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-widest">
-        <span>© {new Date().getFullYear()} FarmRisk Corporation</span>
+        <span>© {new Date().getFullYear()} {t.export.footerCorporation}</span>
         <span>
-          Data verified against satellite hydrology and bias corrections
+          {t.export.footerVerification}
           <p className="text-[8px] text-slate-600">
-            Generated Locally &middot; Not for Regulatory Submission
+            {t.export.footerDisclaimer}
           </p>
         </span>
       </div>

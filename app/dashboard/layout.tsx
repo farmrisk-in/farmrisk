@@ -1,3 +1,5 @@
+"use client";
+
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { LocationProvider } from "@/providers/LocationProvider";
@@ -8,12 +10,14 @@ import { ModeToggle } from "@/components/ThemeChange";
 import { PageHeading } from "@/components/ui/PageHeading";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Download from "@/components/dashboard/overview/Download";
+import { useLanguage } from "@/hooks/useLanguage";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <NavigationProvider>
       <LocationProvider>
@@ -35,7 +39,12 @@ export default async function DashboardLayout({
                   color="blue"
                   className="lg:flex hidden"
                 >
-                  {new Date().toDateString()}
+                  {new Date().toLocaleDateString(t.locale, {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </Badge>
                 <Download />
                 <LanguageSwitcher isScrolled={true} rounded={false} />

@@ -122,11 +122,31 @@ const Download = ({ className }: { className?: string }) => {
   // 1. Core Snapshot Function
   const getCanvas = async () => {
     if (!printRef.current) return null;
-    // scale: 2 ensures text and charts remain crisp on A4 paper prints
-    return await html2canvas(printRef.current, {
+
+    // Wait for all fonts to finish loading before capture
+    await document.fonts.ready;
+
+    // Wait a tick for layout to settle after fonts render
+    await new Promise((r) => setTimeout(r, 300));
+
+    // Ensure the container dimensions reflect the full content
+    const el = printRef.current;
+
+    return await html2canvas(el, {
       scale: 2,
       useCORS: true,
       logging: false,
+      width: el.scrollWidth,
+      height: el.scrollHeight,
+      windowWidth: el.scrollWidth,
+      windowHeight: el.scrollHeight,
+      onclone: (doc) => {
+        const clone = doc.querySelector('[data-export-root]') as HTMLElement;
+        if (clone) {
+          clone.style.height = 'auto';
+          clone.style.overflow = 'visible';
+        }
+      },
     });
   };
 
@@ -220,11 +240,12 @@ const Download = ({ className }: { className?: string }) => {
       </DropdownMenu>
 
       {/* HIDDEN A4 TEMPLATE (Kept off-screen to prevent layout warping) */}
-      <div className="overflow-hidden absolute left-[-9999px] top-[-9999px] pointer-events-none">
+      <div className="absolute left-[-9999px] top-[-9999px] pointer-events-none">
         <div
           ref={printRef}
           className="relative flex flex-col bg-white"
-          style={{ width: "794px", minHeight: "1123px" }} // Standard 96 DPI A4 Pixel Grid
+          style={{ width: "794px" }}
+          data-export-root
         >
           <DownloadTemplate
             location={location}
