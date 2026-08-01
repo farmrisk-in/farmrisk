@@ -25,6 +25,7 @@ import { useLocationContext } from "@/providers/LocationProvider";
 import { useWeather } from "@/hooks/useWeather";
 import { useForecast } from "@/hooks/useForecast";
 import { useAI } from "@/hooks/useAI";
+import { useRisk } from "@/hooks/useRisk";
 import { type CropOption } from "./Overview";
 import { GENERAL_CROP } from "@/types/crops";
 
@@ -109,12 +110,14 @@ const Download = ({ className }: { className?: string }) => {
     selectedCrop.id,
     language,
   );
+  const { isLoading: isRiskLoading } = useRisk();
 
   const isDataLoading =
     weatherData.isLoading ||
     isForecastLoading ||
     // isCalendarLoading ||
     isAiLoading ||
+    isRiskLoading ||
     !weatherData.data?.current ||
     predictions.length === 0 ||
     !aiSummary;
@@ -126,25 +129,48 @@ const Download = ({ className }: { className?: string }) => {
     // Wait for all fonts to finish loading before capture
     await document.fonts.ready;
 
+    // Wait for any images (e.g. weather icons) inside the report to load
+    const images = Array.from(printRef.current.querySelectorAll("img"));
+    if (images.length > 0) {
+      await Promise.all(
+        images.map((img) =>
+          img.complete
+            ? Promise.resolve()
+            : new Promise<void>((resolve) => {
+                img.addEventListener("load", () => resolve(), { once: true });
+                img.addEventListener("error", () => resolve(), { once: true });
+              }),
+        ),
+      );
+    }
+
     // Wait a tick for layout to settle after fonts render
     await new Promise((r) => setTimeout(r, 300));
 
     // Ensure the container dimensions reflect the full content
     const el = printRef.current;
 
+    // Capture exactly the element bounds (no page offset, no shift)
+    const rect = el.getBoundingClientRect();
+
     return await html2canvas(el, {
       scale: 2,
       useCORS: true,
       logging: false,
-      width: el.scrollWidth,
-      height: el.scrollHeight,
-      windowWidth: el.scrollWidth,
-      windowHeight: el.scrollHeight,
+      width: rect.width,
+      height: rect.height,
+      windowWidth: rect.width,
+      windowHeight: rect.height,
+      scrollX: 0,
+      scrollY: 0,
       onclone: (doc) => {
         const clone = doc.querySelector('[data-export-root]') as HTMLElement;
         if (clone) {
           clone.style.height = 'auto';
           clone.style.overflow = 'visible';
+          clone.style.transform = 'none';
+          clone.style.translate = 'none';
+          clone.style.scale = 'none';
         }
       },
     });

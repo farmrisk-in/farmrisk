@@ -8,6 +8,13 @@ import {
   Bot,
   TrendingUpDown,
   Droplets,
+  CloudRainWind,
+  Flame,
+  Bug,
+  Zap,
+  Wind,
+  Snowflake,
+  Gauge,
 } from "lucide-react";
 import { type SelectedLocation } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
@@ -19,6 +26,8 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { useAI } from "@/hooks/useAI";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useIrrigation } from "@/hooks/useIrrigation";
+import { useRisk } from "@/hooks/useRisk";
+import { riskColor } from "@/components/ui/riskChart";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -107,6 +116,60 @@ export default function DownloadTemplate({
     }
   };
 
+  const translateBand = (band: string) => {
+    switch (band) {
+      case "Extreme":
+        return t.export.riskBandExtreme;
+      case "High":
+        return t.export.riskBandHigh;
+      case "Moderate":
+        return t.export.riskBandModerate;
+      case "Low":
+        return t.export.riskBandLow;
+      case "Minimal":
+        return t.export.riskBandMinimal;
+      default:
+        return band;
+    }
+  };
+
+  const hazardLabel = (key: string) => {
+    switch (key) {
+      case "heavy_rain":
+        return t.dashboard.hazardHeavyRain;
+      case "heat_stress":
+        return t.dashboard.hazardHeatStress;
+      case "pest":
+        return t.dashboard.hazardPest;
+      case "lightning":
+        return t.dashboard.hazardLightning;
+      case "wind":
+        return t.dashboard.hazardWind;
+      case "frost":
+        return t.dashboard.hazardFrost;
+      default:
+        return key;
+    }
+  };
+
+  const HAZARD_ICONS: Record<string, React.ReactNode> = {
+    heavy_rain: <CloudRainWind size={14} className="shrink-0 text-emerald-700" />,
+    heat_stress: <Flame size={14} className="shrink-0 text-emerald-700" />,
+    pest: <Bug size={14} className="shrink-0 text-emerald-700" />,
+    lightning: <Zap size={14} className="shrink-0 text-emerald-700" />,
+    wind: <Wind size={14} className="shrink-0 text-emerald-700" />,
+    frost: <Snowflake size={14} className="shrink-0 text-emerald-700" />,
+  };
+
+  const HAZARD_KEYS = [
+    "heavy_rain",
+    "heat_stress",
+    "pest",
+    "lightning",
+    "wind",
+    "frost",
+  ] as const;
+
   const daysbefore = useIrrigation();
 
   const { forecastRows } = useForecast();
@@ -114,6 +177,7 @@ export default function DownloadTemplate({
   const { data: weatherReport } = useWeather();
   const { data: calendarReport } = useCalendar(selectedCrop.id);
   const { data: aiOverviewText } = useAI(selectedCrop.id, language);
+  const { data: riskReport, isLoading: isRiskLoading } = useRisk();
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -200,13 +264,13 @@ export default function DownloadTemplate({
   const renderSoilChart = () => {
     if (chartData.length === 0) {
       return (
-        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
-          {t.export.noSoilData}
-        </div>
+      <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-3.5">
+        {t.export.noSoilData}
+      </div>
       );
     }
 
-    const svgWidth = 706;
+    const svgWidth = 700;
     const svgHeight = 110;
     const padL = 32; // Increased to leave space for Y-axis labels
     const padR = 25;
@@ -255,12 +319,12 @@ export default function DownloadTemplate({
     }
 
     return (
-      <div className="w-full bg-white border border-slate-300 rounded-lg p-3">
+      <div className="w-full bg-white border border-slate-300 rounded-lg p-3.5">
         <svg
           width={svgWidth}
           height={svgHeight}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="overflow-visible"
+          className="block w-full overflow-visible"
         >
           {/* Background area for Wet conditions (70 - 100%) */}
           <rect
@@ -390,7 +454,7 @@ export default function DownloadTemplate({
             <div key={l.label} className="flex items-center gap-1.25">
               <span
                 style={{ backgroundColor: l.color }}
-                className="w-2 h-2 rounded-full inline-block border border-slate-700"
+                className="w-2 h-2 rounded-full inline-block border border-slate-700 shrink-0"
               />
               <span className="text-[8.5px] font-bold text-slate-700 uppercase tracking-wide">
                 {l.label}
@@ -408,7 +472,7 @@ export default function DownloadTemplate({
   const renderForecastList = () => {
     if (forecastDays.length === 0) {
       return (
-        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-3.5">
           {t.export.noForecast}
         </div>
       );
@@ -418,7 +482,7 @@ export default function DownloadTemplate({
     const span = max - min;
 
     return (
-      <div className="w-full border border-slate-300 rounded-lg bg-white p-2.5">
+      <div className="w-full border border-slate-300 rounded-lg bg-white p-3.5">
         <div
           style={{ gridTemplateColumns: `repeat(${forecastDays.length}, 1fr)` }}
           className="grid"
@@ -520,14 +584,14 @@ export default function DownloadTemplate({
     const calendar = calendarReport?.calendar || [];
     if (calendar.length === 0) {
       return (
-        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-4">
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-3.5">
           {t.export.noCalendar}
         </div>
       );
     }
 
     return (
-      <div className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3 flex flex-col gap-3">
+      <div className="w-full bg-slate-50 border border-slate-300 rounded-lg p-3.5 flex flex-col gap-3">
         {calendar.map((event, idx) => {
           const startSow = event.sowFromMon || 6;
           const endSow = event.sowToMon || startSow;
@@ -607,7 +671,7 @@ export default function DownloadTemplate({
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1.25">
               <span
-                className={cn("w-2.25 h-2.25 rounded-sm inline-block", l.color)}
+                className={cn("w-2.25 h-2.25 rounded-sm inline-block shrink-0", l.color)}
               />
               <span className="text-[8.5px] font-semibold text-slate-600 uppercase tracking-wide">
                 {l.label}
@@ -619,19 +683,89 @@ export default function DownloadTemplate({
     );
   };
 
+  // ---------- Agricultural Risk ----------
+  const renderRiskGrid = () => {
+    if (isRiskLoading) {
+      return (
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-3.5">
+          {t.export.loading}
+        </div>
+      );
+    }
+
+    if (!riskReport) {
+      return (
+        <div className="w-full border border-dashed border-slate-300 rounded-lg flex items-center justify-center text-slate-400 text-[10px] italic p-3.5">
+          {t.export.riskUnavailable}
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full border border-slate-300 rounded-lg bg-white p-3.5 flex flex-col gap-3">
+        {/* Overall score */}
+        <div className="flex items-center justify-between">
+          <span className="text-[8.5px] font-bold text-slate-600 uppercase tracking-wide">
+            {t.export.riskOverall}
+          </span>
+          <span
+            className="px-2 py-0.5 rounded-full text-[9px] font-extrabold"
+            style={{
+              backgroundColor: `${riskColor(riskReport.overall.score)}18`,
+              color: riskColor(riskReport.overall.score),
+            }}
+          >
+            {Math.round(riskReport.overall.score)} ·{" "}
+            {translateBand(riskReport.overall.band)}
+          </span>
+        </div>
+
+        {/* Six hazard gauges */}
+        <div className="grid grid-cols-6 gap-2 w-full">
+          {HAZARD_KEYS.map((key) => {
+            const hazard = riskReport[key];
+            if (!hazard) return null;
+            const score = Math.round(hazard.score);
+            const color = riskColor(score);
+            return (
+              <div
+                key={key}
+                className="flex flex-col items-center justify-center gap-1 border border-slate-200 rounded-lg p-2 text-center"
+              >
+                {HAZARD_ICONS[key]}
+                <span className="min-w-0 text-[8px] font-bold text-slate-700 text-center leading-tight">
+                  {hazardLabel(key)}
+                </span>
+                <span className="text-[12px] font-black tabular-nums leading-none" style={{ color }}>
+                  {score}
+                </span>
+                <span
+                  className="text-[7.5px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ backgroundColor: `${color}18`, color }}
+                >
+                  {translateBand(hazard.band)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div data-export-root className="w-[794px] bg-white text-slate-800 p-8 flex flex-col font-sans border-t-10 border-emerald-700 box-border">
       <div className="flex flex-col gap-4">
         {/* 1. HEADER */}
-        <div className="flex justify-between items-start pb-3.5 border-b-2 border-emerald-700/30">
+        <div className="flex justify-between items-center pb-3.5 border-b-2 border-emerald-700/30">
           <div className="flex flex-col gap-0.75">
             <div className="flex items-center gap-2">
-              <Leaf size={20} className="text-emerald-700" />
-              <h1 className="text-[22px] font-black tracking-tight text-emerald-800 leading-none">
+              <Leaf size={20} className="shrink-0 text-emerald-700" />
+              <h1 className="min-w-0 text-[22px] font-black tracking-tight text-emerald-800 leading-none">
                 {t.export.reportTitle}
               </h1>
             </div>
-            <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+            <p className="min-w-0 text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
               {t.export.reportSubtitle}
             </p>
           </div>
@@ -640,22 +774,22 @@ export default function DownloadTemplate({
               <span className="text-[8.5px] font-bold text-slate-500 uppercase tracking-wider">
                 {t.export.cropLabel}
               </span>
-              <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800 text-[9px] font-bold uppercase tracking-wide">
+              <span className="inline-block px-2 py-0.5 rounded bg-emerald-50 border border-emerald-300 text-emerald-800 text-[9px] font-bold uppercase tracking-wide shrink-0">
                 {translateCropName(selectedCrop)}
               </span>
             </div>
-            <span className="inline-block px-2.5 py-0.75 rounded-full bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wide">
+            <span className="inline-block px-2.5 py-0.75 rounded-full bg-emerald-700 text-white text-[9px] font-extrabold uppercase tracking-wide shrink-0">
               {t.export.officialBadge}
             </span>
           </div>
         </div>
 
         {/* 2. REGION & RUNTIME METADATA */}
-        <div className="w-full grid grid-cols-2 gap-4 bg-slate-50 border border-slate-300 p-3.5 rounded-lg">
+        <div className="w-full grid grid-cols-2 gap-4 items-stretch bg-slate-50 border border-slate-300 p-3.5 rounded-lg">
           <div className="flex flex-col gap-0.75">
             <div className="flex items-center gap-1.5 text-slate-600 font-bold uppercase tracking-wider text-[9px]">
-              <MapPin className="size-3 text-emerald-700" />
-              <span>{t.export.targetLocation}</span>
+              <MapPin className="size-3 text-emerald-700 shrink-0" />
+              <span className="min-w-0">{t.export.targetLocation}</span>
             </div>
             <p className="font-extrabold text-slate-800 text-[12px] pl-4.5 break-words whitespace-normal">
               {location?.displayName || location?.name || t.export.unspecifiedLocation}
@@ -669,8 +803,8 @@ export default function DownloadTemplate({
 
           <div className="flex flex-col gap-0.75 border-l border-slate-300 pl-4">
             <div className="flex items-center gap-1.5 text-slate-600 font-bold uppercase tracking-wider text-[9px]">
-              <Calendar className="size-3 text-emerald-700" />
-              <span>{t.export.compilationTimestamp}</span>
+              <Calendar className="size-3 text-emerald-700 shrink-0" />
+              <span className="min-w-0">{t.export.compilationTimestamp}</span>
             </div>
             <p className="font-bold text-slate-800 text-[11px] pl-4.5">
               {dateStr}
@@ -684,46 +818,53 @@ export default function DownloadTemplate({
         {/* 3. AI ADVISORY OVERVIEW */}
         <div className="w-full bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-emerald-800 text-[10px] font-black uppercase tracking-wider border-b border-emerald-300 pb-1.5">
-            <Bot className="size-3.5" />
-            <span>{t.export.advisoryTitle}</span>
+            <Bot className="size-3.5 shrink-0" />
+            <span className="min-w-0">{t.export.advisoryTitle}</span>
           </div>
-          <div className="flex-1">
-            <p className="text-[10px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
-              {formattedText}
-            </p>
-          </div>
+          <p className="text-[10px] text-slate-700 leading-relaxed whitespace-pre-wrap break-words">
+            {formattedText}
+          </p>
         </div>
 
-        {/* 4. 16-DAY FORECAST */}
+        {/* 4. AGRICULTURAL RISK */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
-            <TrendingUpDown className="size-3.5 text-emerald-700" />
-            <span>{t.export.forecastTitle}</span>
+            <Gauge className="size-3.5 text-emerald-700 shrink-0" />
+            <span className="min-w-0">{t.export.riskTitle}</span>
+          </div>
+          {renderRiskGrid()}
+        </div>
+
+        {/* 5. 16-DAY FORECAST */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
+            <TrendingUpDown className="size-3.5 text-emerald-700 shrink-0" />
+            <span className="min-w-0">{t.export.forecastTitle}</span>
           </div>
           {renderForecastList()}
         </div>
 
-        {/* 5. SOIL HYDROMETRY */}
+        {/* 6. SOIL HYDROMETRY */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
-            <Droplets className="size-3.5 text-emerald-700" />
-            <span>{t.export.soilTitle}</span>
+            <Droplets className="size-3.5 text-emerald-700 shrink-0" />
+            <span className="min-w-0">{t.export.soilTitle}</span>
           </div>
           {renderSoilChart()}
         </div>
 
-        {/* 6. CROP CALENDAR */}
+        {/* 7. CROP CALENDAR */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
-            <Leaf className="size-3.5 text-emerald-700" />
-            <span>{t.export.calendarTitle}</span>
+            <Leaf className="size-3.5 text-emerald-700 shrink-0" />
+            <span className="min-w-0">{t.export.calendarTitle}</span>
           </div>
           {renderCalendarGrid()}
         </div>
       </div>
 
-      {/* 7. FOOTER */}
-      <div className="border-t border-slate-300 pt-2.5 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-widest">
+      {/* 8. FOOTER */}
+      <div className="mt-4 border-t border-slate-300 pt-2.5 flex justify-between items-center text-[8px] text-slate-600 font-bold uppercase tracking-widest">
         <span>© {new Date().getFullYear()} {t.export.footerCorporation}</span>
         <span>
           {t.export.footerVerification}
