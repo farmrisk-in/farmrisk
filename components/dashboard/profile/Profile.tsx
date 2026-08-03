@@ -3,20 +3,19 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useFields } from "@/hooks/useFields";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useCrop } from "@/hooks/useCrop";
+import { useNavigation } from "@/hooks/useNavigation";
+import { translateCropName } from "@/lib/cropName";
+import { cn } from "@/lib/utils";
 import {
   User,
   Phone,
@@ -31,9 +30,11 @@ import {
   Crop,
   ZoomIn,
   ZoomOut,
-  Mail,
   KeyRound,
   Lock,
+  Check,
+  ChevronRight,
+  LandPlot,
 } from "lucide-react";
 
 export default function Profile() {
@@ -46,7 +47,10 @@ export default function Profile() {
     updatePassword,
     isUpdatingPassword,
   } = useProfile();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
+  const { crops: cropOptions } = useCrop();
+  const { setCurrentPage } = useNavigation();
+  const { fields: savedFields } = useFields();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -57,6 +61,9 @@ export default function Profile() {
   const [age, setAge] = useState<string>("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [crops, setCrops] = useState<string[]>([]);
+
+  const cropChoices = cropOptions.filter((c) => c.id !== "general");
 
   // Change Password Dialog States
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
@@ -73,14 +80,22 @@ export default function Profile() {
   // Sync profile data when loaded via TanStack Query
   useEffect(() => {
     if (profile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFirstName(profile.first_name || "");
       setLastName(profile.last_name || "");
       setPhone(profile.phone || "");
       setAge(profile.age ? String(profile.age) : "");
       setLocation(profile.location || "");
       setAvatarUrl(profile.avatar_url || "");
+      setCrops(profile.crops || []);
     }
   }, [profile]);
+
+  const toggleCrop = (id: string) => {
+    setCrops((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
+  };
 
   // Step 1: File selection triggers crop dialog
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +126,7 @@ export default function Profile() {
   };
 
   // Step 2: Auto Crop, Resize to 300x300, and Compress to JPEG (~30KB)
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const handleApplyCropAndCompress = useCallback(() => {
     const img = cropImgRef.current;
     if (!img) return;
@@ -181,6 +197,7 @@ export default function Profile() {
         age: ageNum,
         location: location.trim(),
         avatar_url: avatarUrl.trim(),
+        crops,
       });
 
       toast.success(
@@ -188,6 +205,7 @@ export default function Profile() {
           ? "प्रोफ़ाइल सफलतापूर्वक सहेजी गई!"
           : "Profile updated successfully!",
       );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(
         err?.message ||
@@ -237,6 +255,7 @@ export default function Profile() {
       setNewPassword("");
       setConfirmPassword("");
       setIsPasswordOpen(false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(
         err?.message ||
@@ -247,9 +266,23 @@ export default function Profile() {
     }
   };
 
+  // Localized labels (matching the existing Profile localization style)
+  const tMyFields = language === "hi" ? "मेरे खेत" : "My Fields";
+  const tCropsIGrow =
+    language === "hi" ? "मैं कौन सी फसलें उगाता/उगाती हूँ" : "Crops I Grow";
+  const tSavedFields =
+    language === "hi" ? "खेत सहेजे गए" : "saved fields";
+  const tNoFieldsYet =
+    language === "hi" ? "अभी तक कोई खेत नहीं जोड़ा गया" : "No fields added yet";
+
+  const tMyFieldsSummary = (count: number) =>
+    count > 0
+      ? `${count} ${tSavedFields}`
+      : tNoFieldsYet;
+
   if (isLoading) {
     return (
-      <div className="w-full max-w-3xl mx-auto p-4 space-y-4">
+      <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
         <Skeleton className="h-32 w-full rounded-md" />
         <Skeleton className="h-80 w-full rounded-md" />
       </div>
@@ -271,7 +304,7 @@ export default function Profile() {
     : "N/A";
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-3 sm:p-4 space-y-4 animate-in fade-in duration-200">
+    <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 space-y-4 animate-in fade-in duration-200">
       {/* Hidden File Input */}
       <input
         ref={fileInputRef}
@@ -363,134 +396,200 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* 2. PROFILE EDIT FORM (rounded-md styling) */}
-      <form
-        onSubmit={handleSave}
-        className="space-y-4 bg-card border border-border rounded-md p-4 sm:p-5 shadow-xs"
+      {/* 2. MY FIELDS SUMMARY */}
+      <button
+        type="button"
+        onClick={() => setCurrentPage("MyFields")}
+        className="group flex w-full items-center gap-3 rounded-md border border-border bg-card p-4 text-left shadow-xs transition-all hover:border-emerald-400/60 hover:bg-muted/40 cursor-pointer"
       >
-        <div className="flex items-center justify-between border-b border-border pb-3">
-          <div className="flex items-center gap-2">
-            <User className="size-4 text-emerald-500" />
-            <h3 className="font-bold text-sm text-foreground">
-              {language === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
-            </h3>
-          </div>
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+          <LandPlot className="size-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-foreground">{tMyFields}</p>
+          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+            {tMyFieldsSummary(savedFields.length)}
+          </p>
+        </div>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      </button>
 
-          {/* Image Upload Action with clear button */}
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
-              className="h-8 text-xs px-2.5 rounded-md flex items-center gap-1.5 border-border hover:bg-muted cursor-pointer"
-            >
-              <Upload className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
-            </Button>
+      {/* 3. PROFILE INFORMATION + CROPS I GROW FORM */}
+      <form onSubmit={handleSave} className="space-y-4">
+        {/* 2a. Profile Information */}
+        <div className="bg-card border border-border rounded-md p-4 sm:p-5 shadow-xs">
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <div className="flex items-center gap-2">
+              <User className="size-4 text-emerald-500" />
+              <h3 className="font-bold text-sm text-foreground">
+                {language === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
+              </h3>
+            </div>
 
-            {avatarUrl && (
+            {/* Image Upload Action with clear button */}
+            <div className="flex items-center gap-2">
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setAvatarUrl("")}
-                className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer shrink-0"
-                title="Remove photo"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                className="h-8 text-xs px-2.5 rounded-md flex items-center gap-1.5 border-border hover:bg-muted cursor-pointer"
               >
-                <Trash2 className="size-3.5" />
+                <Upload className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
               </Button>
-            )}
+
+              {avatarUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setAvatarUrl("")}
+                  className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer shrink-0"
+                  title="Remove photo"
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Input Fields */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            {/* First Name */}
+            <div className="space-y-1">
+              <Label htmlFor="firstName" className="text-xs font-semibold">
+                {language === "hi" ? "पहला नाम" : "First Name"}
+              </Label>
+              <Input
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="e.g. Ramesh"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            {/* Last Name */}
+            <div className="space-y-1">
+              <Label htmlFor="lastName" className="text-xs font-semibold">
+                {language === "hi" ? "अंतिम नाम" : "Last Name"}
+              </Label>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="e.g. Patel"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div className="space-y-1">
+              <Label
+                htmlFor="phone"
+                className="text-xs font-semibold flex items-center gap-1.5"
+              >
+                <Phone className="size-3 text-muted-foreground" />
+                {language === "hi" ? "फ़ोन नंबर" : "Phone Number"}
+              </Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="9876543210"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            {/* Age */}
+            <div className="space-y-1">
+              <Label htmlFor="age" className="text-xs font-semibold">
+                {language === "hi" ? "आयु (वर्ष)" : "Age (Years)"}
+              </Label>
+              <Input
+                id="age"
+                type="number"
+                min={1}
+                max={120}
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                placeholder="e.g. 42"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
+
+            {/* Location / Village */}
+            <div className="sm:col-span-2 space-y-1">
+              <Label
+                htmlFor="location"
+                className="text-xs font-semibold flex items-center gap-1.5"
+              >
+                <MapPin className="size-3 text-muted-foreground" />
+                {language === "hi" ? "स्थान / जिला" : "Location / District"}
+              </Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. Dholka, Ahmedabad, Gujarat"
+                className="bg-background h-8.5 text-xs rounded-md"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Input Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-          {/* First Name */}
-          <div className="space-y-1">
-            <Label htmlFor="firstName" className="text-xs font-semibold">
-              {language === "hi" ? "पहला नाम" : "First Name"}
-            </Label>
-            <Input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="e.g. Ramesh"
-              className="bg-background h-8.5 text-xs rounded-md"
-            />
+        {/* 2b. Crops I Grow */}
+        <div
+          id="crops-section"
+          className="scroll-mt-3 bg-card border border-border rounded-md p-4 sm:p-5 shadow-xs"
+        >
+          <div className="flex items-center gap-2 border-b border-border pb-3">
+            <Crop className="size-4 text-emerald-500" />
+            <h3 className="font-bold text-sm text-foreground">{tCropsIGrow}</h3>
           </div>
 
-          {/* Last Name */}
-          <div className="space-y-1">
-            <Label htmlFor="lastName" className="text-xs font-semibold">
-              {language === "hi" ? "अंतिम नाम" : "Last Name"}
-            </Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="e.g. Patel"
-              className="bg-background h-8.5 text-xs rounded-md"
-            />
-          </div>
-
-          {/* Phone Number */}
-          <div className="space-y-1">
-            <Label
-              htmlFor="phone"
-              className="text-xs font-semibold flex items-center gap-1.5"
-            >
-              <Phone className="size-3 text-muted-foreground" />
-              {language === "hi" ? "फ़ोन नंबर" : "Phone Number"}
-            </Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="9876543210"
-              className="bg-background h-8.5 text-xs rounded-md"
-            />
-          </div>
-
-          {/* Age */}
-          <div className="space-y-1">
-            <Label htmlFor="age" className="text-xs font-semibold">
-              {language === "hi" ? "आयु (वर्ष)" : "Age (Years)"}
-            </Label>
-            <Input
-              id="age"
-              type="number"
-              min={1}
-              max={120}
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              placeholder="e.g. 42"
-              className="bg-background h-8.5 text-xs rounded-md"
-            />
-          </div>
-
-          {/* Location / Village */}
-          <div className="sm:col-span-2 space-y-1">
-            <Label
-              htmlFor="location"
-              className="text-xs font-semibold flex items-center gap-1.5"
-            >
-              <MapPin className="size-3 text-muted-foreground" />
-              {language === "hi" ? "स्थान / जिला" : "Location / District"}
-            </Label>
-            <Input
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Dholka, Ahmedabad, Gujarat"
-              className="bg-background h-8.5 text-xs rounded-md"
-            />
+          <div className="mt-3.5 space-y-1.5">
+            {cropChoices.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">
+                {language === "hi"
+                  ? "अपना स्थान चुनने के बाद फसलें उपलब्ध होंगी"
+                  : "Crops will be available after you choose your location"}
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {cropChoices.map((c) => {
+                  const active = crops.includes(c.id);
+                  return (
+                    <button
+                      type="button"
+                      key={c.id}
+                      onClick={() => toggleCrop(c.id)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer",
+                        active
+                          ? "bg-emerald-600 border-emerald-600 text-white shadow-xs"
+                          : "bg-background border-border text-foreground hover:border-emerald-400",
+                      )}
+                    >
+                      {active && <Check className="size-3" />}
+                      {translateCropName(c, t)}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-[11px] text-muted-foreground">
+              {language === "hi"
+                ? "उन फसलों को चुनें जो आप अपने खेतों में उगाते हैं।"
+                : "Select the crops you grow on your fields."}
+            </p>
           </div>
         </div>
 
         {/* Save Changes Button */}
-        <div className="pt-3 flex justify-end border-t border-border mt-2">
+        <div className="flex justify-end pt-1">
           <Button
             type="submit"
             disabled={isUpdating}

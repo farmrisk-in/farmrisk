@@ -13,6 +13,7 @@ export interface ExtendedProfileData {
   location: string;
   phone: string;
   avatar_url: string;
+  crops: string[];
 }
 
 export function useProfile() {
@@ -64,6 +65,12 @@ export function useProfile() {
       }
       const avatarUrl = meta.avatar_url || "";
 
+      const crops = Array.isArray(meta.crops)
+        ? (meta.crops as unknown[]).filter(
+            (c): c is string => typeof c === "string",
+          )
+        : [];
+
       return {
         first_name: firstName,
         last_name: lastName,
@@ -72,6 +79,7 @@ export function useProfile() {
         location,
         phone,
         avatar_url: avatarUrl,
+        crops,
       };
     },
     enabled: !!user,
@@ -90,6 +98,7 @@ export function useProfile() {
         location: "",
         phone: "",
         avatar_url: "",
+        crops: [],
       };
 
       const firstName =
@@ -103,6 +112,7 @@ export function useProfile() {
       const phone = updated.phone !== undefined ? updated.phone : current.phone;
       const avatarUrl =
         updated.avatar_url !== undefined ? updated.avatar_url : current.avatar_url;
+      const crops = updated.crops !== undefined ? updated.crops : current.crops;
 
       // Base database payload
       const basePayload: any = {
@@ -115,6 +125,7 @@ export function useProfile() {
           avatar_url: avatarUrl, // Stored safely in public.profiles table ONLY
           first_name: firstName,
           last_name: lastName,
+          crops,
         },
         updated_at: new Date().toISOString(),
       };
@@ -183,6 +194,7 @@ export function useProfile() {
         location,
         phone,
         avatar_url: avatarUrl,
+        crops,
       };
     },
     onSuccess: (data) => {

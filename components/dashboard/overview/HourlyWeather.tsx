@@ -121,13 +121,17 @@ const HourlyWeather = () => {
                       </span>
 
                       {/* 2. Weather Icon (Above Temperature) */}
-                      <Image
-                        src={`/weatherIcons/${slot.icon}`}
-                        alt={getConditionAlt(slot.weatherCode)}
-                        width={26}
-                        height={26}
-                        className="my-0.5 drop-shadow-xs/40 dark:drop-shadow-none"
-                      />
+                      {slot.icon ? (
+                        <Image
+                          src={`/weatherIcons/${slot.icon}`}
+                          alt={getConditionAlt(slot.weatherCode)}
+                          width={26}
+                          height={26}
+                          className="my-0.5 drop-shadow-xs/40 dark:drop-shadow-none"
+                        />
+                      ) : (
+                        <CloudOff className="size-6 my-0.5 text-muted-foreground/60" />
+                      )}
 
                       {/* 3. Temperature (Main metrics label) */}
                       <span className="text-md font-extrabold tracking-tight text-foreground">

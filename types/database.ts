@@ -53,6 +53,74 @@ export type Database = {
           },
         ];
       };
+      saved_fields: {
+        Row: {
+          id: string;
+          user_id: string;
+          field_id: string | null;
+          field_name: string | null;
+          year: string | null;
+          country_code: string | null;
+          geometry: Json | null;
+          properties: Json | null;
+          center_lat: number | null;
+          center_lng: number | null;
+          area_m2: number | null;
+          confidence: number | null;
+          season: string | null;
+          crop_stage: string | null;
+          crops: string[] | null;
+          source: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          field_id?: string | null;
+          field_name?: string | null;
+          year?: string | null;
+          country_code?: string | null;
+          geometry?: Json | null;
+          properties?: Json | null;
+          center_lat?: number | null;
+          center_lng?: number | null;
+          area_m2?: number | null;
+          confidence?: number | null;
+          season?: string | null;
+          crop_stage?: string | null;
+          crops?: string[] | null;
+          source?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          field_id?: string | null;
+          field_name?: string | null;
+          year?: string | null;
+          country_code?: string | null;
+          geometry?: Json | null;
+          properties?: Json | null;
+          center_lat?: number | null;
+          center_lng?: number | null;
+          area_m2?: number | null;
+          confidence?: number | null;
+          season?: string | null;
+          crop_stage?: string | null;
+          crops?: string[] | null;
+          source?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "saved_fields_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<never, never>;
     Functions: {

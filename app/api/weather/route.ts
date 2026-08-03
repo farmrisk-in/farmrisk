@@ -2,6 +2,9 @@ import { NextRequest } from "next/server";
 import { fetchWeatherApi } from "openmeteo";
 import { Lightning, OpenMeteoResponse, WmoEntry } from "@/types/weather";
 
+const pickIcon = (entry: WmoEntry | undefined, isDay: boolean) =>
+  (entry && (entry.icon[isDay ? "day" : "night"] || entry.icon.day)) || "";
+
 const WMO_MAP: Record<number, WmoEntry> = {
   0: {
     condition: {
@@ -473,10 +476,10 @@ export async function GET(request: NextRequest) {
       wind_gusts_10m: roundToNDecimals(current.variables(9)!.value(), 0),
       precipitation: roundToNDecimals(current.variables(10)!.value(), 1),
       cloud_cover: roundToNDecimals(current.variables(11)!.value(), 0),
-      icon:
-        WMO_MAP[current.variables(4)!.value()]?.icon[
-          current.variables(3)!.value() ? "day" : "night"
-        ] || "",
+      icon: pickIcon(
+        WMO_MAP[current.variables(4)!.value()],
+        Boolean(current.variables(3)!.value()),
+      ),
       condition: WMO_MAP[current.variables(4)!.value()]?.condition,
     },
     hourly: {
@@ -516,12 +519,12 @@ export async function GET(request: NextRequest) {
         0,
       ).splice(-24),
       icon: normalizeArray(hourly.variables(3)!.valuesArray(), 0)
-        .map((code) => {
+        .map((code, i) => {
           const isDay = normalizeArray(
             hourly.variables(4)!.valuesArray(),
             0,
           ).map(Boolean);
-          return WMO_MAP[code]?.icon[isDay ? "day" : "night"] || "";
+          return pickIcon(WMO_MAP[code], isDay[i]);
         })
         .splice(-24),
     },

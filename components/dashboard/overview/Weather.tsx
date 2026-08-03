@@ -121,13 +121,17 @@ const Weather = () => {
             </p>
           </div>
           <div className="flex flex-col justify-between items-center">
-            <Image
-              src={"/weatherIcons/" + current.icon}
-              alt={JSON.stringify(current.icon)}
-              width={40}
-              height={40}
-              className="drop-shadow-md dark:drop-shadow-none"
-            />
+            {current.icon ? (
+              <Image
+                src={"/weatherIcons/" + current.icon}
+                alt={current.icon}
+                width={40}
+                height={40}
+                className="drop-shadow-md dark:drop-shadow-none"
+              />
+            ) : (
+              <Cloud className="size-10 text-muted-foreground" />
+            )}
             <span className="text-muted-foreground text-xs font-medium">
               {current.condition[language as keyof typeof current.condition] ||
                 current.condition.en}

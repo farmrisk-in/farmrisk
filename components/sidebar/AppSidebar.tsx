@@ -32,6 +32,10 @@ export function AppSidebar() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Only top-level pages appear in the sidebar (sub-pages like My Fields /
+  // Select Fields are reached from inside Profile).
+  const sidebarItems = navigationItems.filter((item) => item.inSidebar);
+
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || "";
   const firstName = profile?.first_name || user?.user_metadata?.first_name || "";
   const lastName = profile?.last_name || user?.user_metadata?.last_name || "";
@@ -96,7 +100,7 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarMenu className="gap-5">
-          {navigationItems.map((link) => {
+          {sidebarItems.map((link) => {
             const label = t.sidebar[link.labelKey];
             return (
               <SidebarMenuItem key={link.name} className="flex mx-3">
