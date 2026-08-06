@@ -1,5 +1,8 @@
 import {
   LayoutDashboard,
+  CloudSun,
+  ShieldAlert,
+  ChartLine,
   UserRound,
   LandPlot,
   type LucideIcon,
@@ -8,11 +11,23 @@ import Overview from "@/components/dashboard/overview/Overview";
 import Profile from "@/components/dashboard/profile/Profile";
 import Fields from "@/components/dashboard/fields/Fields";
 import MyFields from "@/components/dashboard/fields/MyFields";
+import WeatherRisks from "@/components/dashboard/weather/WeatherRisks";
+import FarmRisk from "@/components/dashboard/farmrisk/FarmRisk";
+import Insights from "@/components/dashboard/insights/Insights";
 import { ReactNode } from "react";
 
 export interface NavigationItem {
   name: string;
-  labelKey: "overview" | "profile" | "fields" | "myFields" | "selectFields";
+  labelKey:
+    | "overview"
+    | "today"
+    | "weather"
+    | "farmRisk"
+    | "insights"
+    | "profile"
+    | "fields"
+    | "myFields"
+    | "selectFields";
   icon: LucideIcon;
   component: ReactNode;
   isLocked: boolean;
@@ -22,10 +37,34 @@ export interface NavigationItem {
 
 export const navigationItems: NavigationItem[] = [
   {
-    name: "Dashboard",
-    labelKey: "overview",
+    name: "Today",
+    labelKey: "today",
     icon: LayoutDashboard,
     component: <Overview />,
+    isLocked: false,
+    inSidebar: true,
+  },
+  {
+    name: "Weather",
+    labelKey: "weather",
+    icon: CloudSun,
+    component: <WeatherRisks />,
+    isLocked: false,
+    inSidebar: true,
+  },
+  {
+    name: "FarmRisk",
+    labelKey: "farmRisk",
+    icon: ShieldAlert,
+    component: <FarmRisk />,
+    isLocked: false,
+    inSidebar: true,
+  },
+  {
+    name: "Insights",
+    labelKey: "insights",
+    icon: ChartLine,
+    component: <Insights />,
     isLocked: false,
     inSidebar: true,
   },

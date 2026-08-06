@@ -42,13 +42,18 @@ import SaveFieldDialog, { type FieldInfo } from "./SaveFieldDialog";
 
 const FieldMap = dynamic(() => import("./FieldMap"), {
   ssr: false,
-  loading: () => (
+  loading: () => <MapLoading />,
+});
+
+function MapLoading() {
+  const { t } = useLanguage();
+  return (
     <div className="flex h-full w-full items-center justify-center gap-2 bg-background text-muted-foreground">
       <Loader2 className="size-6 animate-spin text-primary" />
-      <span className="text-sm font-medium">Loading map…</span>
+      <span className="text-sm font-medium">{t.fields.mapLoading}</span>
     </div>
-  ),
-});
+  );
+}
 
 const DEFAULT_CENTER = { lat: 20.5937, lng: 78.9629 };
 
@@ -59,7 +64,7 @@ function fmtArea(m2: number | null | undefined): string {
 }
 
 export default function Fields() {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const f = t.fields;
   const { location } = useLocationContext();
   const { user } = useAuth();
@@ -69,8 +74,6 @@ export default function Fields() {
     saveField,
     isSaving,
   } = useFields();
-
-  const tBack = language === "hi" ? "वापस" : "Back";
 
   // Location state
   const [latInput, setLatInput] = useState(
@@ -349,7 +352,7 @@ export default function Fields() {
           className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
         >
           <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-          {tBack}
+          {f.back}
         </button>
       </div>
 
@@ -383,7 +386,7 @@ export default function Fields() {
                   size="icon"
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setQuery("")}
-                  aria-label="Clear search"
+                  aria-label={f.clearSearch}
                   className="absolute right-1.5 top-1/2 size-7 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-muted"
                 >
                   <X className="size-3.5" />
@@ -399,7 +402,7 @@ export default function Fields() {
                   {loadingResults ? (
                     <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
                       <Loader2 className="size-4 animate-spin" />
-                      Searching…
+                      {f.searching}
                     </div>
                   ) : results.length === 0 ? (
                     <CommandEmpty className="py-6 text-sm text-muted-foreground">
@@ -562,7 +565,7 @@ export default function Fields() {
                 <p className="min-w-0 truncate text-sm font-semibold text-foreground">
                   {selectedProps["admin:country_code"]
                     ? `${selectedProps["admin:country_code"]} · ${year}`
-                    : `Field · ${year}`}
+                    : `${f.fieldFallbackName} · ${year}`}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   <Badge
@@ -580,12 +583,14 @@ export default function Fields() {
                   >
                     <ShieldCheck className="mr-1 size-3 shrink-0 text-primary" />
                     <span className="truncate">
-                      {selectedConf != null ? `${selectedConf}% conf` : f.confNa}
+                      {selectedConf != null
+                        ? `${selectedConf}% ${f.confidenceLabel}`
+                        : f.confNa}
                     </span>
                   </Badge>
                 </div>
                 <p className="truncate rounded-lg bg-muted/50 px-2.5 py-1.5 text-[11px] text-muted-foreground/80">
-                  id: {String(selected.id).slice(0, 32)}
+                  {f.idLabel}: {String(selected.id).slice(0, 32)}
                 </p>
                 <Button
                   type="button"

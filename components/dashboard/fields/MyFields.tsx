@@ -55,15 +55,6 @@ export default function MyFields() {
   const { setCurrentPage } = useNavigation();
   const { fields: savedFields, deleteField, isDeleting, isLoading } = useFields();
 
-  const tBack = language === "hi" ? "वापस" : "Back";
-  const tMyFields = language === "hi" ? "मेरे खेत" : "My Fields";
-  const tArea = language === "hi" ? "क्षेत्रफल" : "Area";
-  const tAdded = language === "hi" ? "जोड़ा गया" : "Added";
-  const tDetected = language === "hi" ? "पता लगाया गया" : "Detected";
-  const tManual = language === "hi" ? "मैन्युअल" : "Manual";
-  const tNoFieldsYet =
-    language === "hi" ? "अभी तक कोई खेत नहीं जोड़ा गया" : "No fields added yet";
-
   const fieldDisplayName = (field: SavedField) =>
     field.name || `${t.fields.fieldFallbackName} · ${field.year}`;
   const seasonLabel = (s?: string) =>
@@ -137,7 +128,7 @@ export default function MyFields() {
         className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground cursor-pointer"
       >
         <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-        {tBack}
+        {t.fields.back}
       </button>
 
       {/* Title + actions */}
@@ -147,13 +138,13 @@ export default function MyFields() {
             <LandPlot className="size-5" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-foreground">{tMyFields}</h2>
+            <h2 className="text-lg font-bold text-foreground">
+              {t.fields.myFieldsTitle}
+            </h2>
             <p className="text-xs text-muted-foreground">
               {savedFields.length > 0
-                ? `${savedFields.length} ${
-                    language === "hi" ? "खेत सहेजे गए" : "saved fields"
-                  }`
-                : tNoFieldsYet}
+                ? `${savedFields.length} ${t.fields.savedFields}`
+                : t.fields.noFieldsYet}
             </p>
           </div>
         </div>
@@ -191,7 +182,7 @@ export default function MyFields() {
       ) : savedFields.length === 0 ? (
         <div className="mt-1 flex flex-col items-center justify-center gap-2.5 rounded-md border border-dashed border-border bg-muted/40 px-4 py-10 text-center">
           <MapPin className="size-6 text-muted-foreground/80" />
-          <p className="text-xs text-muted-foreground">{tNoFieldsYet}</p>
+          <p className="text-xs text-muted-foreground">{t.fields.noFieldsYet}</p>
           <Button
             type="button"
             size="sm"
@@ -225,7 +216,7 @@ export default function MyFields() {
                         : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
                     )}
                   >
-                    {field.source === "manual" ? tManual : tDetected}
+                    {field.source === "manual" ? t.fields.manual : t.fields.detected}
                   </Badge>
                 </div>
 
@@ -233,7 +224,7 @@ export default function MyFields() {
                 <p className="mt-1 truncate text-[11px] text-muted-foreground">
                   {field.countryCode || "FTW"} · {field.year}
                   {field.confidence != null
-                    ? ` · ${Math.round(field.confidence)}% conf`
+                    ? ` · ${Math.round(field.confidence)}% ${t.fields.confidenceLabel}`
                     : ""}
                 </p>
 
@@ -259,7 +250,7 @@ export default function MyFields() {
                 {/* Details */}
                 <dl className="mt-3 space-y-1.5">
                   <FieldDetail
-                    label={tArea}
+                    label={t.fields.areaLabel}
                     value={fmtFieldArea(field.areaM2) || "—"}
                   />
                   <FieldDetail
@@ -271,14 +262,14 @@ export default function MyFields() {
                     value={stageLabel(field.cropStage) || "—"}
                   />
                   <FieldDetail
-                    label={tAdded}
+                    label={t.fields.addedLabel}
                     value={fmtDate(field.savedAt)}
                   />
                 </dl>
 
                 {/* ID */}
                 <p className="mt-3 truncate border-t border-border pt-2.5 text-[10px] text-muted-foreground/70">
-                  ID: {String(field.fieldId || field.id).slice(0, 20)}
+                  {t.fields.idLabel}: {String(field.fieldId || field.id).slice(0, 20)}
                 </p>
 
                 {/* Actions */}

@@ -115,6 +115,30 @@ const WMO_MAP: Record<number, WmoEntry> = {
       day: "drizzle.svg",
     },
   },
+  56: {
+    condition: {
+      en: "Freezing drizzle",
+      hi: "जमी हुई बूंदाबांदी",
+      mr: "गोठलेली रिमझिम",
+      ta: "உறைந்த தூறல்",
+      gu: "ઠંડી ઝરમર",
+    },
+    icon: {
+      day: "drizzle.svg",
+    },
+  },
+  57: {
+    condition: {
+      en: "Dense freezing drizzle",
+      hi: "घनी जमी हुई बूंदाबांदी",
+      mr: "दाट गोठलेली रिमझिम",
+      ta: "அடர்த்தியான உறைந்த தூறல்",
+      gu: "ગાઢ ઠંડી ઝરમર",
+    },
+    icon: {
+      day: "drizzle.svg",
+    },
+  },
   61: {
     condition: {
       en: "Light rain",
@@ -140,6 +164,30 @@ const WMO_MAP: Record<number, WmoEntry> = {
       gu: "ભારી વરસાદ",
     },
     icon: { day: "heavy_rain.svg" },
+  },
+  66: {
+    condition: {
+      en: "Freezing rain",
+      hi: "जमी हुई बारिश",
+      mr: "गोठलेला पाऊस",
+      ta: "உறைந்த மழை",
+      gu: "ઠંડો વરસાદ",
+    },
+    icon: {
+      day: "showers_rain.svg",
+    },
+  },
+  67: {
+    condition: {
+      en: "Heavy freezing rain",
+      hi: "भारी जमी हुई बारिश",
+      mr: "जड गोठलेला पाऊस",
+      ta: "கனமான உறைந்த மழை",
+      gu: "ભારી ઠંડો વરસાદ",
+    },
+    icon: {
+      day: "heavy_rain.svg",
+    },
   },
   71: {
     condition: {

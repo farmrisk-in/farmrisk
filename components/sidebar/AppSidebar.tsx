@@ -23,6 +23,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useProfile } from "@/hooks/useProfile";
 import { navigationItems } from "@/constants/navigation";
 
+// Sidebar items are grouped into labelled sections. Order and membership here
+// only reorganise the visual hierarchy — navigation behaviour is unchanged.
+const SECTIONS: { key: "daily" | "risks" | "advanced"; names: string[] }[] = [
+  { key: "daily", names: ["Today"] },
+  { key: "risks", names: ["Weather", "FarmRisk"] },
+  { key: "advanced", names: ["Insights", "Profile"] },
+];
+
 export function AppSidebar() {
   const { currentPage, setCurrentPage } = useNavigation();
   const { isMobile: isSidebarMobile, state, setOpenMobile } = useSidebar();
@@ -99,38 +107,52 @@ export function AppSidebar() {
           )}
         </SidebarHeader>
 
-        <SidebarMenu className="gap-5">
-          {sidebarItems.map((link) => {
-            const label = t.sidebar[link.labelKey];
-            return (
-              <SidebarMenuItem key={link.name} className="flex mx-3">
-                <SidebarMenuButton
-                  onClick={() => {
-                    if (link.isLocked && user === null) {
-                      redirectToLogin();
-                    } else {
-                      setOpenMobile(false);
-                      setCurrentPage(link.name);
-                    }
-                  }}
-                  variant={"outline"}
-                  tooltip={label}
-                  className={`group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:p-3! ml-1 hover:scale-105 rounded-sm transition-all text-nowrap p-3 py-1.5 size-12 w-full bg-white hover:bg-emerald-100 dark:bg-white/5 dark:hover:bg-white/10 ${
-                    currentPage.name === link.name
-                      ? "border border-emerald-300 bg-emerald-100"
-                      : ""
-                  }`}
-                >
-                  <link.icon style={{ height: "100%", width: "22px" }} />
-                  <div className="pl-1.5 text-lg">{label}</div>
-                  <SidebarMenuBadge>
-                    {link.isLocked && user === null ? <LockIcon /> : null}
-                  </SidebarMenuBadge>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
-        </SidebarMenu>
+        {SECTIONS.map((section) => {
+          const sectionItems = sidebarItems.filter((link) =>
+            section.names.includes(link.name),
+          );
+          if (sectionItems.length === 0) return null;
+
+          return (
+            <div key={section.key} className="mt-3 first:mt-1">
+              <div className="px-4 mb-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground group-data-[collapsible=icon]:hidden">
+                {t.navigation[section.key]}
+              </div>
+              <SidebarMenu className="gap-2">
+                {sectionItems.map((link) => {
+                  const label = t.sidebar[link.labelKey] ?? link.name;
+                  return (
+                    <SidebarMenuItem key={link.name} className="flex mx-3">
+                      <SidebarMenuButton
+                        onClick={() => {
+                          if (link.isLocked && user === null) {
+                            redirectToLogin();
+                          } else {
+                            setOpenMobile(false);
+                            setCurrentPage(link.name);
+                          }
+                        }}
+                        variant={"outline"}
+                        tooltip={label}
+                        className={`group-data-[collapsible=icon]:size-12! group-data-[collapsible=icon]:p-3! ml-1 hover:scale-105 rounded-sm transition-all text-nowrap p-3 py-1.5 size-12 w-full bg-white hover:bg-emerald-100 dark:bg-white/5 dark:hover:bg-white/10 ${
+                          currentPage.name === link.name
+                            ? "border border-emerald-300 bg-emerald-100"
+                            : ""
+                        }`}
+                      >
+                        <link.icon style={{ height: "100%", width: "22px" }} />
+                        <div className="pl-1.5 text-lg">{label}</div>
+                        <SidebarMenuBadge>
+                          {link.isLocked && user === null ? <LockIcon /> : null}
+                        </SidebarMenuBadge>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </div>
+          );
+        })}
         <div className="grow"></div>
         {user !== null && (
           <SidebarFooter className="flex gap-3 m-0 p-0 mb-6">

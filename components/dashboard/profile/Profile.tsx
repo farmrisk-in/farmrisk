@@ -103,11 +103,7 @@ export default function Profile() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error(
-        language === "hi"
-          ? "कृपया एक वैध छवि फ़ाइल चुनें"
-          : "Please select a valid image file",
-      );
+      toast.error(t.profile.selectValidImage);
       return;
     }
 
@@ -165,12 +161,8 @@ export default function Profile() {
     setIsCropOpen(false);
     setRawImageSrc(null);
 
-    toast.success(
-      language === "hi"
-        ? "छवि सफलतापूर्वक क्रॉप और संपीड़ित की गई!"
-        : "Image cropped and auto-compressed!",
-    );
-  }, [zoom, language]);
+    toast.success(t.profile.imageCropped);
+  }, [zoom, t]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,11 +171,7 @@ export default function Profile() {
     if (age.trim()) {
       const parsed = parseInt(age, 10);
       if (isNaN(parsed) || parsed < 1 || parsed > 120) {
-        toast.error(
-          language === "hi"
-            ? "कृपया 1 से 120 के बीच वैध आयु दर्ज करें"
-            : "Please enter a valid age between 1 and 120",
-        );
+        toast.error(t.profile.invalidAgeRange);
         return;
       }
       ageNum = parsed;
@@ -200,19 +188,10 @@ export default function Profile() {
         crops,
       });
 
-      toast.success(
-        language === "hi"
-          ? "प्रोफ़ाइल सफलतापूर्वक सहेजी गई!"
-          : "Profile updated successfully!",
-      );
+      toast.success(t.profile.profileUpdated);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      toast.error(
-        err?.message ||
-          (language === "hi"
-            ? "प्रोफ़ाइल अपडेट करने में विफल"
-            : "Failed to update profile"),
-      );
+      toast.error(err?.message || t.profile.profileUpdateFailed);
     }
   };
 
@@ -220,65 +199,32 @@ export default function Profile() {
     e.preventDefault();
 
     if (!currentPassword) {
-      toast.error(
-        language === "hi"
-          ? "कृपया अपना वर्तमान पासवर्ड दर्ज करें"
-          : "Please enter your current password",
-      );
+      toast.error(t.profile.currentPasswordRequired);
       return;
     }
 
     if (!newPassword || newPassword.length < 6) {
-      toast.error(
-        language === "hi"
-          ? "नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"
-          : "New password must be at least 6 characters long",
-      );
+      toast.error(t.profile.newPasswordTooShort);
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error(
-        language === "hi" ? "पासवर्ड मेल नहीं खाते" : "Passwords do not match",
-      );
+      toast.error(t.profile.passwordsDoNotMatch);
       return;
     }
 
     try {
       await updatePassword({ currentPassword, newPassword });
-      toast.success(
-        language === "hi"
-          ? "पासवर्ड सफलतापूर्वक बदल दिया गया!"
-          : "Password updated successfully!",
-      );
+      toast.success(t.profile.passwordUpdated);
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
       setIsPasswordOpen(false);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      toast.error(
-        err?.message ||
-          (language === "hi"
-            ? "पासवर्ड बदलने में विफल"
-            : "Failed to update password"),
-      );
+      toast.error(err?.message || t.profile.passwordUpdateFailed);
     }
   };
-
-  // Localized labels (matching the existing Profile localization style)
-  const tMyFields = language === "hi" ? "मेरे खेत" : "My Fields";
-  const tCropsIGrow =
-    language === "hi" ? "मैं कौन सी फसलें उगाता/उगाती हूँ" : "Crops I Grow";
-  const tSavedFields =
-    language === "hi" ? "खेत सहेजे गए" : "saved fields";
-  const tNoFieldsYet =
-    language === "hi" ? "अभी तक कोई खेत नहीं जोड़ा गया" : "No fields added yet";
-
-  const tMyFieldsSummary = (count: number) =>
-    count > 0
-      ? `${count} ${tSavedFields}`
-      : tNoFieldsYet;
 
   if (isLoading) {
     return (
@@ -290,7 +236,9 @@ export default function Profile() {
   }
 
   const displayName =
-    `${firstName} ${lastName}`.trim() || user?.email?.split("@")[0] || "Farmer";
+    `${firstName} ${lastName}`.trim() ||
+    user?.email?.split("@")[0] ||
+    t.profile.displayNameFallback;
   const userInitials =
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase() ||
     displayName?.[0]?.toUpperCase() ||
@@ -301,7 +249,7 @@ export default function Profile() {
         language === "hi" ? "hi-IN" : "en-US",
         { year: "numeric", month: "short", day: "numeric" },
       )
-    : "N/A";
+    : t.profile.notAvailable;
 
   return (
     <div className="w-full max-w-4xl mx-auto p-3 sm:p-4 space-y-4 animate-in fade-in duration-200">
@@ -340,7 +288,7 @@ export default function Profile() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="absolute -bottom-1 -right-1 size-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center justify-center transition-all hover:scale-105 cursor-pointer border border-background"
-              title="Upload & crop avatar"
+              title={t.profile.uploadCropAvatar}
             >
               <Camera className="size-3" />
             </button>
@@ -354,7 +302,7 @@ export default function Profile() {
               </h2>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <ShieldCheck className="size-3" />
-                Verified
+                {t.profile.verified}
               </span>
             </div>
 
@@ -373,7 +321,7 @@ export default function Profile() {
               )}
               <span className="flex items-center gap-1">
                 <Calendar className="size-3 text-emerald-500 shrink-0" />
-                Joined {createdDate}
+                {t.profile.joined} {createdDate}
               </span>
             </div>
           </div>
@@ -389,7 +337,7 @@ export default function Profile() {
             >
               <KeyRound className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>
-                {language === "hi" ? "पासवर्ड बदलें" : "Change Password"}
+                {t.profile.changePassword}
               </span>
             </Button>
           </div>
@@ -406,9 +354,11 @@ export default function Profile() {
           <LandPlot className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-bold text-foreground">{tMyFields}</p>
+          <p className="text-sm font-bold text-foreground">{t.profile.myFields}</p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
-            {tMyFieldsSummary(savedFields.length)}
+            {savedFields.length > 0
+              ? `${savedFields.length} ${t.profile.savedFields}`
+              : t.profile.noFieldsYet}
           </p>
         </div>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -422,7 +372,7 @@ export default function Profile() {
             <div className="flex items-center gap-2">
               <User className="size-4 text-emerald-500" />
               <h3 className="font-bold text-sm text-foreground">
-                {language === "hi" ? "व्यक्तिगत जानकारी" : "Personal Information"}
+                {t.profile.personalInformation}
               </h3>
             </div>
 
@@ -436,7 +386,9 @@ export default function Profile() {
                 className="h-8 text-xs px-2.5 rounded-md flex items-center gap-1.5 border-border hover:bg-muted cursor-pointer"
               >
                 <Upload className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                <span>{avatarUrl ? "Change Photo" : "Upload Photo"}</span>
+                <span>
+                  {avatarUrl ? t.profile.changePhoto : t.profile.uploadPhoto}
+                </span>
               </Button>
 
               {avatarUrl && (
@@ -446,7 +398,7 @@ export default function Profile() {
                   size="icon"
                   onClick={() => setAvatarUrl("")}
                   className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer shrink-0"
-                  title="Remove photo"
+                  title={t.profile.removePhoto}
                 >
                   <Trash2 className="size-3.5" />
                 </Button>
@@ -459,13 +411,13 @@ export default function Profile() {
             {/* First Name */}
             <div className="space-y-1">
               <Label htmlFor="firstName" className="text-xs font-semibold">
-                {language === "hi" ? "पहला नाम" : "First Name"}
+                {t.profile.firstName}
               </Label>
               <Input
                 id="firstName"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="e.g. Ramesh"
+                placeholder={t.profile.firstNamePlaceholder}
                 className="bg-background h-8.5 text-xs rounded-md"
               />
             </div>
@@ -473,13 +425,13 @@ export default function Profile() {
             {/* Last Name */}
             <div className="space-y-1">
               <Label htmlFor="lastName" className="text-xs font-semibold">
-                {language === "hi" ? "अंतिम नाम" : "Last Name"}
+                {t.profile.lastName}
               </Label>
               <Input
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="e.g. Patel"
+                placeholder={t.profile.lastNamePlaceholder}
                 className="bg-background h-8.5 text-xs rounded-md"
               />
             </div>
@@ -491,14 +443,14 @@ export default function Profile() {
                 className="text-xs font-semibold flex items-center gap-1.5"
               >
                 <Phone className="size-3 text-muted-foreground" />
-                {language === "hi" ? "फ़ोन नंबर" : "Phone Number"}
+                {t.profile.phoneNumber}
               </Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="9876543210"
+                placeholder={t.profile.phonePlaceholder}
                 className="bg-background h-8.5 text-xs rounded-md"
               />
             </div>
@@ -506,7 +458,7 @@ export default function Profile() {
             {/* Age */}
             <div className="space-y-1">
               <Label htmlFor="age" className="text-xs font-semibold">
-                {language === "hi" ? "आयु (वर्ष)" : "Age (Years)"}
+                {t.profile.ageYears}
               </Label>
               <Input
                 id="age"
@@ -515,7 +467,7 @@ export default function Profile() {
                 max={120}
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                placeholder="e.g. 42"
+                placeholder={t.profile.agePlaceholder}
                 className="bg-background h-8.5 text-xs rounded-md"
               />
             </div>
@@ -527,13 +479,13 @@ export default function Profile() {
                 className="text-xs font-semibold flex items-center gap-1.5"
               >
                 <MapPin className="size-3 text-muted-foreground" />
-                {language === "hi" ? "स्थान / जिला" : "Location / District"}
+                {t.profile.locationDistrict}
               </Label>
               <Input
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Dholka, Ahmedabad, Gujarat"
+                placeholder={t.profile.locationPlaceholder}
                 className="bg-background h-8.5 text-xs rounded-md"
               />
             </div>
@@ -547,15 +499,15 @@ export default function Profile() {
         >
           <div className="flex items-center gap-2 border-b border-border pb-3">
             <Crop className="size-4 text-emerald-500" />
-            <h3 className="font-bold text-sm text-foreground">{tCropsIGrow}</h3>
+            <h3 className="font-bold text-sm text-foreground">
+              {t.profile.cropsIGrow}
+            </h3>
           </div>
 
           <div className="mt-3.5 space-y-1.5">
             {cropChoices.length === 0 ? (
               <p className="text-xs text-muted-foreground italic">
-                {language === "hi"
-                  ? "अपना स्थान चुनने के बाद फसलें उपलब्ध होंगी"
-                  : "Crops will be available after you choose your location"}
+                {t.profile.cropsUnavailable}
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -581,9 +533,7 @@ export default function Profile() {
               </div>
             )}
             <p className="text-[11px] text-muted-foreground">
-              {language === "hi"
-                ? "उन फसलों को चुनें जो आप अपने खेतों में उगाते हैं।"
-                : "Select the crops you grow on your fields."}
+              {t.profile.cropsHint}
             </p>
           </div>
         </div>
@@ -598,14 +548,12 @@ export default function Profile() {
             {isUpdating ? (
               <>
                 <LoaderCircle className="size-3.5 animate-spin" />
-                <span>Saving...</span>
+                <span>{t.profile.saving}</span>
               </>
             ) : (
               <>
                 <Save className="size-3.5" />
-                <span>
-                  {language === "hi" ? "परिवर्तन सहेजें" : "Save Changes"}
-                </span>
+                <span>{t.profile.saveChanges}</span>
               </>
             )}
           </Button>
@@ -618,9 +566,7 @@ export default function Profile() {
           <DialogHeader className="pb-2 border-b border-border">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Lock className="size-4 text-emerald-500" />
-              {language === "hi"
-                ? "खाता पासवर्ड बदलें"
-                : "Change Account Password"}
+              {t.profile.changeAccountPassword}
             </DialogTitle>
           </DialogHeader>
 
@@ -631,7 +577,7 @@ export default function Profile() {
                 htmlFor="currentPassword"
                 className="text-xs font-semibold"
               >
-                {language === "hi" ? "वर्तमान पासवर्ड" : "Current Password"}
+                {t.profile.currentPassword}
               </Label>
               <Input
                 id="currentPassword"
@@ -647,7 +593,7 @@ export default function Profile() {
             {/* New Password Field */}
             <div className="space-y-1">
               <Label htmlFor="newPassword" className="text-xs font-semibold">
-                {language === "hi" ? "नया पासवर्ड" : "New Password"}
+                {t.profile.newPassword}
               </Label>
               <Input
                 id="newPassword"
@@ -667,9 +613,7 @@ export default function Profile() {
                 htmlFor="confirmPassword"
                 className="text-xs font-semibold"
               >
-                {language === "hi"
-                  ? "नए पासवर्ड की पुष्टि करें"
-                  : "Confirm New Password"}
+                {t.profile.confirmNewPassword}
               </Label>
               <Input
                 id="confirmPassword"
@@ -691,7 +635,7 @@ export default function Profile() {
                 onClick={() => setIsPasswordOpen(false)}
                 className="text-xs h-8 rounded-md"
               >
-                Cancel
+                {t.profile.cancel}
               </Button>
               <Button
                 type="submit"
@@ -702,10 +646,10 @@ export default function Profile() {
                 {isUpdatingPassword ? (
                   <>
                     <LoaderCircle className="size-3.5 animate-spin" />
-                    <span>Updating...</span>
+                    <span>{t.profile.updating}</span>
                   </>
                 ) : (
-                  <span>Update Password</span>
+                  <span>{t.profile.updatePassword}</span>
                 )}
               </Button>
             </DialogFooter>
@@ -719,7 +663,7 @@ export default function Profile() {
           <DialogHeader className="pb-2 border-b border-border">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <Crop className="size-4 text-emerald-500" />
-              Crop & Compress Image
+              {t.profile.cropCompressImage}
             </DialogTitle>
           </DialogHeader>
 
@@ -730,7 +674,7 @@ export default function Profile() {
                 <img
                   ref={cropImgRef}
                   src={rawImageSrc}
-                  alt="Crop Target"
+                  alt={t.profile.cropTargetAlt}
                   style={{
                     transform: `scale(${zoom})`,
                     transition: "transform 0.1s ease-out",
@@ -767,7 +711,7 @@ export default function Profile() {
               </button>
             </div>
             <span className="text-[11px] text-muted-foreground">
-              Auto-compresses to 300x300 JPEG (~30KB) for instant loading
+              {t.profile.autoCompressHint}
             </span>
           </div>
 
@@ -779,7 +723,7 @@ export default function Profile() {
               onClick={() => setIsCropOpen(false)}
               className="text-xs h-8 rounded-md"
             >
-              Cancel
+              {t.profile.cancel}
             </Button>
             <Button
               type="button"
@@ -787,7 +731,7 @@ export default function Profile() {
               onClick={handleApplyCropAndCompress}
               className="text-xs h-8 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
             >
-              Crop & Apply
+              {t.profile.cropAndApply}
             </Button>
           </DialogFooter>
         </DialogContent>

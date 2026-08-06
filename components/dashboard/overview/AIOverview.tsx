@@ -39,6 +39,11 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
     ? t.dashboard.advisoryError
     : advisoryDataText || "";
 
+  const isGeneralCrop = selectedCrop.id.toLowerCase() === "general";
+  const heightClasses = isGeneralCrop
+    ? "min-h-[150px] max-h-[240px]"
+    : "min-h-[280px] max-h-[300px]";
+
   const formattedText = advisoryText
     .split(/(\*[^*]+\*)/g)
     .map((part, index) => {
@@ -56,7 +61,9 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
     });
 
   return (
-    <div className="w-full h-full p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl">
+    <div
+      className={`w-full ${heightClasses} p-4 relative overflow-hidden flex flex-col justify-between border-2 border-emerald-400 dark:border-emerald-700 rounded-xl`}
+    >
       {/* HEADER SECTION: Title block */}
       <div className="flex flex-row sm:items-center justify-between gap-3 border-b pb-2 mb-2 shrink-0">
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider justify-between">

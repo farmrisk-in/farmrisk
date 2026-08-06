@@ -141,5 +141,6 @@ export function useWeatherSummary(language: string) {
     isFetching: query.isFetching,
     error: query.error,
     isError: query.isError,
+    refetch: query.refetch,
   };
 }

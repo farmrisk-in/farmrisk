@@ -133,8 +133,8 @@ const Weather = () => {
               <Cloud className="size-10 text-muted-foreground" />
             )}
             <span className="text-muted-foreground text-xs font-medium">
-              {current.condition[language as keyof typeof current.condition] ||
-                current.condition.en}
+              {current.condition?.[language as keyof typeof current.condition] ||
+                current.condition?.en}
             </span>
           </div>
         </div>
