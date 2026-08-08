@@ -7,7 +7,6 @@ import { useRisk } from "@/hooks/useRisk";
 import {
   CloudRainWind,
   Flame,
-  Bug,
   Zap,
   Wind,
   Snowflake,
@@ -23,7 +22,6 @@ import { useLanguage } from "@/hooks/useLanguage";
 const HAZARD_ICONS: Record<string, React.ReactElement> = {
   heavy_rain: <CloudRainWind />,
   heat_stress: <Flame />,
-  pest: <Bug />,
   lightning: <Zap />,
   wind: <Wind />,
   frost: <Snowflake />,
@@ -40,8 +38,8 @@ function RiskSkeleton() {
         <Skeleton className="h-4 w-28 rounded-sm" />
         <Skeleton className="h-4 w-16 rounded-full" />
       </div>
-      {/* 2x3 on mobile, 1x6 on tablet/laptop, 2x3 on xl side-by-side, 1x6 on 2xl */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 xl:grid-cols-3 2xl:grid-cols-6 gap-2 sm:gap-3 w-full justify-items-center items-center my-auto">
+      {/* 2x3 on mobile, 1x5 on tablet/laptop, 2x3 on xl side-by-side, 1x5 on 2xl */}
+      <div className="grid grid-cols-3 sm:grid-cols-5 xl:grid-cols-3 2xl:grid-cols-5 gap-2 sm:gap-3 w-full justify-items-center items-center my-auto">
         {HAZARD_KEYS.map((k) => (
           <div
             key={k}
@@ -84,7 +82,7 @@ export default function Risk() {
       {/* Header row */}
       <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
         <Gauge className="size-4.5" />
-        {t.dashboard?.agricultureRisk || "Agricultural Risk"}
+        {t.dashboard?.agricultureRisk || "Weather Risk"}
         {overall && (
           <Badge
             variant={"default"}
@@ -100,11 +98,11 @@ export default function Risk() {
       </div>
       {/* Grid:
           - Mobile (< 640px): 2x3 (grid-cols-3)
-          - Stacked on tablet/laptop (640px - 1279px): 1x6 (sm:grid-cols-6)
+          - Stacked on tablet/laptop (640px - 1279px): 1x5 (sm:grid-cols-5)
           - Side-by-side on xl (1280px - 1535px): 2x3 (xl:grid-cols-3) to maintain readable chart size
-          - Side-by-side on 2xl full screen (>= 1536px): 1x6 (2xl:grid-cols-6)
+          - Side-by-side on 2xl full screen (>= 1536px): 1x5 (2xl:grid-cols-5)
       */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 xl:grid-cols-3 2xl:grid-cols-6 gap-2 sm:gap-3 w-full justify-items-center items-center my-auto">
+      <div className="grid grid-cols-3 sm:grid-cols-5 xl:grid-cols-3 2xl:grid-cols-5 gap-2 sm:gap-3 w-full justify-items-center items-center my-auto">
         {HAZARD_KEYS.map((key) => {
           const hazard = data[key as keyof typeof data] as
             | {
@@ -122,8 +120,6 @@ export default function Risk() {
             ? (t.dashboard?.hazardHeavyRain || "Heavy Rain")
             : key === "heat_stress"
             ? (t.dashboard?.hazardHeatStress || "Heat Stress")
-            : key === "pest"
-            ? (t.dashboard?.hazardPest || "Pest & Disease")
             : key === "lightning"
             ? (t.dashboard?.hazardLightning || "Lightning")
             : key === "wind"
