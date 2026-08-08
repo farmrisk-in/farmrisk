@@ -45,7 +45,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   }, []);
 
   return (
-    <div className="relative mt-1 inline-block text-left" ref={dropdownRef}>
+    <div className="relative z-[9999] mt-1 inline-block text-left" ref={dropdownRef}>
       <Button
         onClick={() => setIsOpen(!isOpen)}
         variant="outline"
@@ -79,7 +79,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       </Button>
 
       {isOpen && (
-        <div className="bg-background absolute -left-1/2 mt-1.5 z-1000 w-48 rounded-xl border p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 border-border text-slate-800 dark:text-white">
+        <div className="bg-background absolute -left-1/2 mt-1.5 z-[9999] w-48 rounded-xl border p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 border-border text-slate-800 dark:text-white">
           {languages.map((l) => (
             <button
               key={l.code}

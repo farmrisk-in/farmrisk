@@ -145,7 +145,7 @@ export default function Map({
   return (
     <div
       className={cn(
-        "relative w-full cursor-crosshair overflow-hidden select-none touch-none bg-background",
+        "relative isolate z-0 w-full cursor-crosshair overflow-hidden select-none touch-none bg-background",
         dialog ? "h-[80vh]" : "h-full",
       )}
     >
