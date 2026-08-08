@@ -114,7 +114,7 @@ const Weather = () => {
               {current.temperature_2m}°C
             </span>
             <p className="text-xs text-muted-foreground font-medium">
-              Feels Like{" "}
+              {t.dashboard.feelsLike}{" "}
               <span className="font-semibold text-foreground">
                 {current.apparent_temperature}°C
               </span>
