@@ -209,11 +209,6 @@ export default function Fields() {
     );
   };
 
-  const handleYearChange = (value: string) => {
-    setYear(value);
-    setSelected(null);
-  };
-
   const handleAdd = () => {
     if (!selected) return;
     if (!user) {
@@ -441,7 +436,7 @@ export default function Fields() {
           </Popover>
         </Command>
 
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">
               {f.latLabel}
@@ -465,19 +460,6 @@ export default function Fields() {
               onChange={(e) => setLngInput(e.target.value)}
               className="bg-background text-sm"
             />
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">
-              {f.yearLabel}
-            </Label>
-            <select
-              value={year}
-              onChange={(e) => handleYearChange(e.target.value)}
-              className="h-9 w-full cursor-pointer rounded-4xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-            </select>
           </div>
           <div className="flex items-end">
             <Button
@@ -546,14 +528,6 @@ export default function Fields() {
               <h3 className="text-sm font-semibold text-foreground">
                 {f.selectedTitle}
               </h3>
-              {selected && (
-                <Badge
-                  variant="outline"
-                  className="shrink-0 rounded-full text-[10px] font-medium"
-                >
-                  {f.yearLabel}: {year}
-                </Badge>
-              )}
             </div>
             {!selected ? (
               <div className="flex flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-border bg-muted/40 px-4 py-8 text-center">
@@ -564,8 +538,8 @@ export default function Fields() {
               <div className="space-y-2.5">
                 <p className="min-w-0 truncate text-sm font-semibold text-foreground">
                   {selectedProps["admin:country_code"]
-                    ? `${selectedProps["admin:country_code"]} · ${year}`
-                    : `${f.fieldFallbackName} · ${year}`}
+                    ? `${selectedProps["admin:country_code"]}`
+                    : `${f.fieldFallbackName}`}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   <Badge
@@ -615,7 +589,6 @@ export default function Fields() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         field={selected}
-        year={year}
         isSaving={isSaving}
         onSave={handleSaveField}
       />
@@ -630,7 +603,6 @@ export default function Fields() {
           }
         }}
         field={drawnField}
-        year={year}
         isSaving={isSaving}
         onSave={handleSaveDrawn}
       />

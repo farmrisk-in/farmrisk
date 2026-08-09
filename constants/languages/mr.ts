@@ -340,7 +340,7 @@ export const mr = {
     agePlaceholder: "उदा. 42",
     locationPlaceholder: "उदा. धोलका, अहमदाबाद, गुजरात",
 
-    cropsIGrow: "मी कोणती पिके घेतो/घेते",
+    cropsIGrow: "सध्या घेतले जाणारे पीक",
     cropsHint: "तुम्ही तुमच्या शेतात घेत असलेली पिके निवडा.",
     cropsUnavailable: "तुमचे स्थान निवडल्यानंतर पिके उपलब्ध होतील",
 
@@ -437,7 +437,7 @@ export const mr = {
     clearSearch: "शोध साफ करा",
     fieldNameLabel: "शेताचे नाव",
     fieldNamePlaceholder: "उदा. उत्तर शेत",
-    cropsLabel: "मी कोणती पिके घेतो",
+    cropsLabel: "सध्या घेतले जाणारे पीक",
     cropsPlaceholder: "पिके शोधा आणि निवडा…",
     cropsNone: "कोणतेही पीक निवडले नाही",
     cropsNoResults: "कोणतेही पीक सापडले नाही.",
@@ -458,6 +458,9 @@ export const mr = {
     dialogSubtitle: "या शेतावर तुम्ही काय पिकवता ते सांगा.",
     cancelBtn: "रद्द करा",
     saveFieldBtn: "शेत जतन करा",
+    editCropTitle: "पीक संपादित करा",
+    editCropBtn: "पीक संपादित करा",
+    cropUpdated: "सध्याचे पीक अपडेट केले.",
     nameRequired: "कृपया या शेतासाठी नाव प्रविष्ट करा.",
     cropsRequired: "कृपया किमान एक पीक निवडा.",
     fieldFallbackName: "शेत",

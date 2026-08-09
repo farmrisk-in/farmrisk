@@ -337,7 +337,7 @@ export const en = {
     agePlaceholder: "e.g. 42",
     locationPlaceholder: "e.g. Dholka, Ahmedabad, Gujarat",
 
-    cropsIGrow: "Crops I Grow",
+    cropsIGrow: "Crop Currently Grown",
     cropsHint: "Select the crops you grow on your fields.",
     cropsUnavailable: "Crops will be available after you choose your location",
 
@@ -434,7 +434,7 @@ export const en = {
     clearSearch: "Clear search",
     fieldNameLabel: "Field Name",
     fieldNamePlaceholder: "e.g. North Farm",
-    cropsLabel: "Crops I Grow",
+    cropsLabel: "Crop Currently Grown",
     cropsPlaceholder: "Search and select crops…",
     cropsNone: "No crops selected",
     cropsNoResults: "No crops found.",
@@ -455,6 +455,9 @@ export const en = {
     dialogSubtitle: "Tell us what you grow on this field.",
     cancelBtn: "Cancel",
     saveFieldBtn: "Save Field",
+    editCropTitle: "Edit Crop",
+    editCropBtn: "Edit Crop",
+    cropUpdated: "Current crop updated.",
     nameRequired: "Please enter a name for this field.",
     cropsRequired: "Please select at least one crop.",
     fieldFallbackName: "Field",

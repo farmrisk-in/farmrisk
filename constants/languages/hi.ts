@@ -340,7 +340,7 @@ export const hi = {
     agePlaceholder: "जैसे 42",
     locationPlaceholder: "जैसे धोलका, अहमदाबाद, गुजरात",
 
-    cropsIGrow: "मैं कौन सी फसलें उगाता/उगाती हूँ",
+    cropsIGrow: "इस समय उगाई जा रही फसल",
     cropsHint: "उन फसलों को चुनें जो आप अपने खेतों में उगाते हैं।",
     cropsUnavailable: "अपना स्थान चुनने के बाद फसलें उपलब्ध होंगी",
 
@@ -436,7 +436,7 @@ export const hi = {
     clearSearch: "खोज साफ करें",
     fieldNameLabel: "खेत का नाम",
     fieldNamePlaceholder: "जैसे उत्तर खेत",
-    cropsLabel: "मैं कौन सी फसलें उगाता/उगाती हूँ",
+    cropsLabel: "इस समय उगाई जा रही फसल",
     cropsPlaceholder: "फसलें खोजें और चुनें…",
     cropsNone: "कोई फसल नहीं चुनी गई",
     cropsNoResults: "कोई फसल नहीं मिली।",
@@ -457,6 +457,9 @@ export const hi = {
     dialogSubtitle: "बताएं कि आप इस खेत पर क्या उगाते हैं।",
     cancelBtn: "रद्द करें",
     saveFieldBtn: "खेत सहेजें",
+    editCropTitle: "फसल संपादित करें",
+    editCropBtn: "फसल संपादित करें",
+    cropUpdated: "वर्तमान फसल अपडेट हो गई।",
     nameRequired: "कृपया इस खेत के लिए नाम दर्ज करें।",
     cropsRequired: "कृपया कम से कम एक फसल चुनें।",
     fieldFallbackName: "खेत",

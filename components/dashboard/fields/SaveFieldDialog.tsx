@@ -16,7 +16,7 @@ import {
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCrop } from "@/hooks/useCrop";
 import { fieldCenter } from "@/lib/ftw";
-import { CROP_STAGES, CROP_STAGE_KEYS, DEFAULT_CROPS, SEASONS, SEASON_KEYS } from "@/constants/farm";
+import { CROP_STAGES, DEFAULT_CROPS, SEASONS } from "@/constants/farm";
 import type { ClickedField } from "@/types/fields";
 import CropMultiSelect from "./CropMultiSelect";
 
@@ -31,7 +31,6 @@ interface SaveFieldDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   field: ClickedField | null;
-  year: string;
   isSaving?: boolean;
   onSave: (info: FieldInfo) => void;
 }
@@ -42,13 +41,11 @@ interface SaveFieldDialogProps {
  */
 function SaveFieldForm({
   field,
-  year,
   isSaving,
   onSave,
   onOpenChange,
 }: {
   field: ClickedField;
-  year: string;
   isSaving?: boolean;
   onSave: (info: FieldInfo) => void;
   onOpenChange: (open: boolean) => void;
@@ -71,19 +68,22 @@ function SaveFieldForm({
 
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
-  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
+  const [selectedCrop, setSelectedCrop] = useState<string[]>([]);
   const [cropsError, setCropsError] = useState<string | null>(null);
-  const [season, setSeason] = useState<string>(SEASONS[0]);
-  const [stage, setStage] = useState<string>(CROP_STAGES[0]);
+
+  // Season and crop stage are no longer collected in the form; keep the
+  // existing defaults so the persisted payload stays backwards-compatible.
+  const season = SEASONS[0];
+  const cropStage = CROP_STAGES[0];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const nameErr = name.trim() ? null : f.nameRequired;
-    const cropsErr = selectedCrops.length > 0 ? null : f.cropsRequired;
+    const cropsErr = selectedCrop.length > 0 ? null : f.cropsRequired;
     setNameError(nameErr);
     setCropsError(cropsErr);
     if (nameErr || cropsErr) return;
-    onSave({ name: name.trim(), crops: selectedCrops, season, cropStage: stage });
+    onSave({ name: name.trim(), crops: selectedCrop, season, cropStage });
   };
 
   return (
@@ -93,9 +93,6 @@ function SaveFieldForm({
           <DialogTitle className="flex flex-wrap items-center gap-2 text-base font-bold">
             <MapPinned className="size-4 shrink-0 text-primary" />
             {f.dialogTitle}
-            <span className="inline-flex items-center rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-              {f.yearLabel}: {year}
-            </span>
           </DialogTitle>
           <p className="text-xs text-muted-foreground">{f.dialogSubtitle}</p>
         </DialogHeader>
@@ -130,25 +127,21 @@ function SaveFieldForm({
           )}
         </div>
 
-        {/* Crops I Grow */}
+        {/* Crop Currently Grown */}
         <div className="space-y-1.5">
           <Label className="text-sm font-medium">{f.cropsLabel}</Label>
           {cropsLoading ? (
             <div className="space-y-2" aria-live="polite">
               <Skeleton className="h-9 w-full rounded-full" />
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-16 rounded-full" />
-                <Skeleton className="h-5 w-20 rounded-full" />
-              </div>
               <p className="text-xs text-muted-foreground">{f.cropsLoading}</p>
             </div>
           ) : (
             <>
               <CropMultiSelect
                 options={options}
-                value={selectedCrops}
+                value={selectedCrop}
                 onChange={(v) => {
-                  setSelectedCrops(v);
+                  setSelectedCrop(v);
                   if (cropsError) setCropsError(null);
                 }}
                 placeholder={f.cropsPlaceholder}
@@ -165,44 +158,6 @@ function SaveFieldForm({
               )}
             </>
           )}
-        </div>
-
-        {/* Season + Crop Stage */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="season" className="text-sm font-medium">
-              {f.seasonLabel}
-            </Label>
-            <select
-              id="season"
-              value={season}
-              onChange={(e) => setSeason(e.target.value)}
-              className="h-9 w-full cursor-pointer rounded-4xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              {SEASONS.map((s) => (
-                <option key={s} value={s}>
-                  {t.fields[SEASON_KEYS[s]]}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="stage" className="text-sm font-medium">
-              {f.stageLabel}
-            </Label>
-            <select
-              id="stage"
-              value={stage}
-              onChange={(e) => setStage(e.target.value)}
-              className="h-9 w-full cursor-pointer rounded-4xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              {CROP_STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {t.fields[CROP_STAGE_KEYS[s]]}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <DialogFooter className="-mx-6 -mb-5 flex flex-col-reverse gap-2 border-t border-border bg-muted/30 px-6 pb-5 pt-4 sm:flex-row sm:justify-end">
@@ -232,7 +187,6 @@ export default function SaveFieldDialog({
   open,
   onOpenChange,
   field,
-  year,
   isSaving,
   onSave,
 }: SaveFieldDialogProps) {
@@ -242,7 +196,6 @@ export default function SaveFieldDialog({
         {field && (
           <SaveFieldForm
             field={field}
-            year={year}
             isSaving={isSaving}
             onSave={onSave}
             onOpenChange={onOpenChange}

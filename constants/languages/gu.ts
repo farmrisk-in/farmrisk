@@ -338,7 +338,7 @@ export const gu = {
     agePlaceholder: "દા.ત. 42",
     locationPlaceholder: "દા.ત. ધોળકા, અમદાવાદ, ગુજરાત",
 
-    cropsIGrow: "હું કઈ ફસલો ઉગાડું છું",
+    cropsIGrow: "હાલમાં ઉગાવવામાં આવતો પાક",
     cropsHint: "તમે તમારા ખેતરોમાં જે ફસલો ઉગાડો છો તે પસંદ કરો.",
     cropsUnavailable: "તમારું સ્થાન પસંદ કર્યા પછી ફસલો ઉપલબ્ધ થશે",
 
@@ -435,7 +435,7 @@ export const gu = {
     clearSearch: "શોધ સાફ કરો",
     fieldNameLabel: "ખેતરનું નામ",
     fieldNamePlaceholder: "દા.ત. ઉત્તર ખેતર",
-    cropsLabel: "હું કઈ પાક ઉગાડું છું",
+    cropsLabel: "હાલમાં ઉગાવવામાં આવતો પાક",
     cropsPlaceholder: "પાક શોધો અને પસંદ કરો…",
     cropsNone: "કોઈ પાક પસંદ નથી",
     cropsNoResults: "કોઈ પાક મળ્યો નથી.",
@@ -456,6 +456,9 @@ export const gu = {
     dialogSubtitle: "આ ખેતરમાં તમે શું ઉગાડો છો તે જણાવો.",
     cancelBtn: "રદ કરો",
     saveFieldBtn: "ખેતર સાચવો",
+    editCropTitle: "પાક સંપાદિત કરો",
+    editCropBtn: "પાક સંપાદિત કરો",
+    cropUpdated: "હાલનો પાક અપડેટ થયો.",
     nameRequired: "કૃપા કરીને આ ખેતર માટે નામ દાખલ કરો.",
     cropsRequired: "કૃપા કરીને ઓછામાં ઓછો એક પાક પસંદ કરો.",
     fieldFallbackName: "ખેતર",

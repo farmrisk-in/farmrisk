@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useFields } from "@/hooks/useFields";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -9,12 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { translateCropName } from "@/lib/cropName";
-import {
-  CROP_STAGE_KEYS,
-  SEASON_KEYS,
-  type CropStage,
-  type Season,
-} from "@/constants/farm";
 import { cn } from "@/lib/utils";
 import type { SavedField } from "@/types/fields";
 import { setPendingFieldZoom } from "@/lib/pendingFieldZoom";
@@ -25,9 +19,11 @@ import {
   LandPlot,
   LoaderCircle,
   MapPin,
+  PenLine,
   Trash2,
   ZoomIn,
 } from "lucide-react";
+import EditFieldCropDialog from "./EditFieldCropDialog";
 
 function fmtFieldArea(m2: number | null | undefined): string {
   if (m2 == null || isNaN(m2)) return "";
@@ -53,14 +49,20 @@ function FieldDetail({
 export default function MyFields() {
   const { t, language } = useLanguage();
   const { setCurrentPage } = useNavigation();
-  const { fields: savedFields, deleteField, isDeleting, isLoading } = useFields();
+  const {
+    fields: savedFields,
+    deleteField,
+    updateField,
+    isUpdating,
+    isDeleting,
+    isLoading,
+  } = useFields();
+
+  const [editingField, setEditingField] = useState<SavedField | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
 
   const fieldDisplayName = (field: SavedField) =>
     field.name || `${t.fields.fieldFallbackName} · ${field.year}`;
-  const seasonLabel = (s?: string) =>
-    s && s in SEASON_KEYS ? t.fields[SEASON_KEYS[s as Season]] : "";
-  const stageLabel = (s?: string) =>
-    s && s in CROP_STAGE_KEYS ? t.fields[CROP_STAGE_KEYS[s as CropStage]] : "";
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
@@ -117,6 +119,23 @@ export default function MyFields() {
       year: field.year,
     });
     setCurrentPage("SelectFields");
+  };
+
+  const handleEditClick = (field: SavedField) => {
+    setEditingField(field);
+    setEditOpen(true);
+  };
+
+  const handleEditCrop = async (cropId: string) => {
+    if (!editingField) return;
+    try {
+      await updateField({ id: editingField.id, patch: { crops: [cropId] } });
+      toast.success(t.fields.cropUpdated);
+      setEditOpen(false);
+      setEditingField(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.fields.saveError);
+    }
   };
 
   return (
@@ -254,14 +273,6 @@ export default function MyFields() {
                     value={fmtFieldArea(field.areaM2) || "—"}
                   />
                   <FieldDetail
-                    label={t.fields.seasonLabel}
-                    value={seasonLabel(field.season) || "—"}
-                  />
-                  <FieldDetail
-                    label={t.fields.stageLabel}
-                    value={stageLabel(field.cropStage) || "—"}
-                  />
-                  <FieldDetail
                     label={t.fields.addedLabel}
                     value={fmtDate(field.savedAt)}
                   />
@@ -273,31 +284,38 @@ export default function MyFields() {
                 </p>
 
                 {/* Actions */}
-                <div className="mt-2.5 grid grid-cols-2 gap-2">
+                <div className="mt-2.5 grid grid-cols-3 gap-2">
                   <Button
                     type="button"
                     variant="default"
-                    size="sm"
                     onClick={() => handleViewField(field)}
-                    className="h-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center justify-center gap-1.5"
+                    className="min-w-0 h-auto min-h-[2.25rem] whitespace-normal text-xs leading-tight rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center justify-center gap-1.5 px-1"
                   >
                     <ZoomIn className="size-3.5 shrink-0" />
-                    {t.fields.zoomBtn}
+                    <span className="min-w-0">{t.fields.zoomBtn}</span>
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
-                    size="sm"
+                    onClick={() => handleEditClick(field)}
+                    className="min-w-0 h-auto min-h-[2.25rem] whitespace-normal text-xs leading-tight rounded-lg border-border flex items-center justify-center gap-1.5 px-1"
+                  >
+                    <PenLine className="size-3.5 shrink-0 text-primary" />
+                    <span className="min-w-0">{t.fields.editCropBtn}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
                     disabled={isDeleting}
                     onClick={() => handleRemove(field)}
-                    className="h-8 rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive flex items-center justify-center gap-1.5"
+                    className="min-w-0 h-auto min-h-[2.25rem] whitespace-normal text-xs leading-tight rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive flex items-center justify-center gap-1.5 px-1"
                   >
                     {isDeleting ? (
                       <LoaderCircle className="size-3.5 animate-spin" />
                     ) : (
                       <Trash2 className="size-3.5 shrink-0" />
                     )}
-                    {t.fields.removeBtn}
+                    <span className="min-w-0">{t.fields.removeBtn}</span>
                   </Button>
                 </div>
               </div>
@@ -305,6 +323,14 @@ export default function MyFields() {
           })}
         </div>
       )}
+
+      <EditFieldCropDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        field={editingField}
+        isSaving={isUpdating}
+        onSave={handleEditCrop}
+      />
     </div>
   );
 }

@@ -344,7 +344,7 @@ export const ta = {
     agePlaceholder: "எ.கா. 42",
     locationPlaceholder: "எ.கா. தோல்கா, அகமதாபாத், குஜராத்",
 
-    cropsIGrow: "நான் வளர்க்கும் பயிர்கள்",
+    cropsIGrow: "தற்போது வளர்க்கப்படும் பயிர்",
     cropsHint: "உங்கள் வயல்களில் நீங்கள் வளர்க்கும் பயிர்களைத் தேர்ந்தெடுக்கவும்.",
     cropsUnavailable: "உங்கள் இருப்பிடத்தைத் தேர்ந்தெடுத்த பிறகு பயிர்கள் கிடைக்கும்",
 
@@ -441,7 +441,7 @@ export const ta = {
     clearSearch: "தேடலை அழி",
     fieldNameLabel: "வயல் பெயர்",
     fieldNamePlaceholder: "எ.கா. வடக்கு வயல்",
-    cropsLabel: "நான் விளைவிக்கும் பயிர்கள்",
+    cropsLabel: "தற்போது வளர்க்கப்படும் பயிர்",
     cropsPlaceholder: "பயிர்களைத் தேடி தேர்ந்தெடுக்கவும்…",
     cropsNone: "பயிர்கள் எதுவும் தேர்ந்தெடுக்கப்படவில்லை",
     cropsNoResults: "பயிர்கள் எதுவும் காணப்படவில்லை.",
@@ -462,6 +462,9 @@ export const ta = {
     dialogSubtitle: "இந்த வயலில் நீங்கள் என்ன விளைவிக்கிறீர்கள் என்பதைச் சொல்லுங்கள்.",
     cancelBtn: "ரத்து செய்",
     saveFieldBtn: "வயலைச் சேமி",
+    editCropTitle: "பயிரைத் திருத்து",
+    editCropBtn: "பயிரைத் திருத்து",
+    cropUpdated: "தற்போதைய பயிர் புதுப்பிக்கப்பட்டது.",
     nameRequired: "இந்த வயலுக்கு ஒரு பெயரை உள்ளிடவும்.",
     cropsRequired: "குறைந்தது ஒரு பயிரையாவது தேர்ந்தெடுக்கவும்.",
     fieldFallbackName: "வயல்",

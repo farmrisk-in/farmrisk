@@ -68,10 +68,13 @@ export default function CropMultiSelect({
     );
   }, [options, query]);
 
-  const toggle = (id: string) =>
-    onChange(
-      value.includes(id) ? value.filter((v) => v !== id) : [...value, id],
-    );
+  // Single-crop selection: picking a crop replaces the current one. Picking
+  // the same crop again clears the selection.
+  const toggle = (id: string) => {
+    const next = value.includes(id) ? [] : [id];
+    onChange(next);
+    if (next.length === 1) setOpen(false);
+  };
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -110,11 +113,6 @@ export default function CropMultiSelect({
             <span className="truncate text-muted-foreground">
               {placeholder ?? f.cropsPlaceholder}
             </span>
-            {value.length > 0 && (
-              <span className="ml-auto mr-1.5 shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                {value.length}
-              </span>
-            )}
             <ChevronsUpDown className="size-3.5 shrink-0 opacity-60" />
           </Button>
         </PopoverTrigger>
