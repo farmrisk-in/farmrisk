@@ -39,6 +39,7 @@ import type { DrawnFieldPayload } from "@/lib/drawField";
 import { consumePendingFieldZoom } from "@/lib/pendingFieldZoom";
 import type { ClickedField } from "@/types/fields";
 import SaveFieldDialog, { type FieldInfo } from "./SaveFieldDialog";
+import { useProfile } from "@/hooks/useProfile";
 
 const FieldMap = dynamic(() => import("./FieldMap"), {
   ssr: false,
@@ -74,6 +75,7 @@ export default function Fields() {
     saveField,
     isSaving,
   } = useFields();
+  const { syncCropHistory } = useProfile();
 
   // Location state
   const [latInput, setLatInput] = useState(
@@ -279,6 +281,17 @@ export default function Fields() {
         cropStage: info.cropStage,
       });
       toast.success(f.addSuccess);
+      try {
+        const activeCrops = [
+          ...new Set([
+            ...savedFields.flatMap((x) => x.crops ?? []),
+            ...(info.crops ?? []),
+          ]),
+        ];
+        await syncCropHistory(activeCrops);
+      } catch {
+        // best effort - crop history must not block the field save flow
+      }
       setSaveDrawnOpen(false);
       setDrawnField(null);
       setDrawnMeta(null);
@@ -319,6 +332,17 @@ export default function Fields() {
         cropStage: info.cropStage,
       });
       toast.success(f.addSuccess);
+      try {
+        const activeCrops = [
+          ...new Set([
+            ...savedFields.flatMap((x) => x.crops ?? []),
+            ...(info.crops ?? []),
+          ]),
+        ];
+        await syncCropHistory(activeCrops);
+      } catch {
+        // best effort - crop history must not block the field save flow
+      }
       setDialogOpen(false);
       setSelected(null);
       setCurrentPage("MyFields");

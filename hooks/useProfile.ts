@@ -4,6 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { normalizePhoneNumber } from "@/lib/auth/phone";
+import {
+  EMPTY_CROP_HISTORY,
+  sanitizeCropHistory,
+  syncCropHistory as syncCropHistoryState,
+} from "@/lib/cropHistory";
+import type { CropHistoryState } from "@/lib/cropHistory";
 
 export interface ExtendedProfileData {
   first_name: string;
@@ -14,6 +20,7 @@ export interface ExtendedProfileData {
   phone: string;
   avatar_url: string;
   crops: string[];
+  cropHistory: CropHistoryState;
 }
 
 export function useProfile() {
@@ -71,6 +78,8 @@ export function useProfile() {
           )
         : [];
 
+      const cropHistory = sanitizeCropHistory(meta.crop_history);
+
       return {
         first_name: firstName,
         last_name: lastName,
@@ -80,6 +89,7 @@ export function useProfile() {
         phone,
         avatar_url: avatarUrl,
         crops,
+        cropHistory,
       };
     },
     enabled: !!user,
@@ -99,6 +109,7 @@ export function useProfile() {
         phone: "",
         avatar_url: "",
         crops: [],
+        cropHistory: EMPTY_CROP_HISTORY,
       };
 
       const firstName =
@@ -112,7 +123,12 @@ export function useProfile() {
       const phone = updated.phone !== undefined ? updated.phone : current.phone;
       const avatarUrl =
         updated.avatar_url !== undefined ? updated.avatar_url : current.avatar_url;
-      const crops = updated.crops !== undefined ? updated.crops : current.crops;
+      const crops =
+        updated.crops !== undefined ? updated.crops : current.crops;
+      const cropHistory =
+        updated.cropHistory !== undefined
+          ? updated.cropHistory
+          : current.cropHistory;
 
       // Base database payload
       const basePayload: any = {
@@ -126,6 +142,7 @@ export function useProfile() {
           first_name: firstName,
           last_name: lastName,
           crops,
+          crop_history: cropHistory,
         },
         updated_at: new Date().toISOString(),
       };
@@ -195,6 +212,7 @@ export function useProfile() {
         phone,
         avatar_url: avatarUrl,
         crops,
+        cropHistory,
       };
     },
     onSuccess: (data) => {
@@ -254,12 +272,27 @@ export function useProfile() {
     },
   });
 
+  /**
+   * Synchronizes the recorded crop history so that the currently active crops
+   * match the union of crops across all saved fields. A crop that stops being
+   * grown on any field moves into history only if it stayed active for more
+   * than 7 days. Persisted into profiles.metadata.crop_history.
+   */
+  const syncCropHistory = async (currentFieldCrops: string[]): Promise<void> => {
+    if (!user) throw new Error("User must be logged in to update crops");
+    const currentState = query.data?.cropHistory ?? EMPTY_CROP_HISTORY;
+    const next = syncCropHistoryState(currentState, currentFieldCrops, new Date().toISOString());
+    await updateMutation.mutateAsync({ cropHistory: next });
+  };
+
   return {
     profile: query.data,
+    cropHistory: query.data?.cropHistory ?? EMPTY_CROP_HISTORY,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
     updateProfile: updateMutation.mutateAsync,
+    syncCropHistory,
     isUpdating: updateMutation.isPending,
     updatePassword: updatePasswordMutation.mutateAsync,
     isUpdatingPassword: updatePasswordMutation.isPending,

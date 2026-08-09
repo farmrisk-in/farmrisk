@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useFields } from "@/hooks/useFields";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigation } from "@/hooks/useNavigation";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -57,6 +58,7 @@ export default function MyFields() {
     isDeleting,
     isLoading,
   } = useFields();
+  const { syncCropHistory } = useProfile();
 
   const [editingField, setEditingField] = useState<SavedField | null>(null);
   const [editOpen, setEditOpen] = useState(false);
@@ -105,6 +107,18 @@ export default function MyFields() {
   const handleRemove = async (field: SavedField) => {
     try {
       await deleteField(field.id);
+      try {
+        const remainingCrops = [
+          ...new Set(
+            savedFields
+              .filter((x) => x.id !== field.id)
+              .flatMap((x) => x.crops ?? []),
+          ),
+        ];
+        await syncCropHistory(remainingCrops);
+      } catch {
+        // best effort - crop history must not block the field delete flow
+      }
       toast.success(t.fields.removeSuccess);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.fields.saveError);
@@ -130,6 +144,19 @@ export default function MyFields() {
     if (!editingField) return;
     try {
       await updateField({ id: editingField.id, patch: { crops: [cropId] } });
+      try {
+        const activeCrops = [
+          ...new Set([
+            ...savedFields
+              .filter((x) => x.id !== editingField.id)
+              .flatMap((x) => x.crops ?? []),
+            cropId,
+          ]),
+        ];
+        await syncCropHistory(activeCrops);
+      } catch {
+        // best effort - crop history must not block the field edit flow
+      }
       toast.success(t.fields.cropUpdated);
       setEditOpen(false);
       setEditingField(null);

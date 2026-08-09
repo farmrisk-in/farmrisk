@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useFields } from "@/hooks/useFields";
@@ -9,13 +15,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { useCrop } from "@/hooks/useCrop";
 import { useNavigation } from "@/hooks/useNavigation";
 import { translateCropName } from "@/lib/cropName";
 import { cn } from "@/lib/utils";
+import {
+  EMPTY_CROP_HISTORY,
+  cropActiveIds,
+  cropHistoryUnionIds,
+} from "@/lib/cropHistory";
 import {
   User,
   Phone,
@@ -32,7 +48,6 @@ import {
   ZoomOut,
   KeyRound,
   Lock,
-  Check,
   ChevronRight,
   LandPlot,
 } from "lucide-react";
@@ -48,7 +63,6 @@ export default function Profile() {
     isUpdatingPassword,
   } = useProfile();
   const { language, t } = useLanguage();
-  const { crops: cropOptions } = useCrop();
   const { setCurrentPage } = useNavigation();
   const { fields: savedFields } = useFields();
 
@@ -61,9 +75,41 @@ export default function Profile() {
   const [age, setAge] = useState<string>("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [crops, setCrops] = useState<string[]>([]);
 
-  const cropChoices = cropOptions.filter((c) => c.id !== "general");
+// Crops are managed from the Farm Selection / My Fields edit flows. The
+  // profile renders the derived union of active + historical crops. Every crop
+  // currently growing on any saved field is treated as active (multi-field
+  // aware). As a fallback for users who saved a field before crop history
+  // existed, crops on saved fields count as active for display.
+  const historyState = profile?.cropHistory ?? EMPTY_CROP_HISTORY;
+  const fieldCropIds = [
+    ...new Set(savedFields.flatMap((f) => f.crops ?? []).filter(Boolean)),
+  ];
+  const effectiveActiveIds = [
+    ...new Set([...cropActiveIds(historyState), ...fieldCropIds]),
+  ];
+  const cropUnionIds = [
+    ...effectiveActiveIds,
+    ...cropHistoryUnionIds(historyState).filter(
+      (id) => !effectiveActiveIds.includes(id),
+    ),
+  ];
+  const isActiveCrop = (id: string) => effectiveActiveIds.includes(id);
+
+  // Field names each crop is currently grown in, for the hover tooltip.
+  const fieldsByCrop = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const field of savedFields) {
+      const displayName =
+        field.name ||
+        `${t.fields.fieldFallbackName} ${field.year}`;
+      for (const cropId of new Set(field.crops ?? [])) {
+        if (!cropId) continue;
+        (map[cropId] ??= []).push(displayName);
+      }
+    }
+    return map;
+  }, [savedFields, t]);
 
   // Change Password Dialog States
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
@@ -87,15 +133,8 @@ export default function Profile() {
       setAge(profile.age ? String(profile.age) : "");
       setLocation(profile.location || "");
       setAvatarUrl(profile.avatar_url || "");
-      setCrops(profile.crops || []);
     }
   }, [profile]);
-
-  const toggleCrop = (id: string) => {
-    setCrops((prev) =>
-      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
-    );
-  };
 
   // Step 1: File selection triggers crop dialog
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,7 +224,6 @@ export default function Profile() {
         age: ageNum,
         location: location.trim(),
         avatar_url: avatarUrl.trim(),
-        crops,
       });
 
       toast.success(t.profile.profileUpdated);
@@ -505,32 +543,52 @@ export default function Profile() {
           </div>
 
           <div className="mt-3.5 space-y-1.5">
-            {cropChoices.length === 0 ? (
+            {cropUnionIds.length === 0 ? (
               <p className="text-xs text-muted-foreground italic">
-                {t.profile.cropsUnavailable}
+                {t.profile.noCropsHistory}
               </p>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {cropChoices.map((c) => {
-                  const active = crops.includes(c.id);
-                  return (
-                    <button
-                      type="button"
-                      key={c.id}
-                      onClick={() => toggleCrop(c.id)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full border transition-all cursor-pointer",
-                        active
-                          ? "bg-emerald-600 border-emerald-600 text-white shadow-xs"
-                          : "bg-background border-border text-foreground hover:border-emerald-400",
-                      )}
-                    >
-                      {active && <Check className="size-3" />}
-                      {translateCropName(c, t)}
-                    </button>
-                  );
-                })}
-              </div>
+              <TooltipProvider>
+                <div className="flex flex-wrap gap-2">
+                  {cropUnionIds.map((id) => {
+                    const isCurrent = isActiveCrop(id);
+                    const fieldNames = fieldsByCrop[id] ?? [];
+                    const chip = (
+                      <span
+                        className={cn(
+                          "inline-flex cursor-default items-center rounded-full border px-3 py-1.5 text-xs font-medium",
+                          isCurrent
+                            ? "bg-emerald-600 border-emerald-600 text-white shadow-xs"
+                            : "bg-muted border-border text-muted-foreground",
+                        )}
+                      >
+                        <span className="min-w-0 truncate">
+                          {translateCropName({ id, name: id }, t)}
+                        </span>
+                      </span>
+                    );
+                    return fieldNames.length > 0 ? (
+                      <Tooltip key={id}>
+                        <TooltipTrigger asChild>{chip}</TooltipTrigger>
+                        <TooltipContent
+                          sideOffset={6}
+                          className="rounded-lg border border-border bg-card px-2.5 py-2 text-[11px] font-normal text-muted-foreground shadow-sm"
+                        >
+                          <div className="space-y-1">
+                            {fieldNames.map((name) => (
+                              <div key={name} className="whitespace-nowrap">
+                                {name}
+                              </div>
+                            ))}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span key={id}>{chip}</span>
+                    );
+                  })}
+                </div>
+              </TooltipProvider>
             )}
             <p className="text-[11px] text-muted-foreground">
               {t.profile.cropsHint}

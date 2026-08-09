@@ -337,8 +337,10 @@ export const en = {
     agePlaceholder: "e.g. 42",
     locationPlaceholder: "e.g. Dholka, Ahmedabad, Gujarat",
 
-    cropsIGrow: "Crop Currently Grown",
-    cropsHint: "Select the crops you grow on your fields.",
+    cropsIGrow: "Crops Currently Grown",
+    currentBadge: "Current",
+    noCropsHistory: "No crops recorded yet.",
+    cropsHint: "Shows the crops growing on any of your fields, plus crops grown for more than a week.",
     cropsUnavailable: "Crops will be available after you choose your location",
 
     save: "Save",
