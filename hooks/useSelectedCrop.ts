@@ -59,13 +59,16 @@ export function useSelectedCrop() {
     };
   }, []);
 
-  // Reset back to the general crop whenever the location changes.
+  // Reset back to the general crop whenever the *unlinked* location changes.
+  // Locations that come from a saved field (`fieldId`) carry the field's own
+  // current crop, which the location picker sets explicitly — resetting here
+  // would overwrite it with the general crop.
   const lastLocationRef = useRef<{ lat: number; lng: number } | null>(
-    location ? { lat: location.lat, lng: location.lng } : null,
+    location && !location.fieldId ? { lat: location.lat, lng: location.lng } : null,
   );
 
   useEffect(() => {
-    if (!location) return;
+    if (!location || location.fieldId) return;
     if (
       !lastLocationRef.current ||
       lastLocationRef.current.lat !== location.lat ||

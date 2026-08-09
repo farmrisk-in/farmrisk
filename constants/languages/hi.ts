@@ -599,7 +599,9 @@ export const hi = {
     headerTitle: "गाँव और स्थान",
     headerSubtitle: "भारत ग्राम खोज",
     searchLabel: "गाँव खोजें",
-    searchPlaceholder: "गाँव, तालुका, जिला खोजें...",
+    searchPlaceholder: "खेत या स्थान खोजें...",
+    resultsHeading: "खोज परिणाम",
+    searchPlaceholderGuest: "गाँव, तालुका, जिला खोजें...",
     noMatches:
       "अभी तक कोई मेल नहीं मिला। कोई जिला, तालुका या पास का गाँव आज़माएँ।",
     selectMapBtn: "मानचित्र से चुनें",

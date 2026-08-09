@@ -14,6 +14,8 @@ export type SelectedLocation = {
   lng: number;
   name: string;
   displayName: string;
+  /** When the location was picked from a saved field, the saved_fields row id. */
+  fieldId?: string;
 };
 
 type LocationContextValue = {

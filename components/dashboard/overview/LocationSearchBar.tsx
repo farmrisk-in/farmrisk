@@ -2,14 +2,20 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPinned, LocateFixed, X, Crosshair, Loader2 } from "lucide-react";
+import { MapPinned, LocateFixed, X, Crosshair, Loader2, LandPlot } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import { useLocationSearch } from "@/hooks/useLocations";
+import { useFields } from "@/hooks/useFields";
+import { useSelectedCrop } from "@/hooks/useSelectedCrop";
+import { translateCropName } from "@/lib/cropName";
+import { GENERAL_CROP } from "@/types/crops";
+import type { SavedField } from "@/types/fields";
 import {
   useLocationContext,
   type SelectedLocation,
@@ -88,9 +94,47 @@ export function LocationSearchBar() {
   const { t, language } = useLanguage();
   const locTrans = t.locationSearchBar;
   const btnTrans = BUTTON_TRANSLATIONS[language] || BUTTON_TRANSLATIONS.en;
+  const { user } = useAuth();
+  const searchPlaceholder = user
+    ? locTrans.searchPlaceholder
+    : locTrans.searchPlaceholderGuest;
 
   // Hook directly into the global location provider
   const { location, setLocation } = useLocationContext();
+  const { fields: savedFields } = useFields();
+  const { setSelectedCrop } = useSelectedCrop();
+
+  // Saved fields with usable coordinates can act as locations
+  const selectableFields = savedFields.filter(
+    (f) => f.centerLat != null && f.centerLng != null,
+  );
+
+  const fieldDisplayName = (field: SavedField) =>
+    field.name || `${t.fields.fieldFallbackName} · ${field.year}`;
+
+  const handleSelectField = (field: SavedField) => {
+    if (field.centerLat == null || field.centerLng == null) return;
+    const currentCropId = field.crops?.[0];
+    // The crop context follows ONLY the selected field's own current crop.
+    // If the field has no crop recorded, fall back to the existing empty state.
+    const crop = currentCropId
+      ? {
+          id: currentCropId,
+          name: translateCropName({ id: currentCropId, name: currentCropId }, t),
+          area: 0,
+        }
+      : GENERAL_CROP;
+    setSelectedCrop(crop);
+    updateGlobalLocation({
+      lat: field.centerLat,
+      lng: field.centerLng,
+      name: fieldDisplayName(field),
+      fieldId: field.id,
+      displayName: currentCropId
+        ? `${translateCropName({ id: currentCropId, name: currentCropId }, t)} · ${formatCoordinates(field.centerLat, field.centerLng)}`
+        : formatCoordinates(field.centerLat, field.centerLng),
+    });
+  };
 
   // Standard input query state, synchronized with selected location name
   const [query, setQuery] = useState(location?.name || "");
@@ -151,6 +195,7 @@ export function LocationSearchBar() {
       lng: next.lng,
       name: next.name,
       displayName: next.displayName,
+      fieldId: next.fieldId,
     });
     setQuery(next.name);
     setIsFocused(false);
@@ -302,7 +347,7 @@ export function LocationSearchBar() {
                   onFocus={() => setIsFocused(true)}
                   onBlur={handleBlur}
                   onValueChange={(value) => setQuery(value)}
-                  placeholder={locTrans.searchPlaceholder}
+                  placeholder={searchPlaceholder}
                 />
 
                 {query && (
@@ -327,17 +372,43 @@ export function LocationSearchBar() {
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <CommandList className="max-h-72">
+                {selectableFields.length > 0 && (
+                  <CommandGroup heading={t.fields.myFieldsTitle}>
+                    {selectableFields.map((field) => (
+                      <CommandItem
+                        key={field.id}
+                        value={`field-${field.id}-${field.centerLat}-${field.centerLng}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onSelect={() => handleSelectField(field)}
+                        className="cursor-pointer py-3 bg-background rounded-xl"
+                      >
+                        <LandPlot className="mr-3 size-7 shrink-0 text-primary" />
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate font-medium">
+                            {fieldDisplayName(field)}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {formatCoordinates(field.centerLat!, field.centerLng!)}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+
                 {loadingResults ? (
                   <div className="flex bg-background rounded-xl items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
                     <Loader2 className="size-4 animate-spin" />
                     Searching...
                   </div>
                 ) : results.length === 0 ? (
-                  <CommandEmpty className="bg-background rounded-xl">
-                    {locTrans.noMatches}
-                  </CommandEmpty>
+                  selectableFields.length === 0 ? (
+                    <CommandEmpty className="bg-background rounded-xl">
+                      {locTrans.noMatches}
+                    </CommandEmpty>
+                  ) : null
                 ) : (
-                  <CommandGroup>
+                  <CommandGroup heading={locTrans.resultsHeading}>
                     {results.map((res, _) => (
                       <CommandItem
                         key={_}

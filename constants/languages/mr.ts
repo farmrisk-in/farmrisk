@@ -599,7 +599,9 @@ export const mr = {
     headerTitle: "गाव आणि स्थान",
     headerSubtitle: "भारत गाव शोध",
     searchLabel: "गाव शोधा",
-    searchPlaceholder: "गाव, तालुका, जिल्हा शोधा...",
+    searchPlaceholder: "शेत किंवा ठिकाण शोधा...",
+    resultsHeading: "शोध निकाल",
+    searchPlaceholderGuest: "गाव, तालुका, जिल्हा शोधा...",
     noMatches:
       "अद्याप कोणतेही सामने आढळले नाहीत. जिल्हा, तालुका किंवा जवळील गाव वापरून पहा.",
     selectMapBtn: "नकाशावरून निवडा",
