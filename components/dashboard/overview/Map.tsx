@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Marker } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Crosshair, LucideProps } from "lucide-react";
+import L from "leaflet";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Crosshair, MapPin, LucideProps } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { ReactNode } from "react";
@@ -14,6 +16,8 @@ export interface LeafletSelectMapProps {
   initialLat: number;
   initialLng: number;
   onCenterChange?: (lat: number, lng: number) => void;
+  /** A single 📍 location pin rendered at these coordinates. Cleared when null. */
+  marker?: { lat: number; lng: number } | null;
   title?: string;
   bottomLeftBadge?: ReactNode;
   bottomRightAction?: ReactNode;
@@ -35,6 +39,20 @@ export interface LeafletSelectMapProps {
 }
 
 const INITIAL_ZOOM = 11;
+
+const LOCATION_PIN_ICON = L.divIcon({
+  className: "farmrisk-location-pin",
+  html: renderToStaticMarkup(
+    <MapPin
+      size={34}
+      strokeWidth={2.25}
+      className="text-red-600 dark:text-red-500 drop-shadow-[0_2px_3px_rgba(0,0,0,0.45)]"
+    />,
+  ),
+  iconSize: [34, 34],
+  iconAnchor: [17, 34],
+  popupAnchor: [0, -34],
+});
 
 function MapEvents({
   onCenterChange,
@@ -71,11 +89,19 @@ function InvalidateMapSize() {
   return null;
 }
 
-function Recenter({ lat, lng }: { lat: number; lng: number }) {
+function Recenter({
+  lat,
+  lng,
+  zoom,
+}: {
+  lat: number;
+  lng: number;
+  zoom?: number;
+}) {
   const map = useMap();
   useEffect(() => {
-    map.setView([lat, lng]);
-  }, [lat, lng, map]);
+    map.setView([lat, lng], zoom);
+  }, [lat, lng, zoom, map]);
   return null;
 }
 
@@ -115,6 +141,7 @@ export default function Map({
   initialLat,
   initialLng,
   onCenterChange,
+  marker = null,
   title,
   topRightAction,
   Icon,
@@ -170,10 +197,17 @@ export default function Map({
         key={`map-container-${initialLat}-${initialLng}-${dialog}`}
       >
         <TileLayer key={isDark ? "dark" : "light"} url={tileUrl} />
-        <Recenter lat={initialLat} lng={initialLng} />
+        <Recenter lat={initialLat} lng={initialLng} zoom={zoom} />
         {onCenterChange && <MapEvents onCenterChange={onCenterChange} />}
         <InvalidateMapSize />
         {showZoomControls && <CustomZoomControl />}
+        {marker && (
+          <Marker
+            position={[marker.lat, marker.lng]}
+            icon={LOCATION_PIN_ICON}
+            zIndexOffset={1000}
+          />
+        )}
         {children}
       </MapContainer>
 

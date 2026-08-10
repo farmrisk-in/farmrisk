@@ -34,9 +34,13 @@ import { useLocationSearch } from "@/hooks/useLocations";
 import { useFields } from "@/hooks/useFields";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigation } from "@/hooks/useNavigation";
+import { useSelectedCrop } from "@/hooks/useSelectedCrop";
 import { fieldCenter } from "@/lib/ftw";
 import type { DrawnFieldPayload } from "@/lib/drawField";
-import { consumePendingFieldZoom } from "@/lib/pendingFieldZoom";
+import { consumePendingFieldZoom, type PendingFieldZoom } from "@/lib/pendingFieldZoom";
+import { formatCoordinates, reverseGeocode } from "@/lib/utils";
+import { translateCropName } from "@/lib/cropName";
+import { GENERAL_CROP } from "@/types/crops";
 import type { ClickedField } from "@/types/fields";
 import SaveFieldDialog, { type FieldInfo } from "./SaveFieldDialog";
 import { useProfile } from "@/hooks/useProfile";
@@ -67,13 +71,15 @@ function fmtArea(m2: number | null | undefined): string {
 export default function Fields() {
   const { t } = useLanguage();
   const f = t.fields;
-  const { location } = useLocationContext();
+  const { location, setLocation } = useLocationContext();
   const { user } = useAuth();
   const { setCurrentPage } = useNavigation();
+  const { setSelectedCrop } = useSelectedCrop();
   const {
     fields: savedFields,
     saveField,
     isSaving,
+    isLoading,
   } = useFields();
   const { syncCropHistory } = useProfile();
 
@@ -151,11 +157,15 @@ export default function Fields() {
     }
   }, [location]);
 
+  const pendingRef = useRef<PendingFieldZoom | null>(null);
+  const pendingLinkedRef = useRef(false);
+
   // Zoom into a saved field requested from the "My Fields" page: centers the
   // map, fits the boundary, highlights it and selects it in the side panel.
   useEffect(() => {
     const pending = consumePendingFieldZoom();
     if (!pending) return;
+    pendingRef.current = pending;
     /* eslint-disable react-hooks/set-state-in-effect */
     setSelected(pending);
     setFocusField(pending);
@@ -171,12 +181,68 @@ export default function Fields() {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  const goTo = (lat: number, lng: number) => {
+  // Once the user's saved fields are loaded, link the zoomed-in field to the
+  // global location + crop so the dashboard/advisory follows that field's own
+  // coordinates and current crop (e.g. Field 1 -> Wheat, Field 2 -> Cotton).
+  useEffect(() => {
+    if (pendingLinkedRef.current) return;
+    const pending = pendingRef.current;
+    if (!pending) return;
+    if (isLoading) return;
+    pendingLinkedRef.current = true;
+    const saved = savedFields.find(
+      (sf) =>
+        (sf.fieldId === pending.id || sf.id === pending.id) &&
+        (!pending.year || sf.year === String(pending.year)),
+    );
+    const c = fieldCenter(pending.geometry);
+    if (saved && saved.centerLat != null && saved.centerLng != null) {
+      const cropId = saved.crops?.[0];
+      const crop = cropId
+        ? {
+            id: cropId,
+            name: translateCropName({ id: cropId, name: cropId }, t),
+            area: 0,
+          }
+        : GENERAL_CROP;
+      setSelectedCrop(crop);
+      setLocation({
+        lat: saved.centerLat,
+        lng: saved.centerLng,
+        name: saved.name || `${f.fieldFallbackName} · ${saved.year}`,
+        displayName: cropId
+          ? `${translateCropName({ id: cropId, name: cropId }, t)} · ${formatCoordinates(saved.centerLat, saved.centerLng)}`
+          : formatCoordinates(saved.centerLat, saved.centerLng),
+        fieldId: saved.id,
+      });
+    } else if (c) {
+      setLocation({
+        lat: c.lat,
+        lng: c.lng,
+        name: formatCoordinates(c.lat, c.lng),
+        displayName: formatCoordinates(c.lat, c.lng),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedFields, isLoading]);
+
+  const goTo = (
+    lat: number,
+    lng: number,
+    name?: string,
+    displayName?: string,
+  ) => {
     manualRef.current = true;
     setLatInput(String(lat));
     setLngInput(String(lng));
     setCenterLat(lat);
     setCenterLng(lng);
+    setLocation({
+      lat,
+      lng,
+      name: name || formatCoordinates(lat, lng),
+      displayName: displayName || formatCoordinates(lat, lng),
+    });
   };
 
   const handleGo = () => {
@@ -202,8 +268,15 @@ export default function Fields() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        goTo(pos.coords.latitude, pos.coords.longitude);
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        try {
+          const reverse = await reverseGeocode(lat, lng);
+          goTo(reverse.lat, reverse.lng, reverse.name, reverse.displayName);
+        } catch {
+          goTo(lat, lng);
+        }
         toast.success(f.gpsStatus);
       },
       () => toast.error(f.gpsError),
@@ -218,6 +291,21 @@ export default function Fields() {
       return;
     }
     setDialogOpen(true);
+  };
+
+  // Two clicks describe the same field when their ids match (stable ids)
+  // or — for FTW vector tiles that lack `properties.id` — when their decoded
+  // geometries are identical.
+  const sameField = (a: ClickedField, b: ClickedField) =>
+    a.id === b.id || JSON.stringify(a.geometry) === JSON.stringify(b.geometry);
+
+  // Toggle selection for existing satellite boundaries: clicking the already
+  // selected field unselects it (removing it from the right-side panel and
+  // clearing its highlight), while clicking any other field selects it.
+  // Identity is matched by geometry (not just id) because FTW vector tiles
+  // don't always expose a stable `properties.id`.
+  const handleSelect = (field: ClickedField) => {
+    setSelected((prev) => (prev && sameField(prev, field) ? null : field));
   };
 
   const startDraw = () => {
@@ -435,7 +523,7 @@ export default function Fields() {
                           value={`${res.id}-${res.name}-${res.lat}-${res.lng}`}
                           onMouseDown={(e) => e.preventDefault()}
                           onSelect={() => {
-                            goTo(res.lat, res.lng);
+                            goTo(res.lat, res.lng, res.name, res.displayName);
                             setQuery(res.name);
                             setIsFocused(false);
                           }}
@@ -523,7 +611,7 @@ export default function Fields() {
                 year={year}
                 selected={selected}
                 focusField={focusField}
-                onSelect={setSelected}
+                onSelect={handleSelect}
                 drawing={isDrawing}
                 onDrawCommit={handleDrawCommit}
                 onDrawCancel={handleDrawCancel}

@@ -160,6 +160,9 @@ export function LocationSearchBar() {
 
   // Map Dialog State
   const DEFAULT_MAP_CENTER = { lat: 20.5937, lng: 78.9629 };
+  // Zoom level used when the active location came from a saved field, matching
+  // the app's field-level zoom so the selected field is clearly in view.
+  const FIELD_LOCATION_ZOOM = 15;
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [center, setCenter] = useState({
     lat: location?.lat ?? DEFAULT_MAP_CENTER.lat,
@@ -492,6 +495,8 @@ export function LocationSearchBar() {
               Icon={MapPinned}
               initialLat={location?.lat ?? DEFAULT_MAP_CENTER.lat}
               initialLng={location?.lng ?? DEFAULT_MAP_CENTER.lng}
+              zoom={location?.fieldId ? FIELD_LOCATION_ZOOM : undefined}
+              marker={location ? { lat: location.lat, lng: location.lng } : null}
               onCenterChange={handleCenterChange}
               title={locTrans.selectMapBtn || "Verify Farm Coordinates"}
               dialog={true}

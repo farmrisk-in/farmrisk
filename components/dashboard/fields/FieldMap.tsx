@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { Check, Loader2, PenLine, Undo2, X } from "lucide-react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Check, Loader2, MapPin, PenLine, Undo2, X } from "lucide-react";
 import { area } from "@turf/area";
 import { polygon } from "@turf/helpers";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,20 @@ const MIN_VERTEX_GAP_PX = 4;
 
 const SATELLITE_TILES =
   "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+
+/** DOM element for the single, always-visible location pin (📍 location marker). */
+function createLocationPinElement(): HTMLDivElement {
+  const el = document.createElement("div");
+  el.innerHTML = renderToStaticMarkup(
+    <MapPin
+      size={34}
+      strokeWidth={2.25}
+      className="text-red-600 dark:text-red-500 drop-shadow-[0_2px_3px_rgba(0,0,0,0.45)]"
+    />,
+  );
+  el.style.pointerEvents = "none";
+  return el;
+}
 
 function addFTWLayers(
   map: maplibregl.Map,
@@ -230,6 +245,7 @@ export default function FieldMap({
 }: FieldMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const locationMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dataStatus, setDataStatus] = useState<"loading" | "available" | "none">(
@@ -491,6 +507,13 @@ export default function FieldMap({
 
     map.on("load", async () => {
       addHighlightLayers(map);
+      locationMarkerRef.current?.remove();
+      locationMarkerRef.current = new maplibregl.Marker({
+        element: createLocationPinElement(),
+        anchor: "bottom",
+      })
+        .setLngLat([lngRef.current, latRef.current])
+        .addTo(map);
       try {
         const tiles = getFTWTiles();
         if (!tiles) throw new Error("PMTiles instance unavailable");
@@ -573,6 +596,15 @@ export default function FieldMap({
     const map = mapRef.current;
     if (!map) return;
     map.flyTo({ center: [lng, lat], zoom: 15, essential: true });
+  }, [lat, lng]);
+
+  // Keep the single location pin pinned to the selected coordinates. MapLibre
+  // markers stay fixed in place across flyTo/zoom, so updating the existing
+  // marker (setLngLat) repositions it instead of stacking duplicate pins.
+  useEffect(() => {
+    const marker = locationMarkerRef.current;
+    if (!marker) return;
+    marker.setLngLat([lng, lat]);
   }, [lat, lng]);
 
   // Fit the focused field's polygon into view (used by "Zoom" on saved fields)

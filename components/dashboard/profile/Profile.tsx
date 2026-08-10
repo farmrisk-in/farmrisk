@@ -68,6 +68,26 @@ export default function Profile() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
+  const cropsSectionRef = useRef<HTMLDivElement>(null);
+
+  // Close the crops tooltip when tapping outside or scrolling, so it works
+  // on touch / small screens where hover is not available.
+  useEffect(() => {
+    if (!activeTooltipId) return;
+    const handlePointer = (e: PointerEvent) => {
+      if (!cropsSectionRef.current?.contains(e.target as Node)) {
+        setActiveTooltipId(null);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointer);
+    document.addEventListener("scroll", () => setActiveTooltipId(null), true);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointer);
+      document.removeEventListener("scroll", () => setActiveTooltipId(null), true);
+    };
+  }, [activeTooltipId]);
+
   // Profile Form States
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -549,12 +569,17 @@ export default function Profile() {
               </p>
             ) : (
               <TooltipProvider>
-                <div className="flex flex-wrap gap-2">
+                <div ref={cropsSectionRef} className="flex flex-wrap gap-2">
                   {cropUnionIds.map((id) => {
                     const isCurrent = isActiveCrop(id);
                     const fieldNames = fieldsByCrop[id] ?? [];
                     const chip = (
                       <span
+                        onClick={() =>
+                          setActiveTooltipId(
+                            activeTooltipId === id ? null : id,
+                          )
+                        }
                         className={cn(
                           "inline-flex cursor-default items-center rounded-full border px-3 py-1.5 text-xs font-medium",
                           isCurrent
@@ -568,7 +593,13 @@ export default function Profile() {
                       </span>
                     );
                     return fieldNames.length > 0 ? (
-                      <Tooltip key={id}>
+                      <Tooltip
+                        key={id}
+                        open={activeTooltipId === id}
+                        onOpenChange={(open) =>
+                          setActiveTooltipId(open ? id : null)
+                        }
+                      >
                         <TooltipTrigger asChild>{chip}</TooltipTrigger>
                         <TooltipContent
                           sideOffset={6}
