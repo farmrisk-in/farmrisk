@@ -31,11 +31,13 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
-  const isChoiceRoute = request.nextUrl.pathname === "/dashboard/choice";
   const isRootDashboard = request.nextUrl.pathname === "/dashboard";
   const isLoginRoute = request.nextUrl.pathname === "/auth/login";
+  const isProtectedFeatureRoute =
+    request.nextUrl.pathname === "/weather" ||
+    request.nextUrl.pathname === "/farm-risk";
 
-  if (!user && isDashboardRoute && !isRootDashboard && !isChoiceRoute) {
+  if (!user && isDashboardRoute && !isRootDashboard) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/auth/login";
     loginUrl.searchParams.set(
@@ -43,6 +45,10 @@ export async function updateSession(request: NextRequest) {
       `${request.nextUrl.pathname}${request.nextUrl.search}`,
     );
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (!user && isProtectedFeatureRoute) {
+    return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   if (user && isLoginRoute) {

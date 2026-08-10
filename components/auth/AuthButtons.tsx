@@ -38,7 +38,7 @@ export function AuthButtons({
         size={isScrolled ? "sm" : "lg"}
         className="rounded-full text-nowrap w-full h-full"
       >
-        <Link href={user ? "/dashboard" : "/auth/choice"}>
+        <Link href={user ? "/dashboard" : "/auth/login"}>
           <span className="flex gap-1.5 items-center text-nowrap">
             {user ? t.nav.goDashboard : text}
             {icon}

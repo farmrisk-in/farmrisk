@@ -5,6 +5,7 @@ import { AuthButtons } from "@/components/auth/AuthButtons";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "../ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import { UserBaseCounter } from "@/components/ui/UserCount";
 import Image from "next/image";
 import { NavBar } from "@/components/home/Navbar";
@@ -44,6 +45,7 @@ interface HeroProps {
 
 export function Hero({ userCount, suffix }: HeroProps) {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const parts = t.heroHeading.split(/\{([^}]*)\}/);
   return (
     <>
@@ -155,7 +157,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                   }}
                   className="w-full lg:w-[155%] xl:w-[140%]"
                 >
-                  <Link className="cursor-pointer" href="/auth/choice">
+                  <Link className="cursor-pointer" href={user ? "/dashboard" : "/auth/login"}>
                     <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border-border bg-background p-2 shadow-2xl ring-1">
                       <Image
                         src="/dashlight.webp"
