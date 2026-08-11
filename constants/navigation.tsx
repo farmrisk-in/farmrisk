@@ -49,7 +49,7 @@ export const navigationItems: NavigationItem[] = [
     labelKey: "weather",
     icon: CloudSun,
     component: <WeatherRisks />,
-    isLocked: true,
+    isLocked: false,
     inSidebar: true,
   },
   {

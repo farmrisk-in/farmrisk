@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 import {
@@ -9,6 +10,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Download as DownloadIcon,
+  Lock as LockIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import DownloadTemplate from "./DownloadTemplate";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useWeather } from "@/hooks/useWeather";
@@ -78,6 +81,14 @@ const Download = ({ className }: { className?: string }) => {
   const printRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { location } = useLocationContext();
+  const { user } = useAuth();
+  const router = useRouter();
+
+  function redirectToLogin() {
+    if (!user) {
+      router.replace("/auth/login");
+    }
+  }
 
   const [selectedCrop, setSelectedCrop] = useState<CropOption>(() => {
     if (typeof window !== "undefined") {
@@ -225,7 +236,8 @@ const Download = ({ className }: { className?: string }) => {
 
   return (
     <div className={className}>
-      <DropdownMenu>
+      {user ? (
+        <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             disabled={isGenerating || isDataLoading}
@@ -264,6 +276,16 @@ const Download = ({ className }: { className?: string }) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      ) : (
+        <Button
+          onClick={redirectToLogin}
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11 px-4 rounded-lg shadow-sm flex items-center justify-center cursor-pointer"
+        >
+          <LockIcon className="size-4 sm:mr-2" />
+          <span className="hidden sm:inline">{trans.download}</span>
+          <ChevronDown className="size-4 ml-2 opacity-70 hidden sm:inline" />
+        </Button>
+      )}
 
       {/* HIDDEN A4 TEMPLATE (Kept off-screen to prevent layout warping) */}
       <div className="absolute left-[-9999px] top-[-9999px] pointer-events-none">

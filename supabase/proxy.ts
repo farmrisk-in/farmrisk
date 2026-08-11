@@ -34,7 +34,6 @@ export async function updateSession(request: NextRequest) {
   const isRootDashboard = request.nextUrl.pathname === "/dashboard";
   const isLoginRoute = request.nextUrl.pathname === "/auth/login";
   const isProtectedFeatureRoute =
-    request.nextUrl.pathname === "/weather" ||
     request.nextUrl.pathname === "/farm-risk";
 
   if (!user && isDashboardRoute && !isRootDashboard) {
