@@ -2,8 +2,10 @@
 
 import React from "react";
 import { ListChecks } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export default function WhatToDoToday() {
+  const { t } = useLanguage();
   return (
     <div className="w-full bg-card border border-border rounded-xl p-4 sm:p-5 shadow-sm">
       {/* HEADER */}
@@ -12,7 +14,7 @@ export default function WhatToDoToday() {
           <ListChecks className="size-4" />
         </div>
         <h3 className="text-sm sm:text-base font-bold tracking-tight text-foreground">
-          What To Do Today
+          {t.dashboard.whatToDoToday}
         </h3>
       </div>
 
@@ -20,9 +22,9 @@ export default function WhatToDoToday() {
       <div className="flex items-center gap-3 py-2">
         <div className="text-base">🌱</div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">Coming Soon</p>
+          <p className="text-sm font-semibold text-foreground">{t.dashboard.comingSoon}</p>
           <p className="text-xs text-muted-foreground">
-            Personalized daily recommendations will be available here.
+            {t.dashboard.personalisedDailyRecs}
           </p>
         </div>
       </div>

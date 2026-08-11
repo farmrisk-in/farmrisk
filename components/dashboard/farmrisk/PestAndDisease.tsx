@@ -37,7 +37,7 @@ const PestAndDisease = () => {
   const { t } = useLanguage();
 
   const hazard = riskData?.pest;
-  const title = t.dashboard?.hazardPest || "Pest & Disease";
+  const title = t.dashboard.hazardPest;
 
   // ---- same inputs the pest score is built from (see useRisk) ----
   const soilRows = soilData?.soil_moisture ?? [];
@@ -91,22 +91,21 @@ const PestAndDisease = () => {
   const color = riskColor(hazard.score);
 
   // ---- dynamic factor description, derived from live values ----
-  const pestFactorRainy =
-    t.dashboard?.pestFactorRainyDays || "{n} rainy days in next 5 days";
+  const pestFactorRainy = t.dashboard.pestFactorRainyDays;
   const factors: string[] = [];
   if (avgMaxTemp != null && avgMaxTemp >= 25 && avgMaxTemp <= 35) {
-    factors.push(t.dashboard?.pestFactorWarm || "warm temperatures");
+    factors.push(t.dashboard.pestFactorWarm);
   }
   if (humidity != null && humidity >= 70) {
-    factors.push(t.dashboard?.pestFactorHumidity || "high humidity");
+    factors.push(t.dashboard.pestFactorHumidity);
   }
   if (rainyDays != null && rainyDays >= 1) {
     factors.push(pestFactorRainy.replace("{n}", String(rainyDays)));
   } else if (rainTotal != null && rainTotal >= 5) {
-    factors.push(t.dashboard?.pestFactorFreshRain || "fresh rain expected");
+    factors.push(t.dashboard.pestFactorFreshRain);
   }
   if (soilPercentile != null && soilPercentile >= 70) {
-    factors.push(t.dashboard?.pestFactorWetSoil || "prolonged soil wetness");
+    factors.push(t.dashboard.pestFactorWetSoil);
   }
 
   const factorsLabel = factors.join(", ");
@@ -124,30 +123,7 @@ const PestAndDisease = () => {
           ? "pestInterpLow"
           : "pestInterpLowNoFact";
 
-  const interpFallbacks: Record<
-    | "pestInterpHigh"
-    | "pestInterpHighNoFact"
-    | "pestInterpModerate"
-    | "pestInterpModerateNoFact"
-    | "pestInterpLow"
-    | "pestInterpLowNoFact",
-    string
-  > = {
-    pestInterpHigh:
-      "Current conditions ({factors}) are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
-    pestInterpHighNoFact:
-      "Current conditions are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
-    pestInterpModerate:
-      "Current conditions ({factors}) may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
-    pestInterpModerateNoFact:
-      "Current conditions may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
-    pestInterpLow:
-      "Current conditions ({factors}) are less favourable for a significant pest and disease build-up. Continue routine crop monitoring.",
-    pestInterpLowNoFact:
-      "Current conditions are less favourable for a significant pest and disease build. Continue routine crop monitoring.",
-  };
-
-  const interpretation = (t.dashboard?.[interpKey] || interpFallbacks[interpKey]).replace(
+  const interpretation = t.dashboard[interpKey].replace(
     "{factors}",
     factorsLabel,
   );
@@ -176,8 +152,8 @@ const PestAndDisease = () => {
 
   const wetDaysLabel =
     rainyDays != null && rainyDays === 1
-      ? t.dashboard?.pestWetDay || "wet day"
-      : t.dashboard?.pestWetDays || "wet days";
+      ? t.dashboard.pestWetDay
+      : t.dashboard.pestWetDays;
 
   return (
     <div className="w-full h-full min-h-55 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none flex flex-col">
@@ -223,32 +199,32 @@ const PestAndDisease = () => {
         {/* CURRENT CONDITIONS — live values feeding the pest score */}
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-            {t.dashboard?.pestCurrentConditions || "Current Conditions"}
+            {t.dashboard.pestCurrentConditions}
           </h4>
           <div className="grid grid-cols-2 gap-1.5">
             {pill(
               <Thermometer className="size-3" />,
-              t.dashboard?.pestAvgMaxTemp || "Avg Max Temp",
+              t.dashboard.pestAvgMaxTemp,
               avgMaxTemp != null ? `${avgMaxTemp.toFixed(1)} °C` : "–",
-              t.dashboard?.pestNext5Days || "next 5 days",
+              t.dashboard.pestNext5Days,
             )}
             {pill(
               <Droplets className="size-3" />,
-              t.dashboard?.pestHumidity || "Humidity",
+              t.dashboard.pestHumidity,
               humidity != null ? `${Math.round(humidity)}%` : "–",
-              t.dashboard?.pestCurrent || "current",
+              t.dashboard.pestCurrent,
             )}
             {pill(
               <CloudRain className="size-3" />,
-              t.dashboard?.pestRain || "Rain · 5 days",
+              t.dashboard.pestRain,
               rainTotal != null ? `${rainTotal.toFixed(1)} mm` : "–",
               rainyDays != null ? `${rainyDays} ${wetDaysLabel}` : undefined,
             )}
             {pill(
               <Percent className="size-3" />,
-              t.dashboard?.pestSoilMoisture || "Soil Moisture",
+              t.dashboard.pestSoilMoisture,
               soilPercentile != null ? `${Math.round(soilPercentile)}%` : "–",
-              t.dashboard?.pestPercentile || "percentile",
+              t.dashboard.pestPercentile,
             )}
           </div>
         </section>
@@ -256,7 +232,7 @@ const PestAndDisease = () => {
         {/* Interpretation — built from the live values and risk band */}
         <section>
           <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-            {t.dashboard?.pestInterpretation || "Interpretation"}
+            {t.dashboard.pestInterpretation}
           </h4>
           <p
             className="text-[12px] text-foreground/90 leading-relaxed border-l-2 pl-2"

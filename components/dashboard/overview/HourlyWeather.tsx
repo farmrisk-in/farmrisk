@@ -15,56 +15,6 @@ import { useWeather } from "@/hooks/useWeather";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 
-// Localized translations for the header
-/* eslint-disable @typescript-eslint/no-explicit-any */
-const TRANSLATIONS: Record<string, any> = {
-  en: {
-    title: "HOURLY WEATHER FORECAST (24 HOURS)",
-    subtitle: "Next 24 Hours",
-    compactTitle: "Next Few Hours",
-    compactSubtitle: "Next 6 Hours",
-    summaryTemperature: "Temperature",
-    summaryRainChance: "Rain Chance",
-    summaryLightning: "Lightning",
-  },
-  hi: {
-    title: "प्रति घंटा पूर्वानुमान",
-    subtitle: "अगले 24 घंटे",
-    compactTitle: "अगले कुछ घंटे",
-    compactSubtitle: "अगले 6 घंटे",
-    summaryTemperature: "तापमान",
-    summaryRainChance: "वर्षा की संभावना",
-    summaryLightning: "बिजली",
-  },
-  mr: {
-    title: "वेळापारक अंदाज",
-    subtitle: "पुढील 24 तास",
-    compactTitle: "पुढील काही तास",
-    compactSubtitle: "पुढील 6 तास",
-    summaryTemperature: "तापमान",
-    summaryRainChance: "पाऊस शक्यता",
-    summaryLightning: "विजा",
-  },
-  ta: {
-    title: "மணிநேர வானிலை முன்னறிவிப்பு",
-    subtitle: "அடுத்த 24 மணிநேரம்",
-    compactTitle: "அடுத்த சில மணிநேரம்",
-    compactSubtitle: "அடுத்த 6 மணிநேரம்",
-    summaryTemperature: "வெப்பநிலை",
-    summaryRainChance: "மழை வாய்ப்பு",
-    summaryLightning: "மின்னல்",
-  },
-  gu: {
-    title: "કલાકદીઠ હવામાન",
-    subtitle: "આગામી 24 કલાક",
-    compactTitle: "આગામી થોડા કલાક",
-    compactSubtitle: "આગામી 6 કલાક",
-    summaryTemperature: "તાપમાન",
-    summaryRainChance: "વરસાદની શક્યતા",
-    summaryLightning: "વીજળી",
-  },
-};
-
 const formatHour = (dateInput: Date | string) => {
   const date = new Date(dateInput);
   const h = date.getUTCHours();
@@ -73,16 +23,16 @@ const formatHour = (dateInput: Date | string) => {
   return `${String(h12).padStart(2, "0")} ${ampm}`;
 };
 
-function getConditionAlt(code: number): string {
-  if (code === 0) return "Clear";
-  if (code <= 3) return "Cloudy";
-  if (code <= 48) return "Foggy";
-  if (code <= 55) return "Drizzle";
-  if (code <= 65) return "Rainy";
-  if (code <= 77) return "Snowy";
-  if (code <= 82) return "Showers";
-  if (code <= 86) return "Snow Showers";
-  return "Thunderstorm";
+function getConditionAlt(code: number, t: { dashboard: { clear: string; cloudy: string; conditionFoggy: string; conditionDrizzle: string; conditionRainy: string; conditionSnowy: string; showers: string; conditionSnowShowers: string; conditionThunderstorm: string } }): string {
+  if (code === 0) return t.dashboard.clear;
+  if (code <= 3) return t.dashboard.cloudy;
+  if (code <= 48) return t.dashboard.conditionFoggy;
+  if (code <= 55) return t.dashboard.conditionDrizzle;
+  if (code <= 65) return t.dashboard.conditionRainy;
+  if (code <= 77) return t.dashboard.conditionSnowy;
+  if (code <= 82) return t.dashboard.showers;
+  if (code <= 86) return t.dashboard.conditionSnowShowers;
+  return t.dashboard.conditionThunderstorm;
 }
 
 type Trend = "up" | "down" | null;
@@ -94,14 +44,14 @@ function getTrend(current: number | undefined, next: number | undefined): Trend 
   return null;
 }
 
-function TrendArrow({ trend }: { trend: Trend }) {
+function TrendArrow({ trend, t }: { trend: Trend; t: { dashboard: { hourlyRising: string; hourlyFalling: string } } }) {
   if (!trend) return null;
   const up = trend === "up";
   const Icon = up ? ArrowUp : ArrowDown;
   return (
     <Icon
       className={`size-3 ${up ? "text-orange-500" : "text-blue-500"}`}
-      aria-label={up ? "rising" : "falling"}
+      aria-label={up ? t.dashboard.hourlyRising : t.dashboard.hourlyFalling}
     />
   );
 }
@@ -114,8 +64,8 @@ interface HourlyWeatherProps {
 }
 
 const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) => {
-  const { language } = useLanguage();
-  const t = TRANSLATIONS[language] || TRANSLATIONS.en;
+  const { t } = useLanguage();
+  const db = t.dashboard;
   const { data, isLoading } = useWeather();
   const hourly = data?.hourly;
 
@@ -140,21 +90,21 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
     const summaryItems = [
       {
         key: "temperature",
-        label: t.summaryTemperature,
+        label: db.hourlyTemperature,
         value: `${Math.round(current?.temperature_2m ?? first?.temp ?? 0)}°C`,
         Icon: Thermometer,
         trend: getTrend(first?.temp, last?.temp),
       },
       {
         key: "rain",
-        label: t.summaryRainChance,
+        label: db.hourlyRainChance,
         value: `${first?.rainChance ?? 0}%`,
         Icon: CloudRain,
         trend: getTrend(first?.rainChance, last?.rainChance),
       },
       {
         key: "lightning",
-        label: t.summaryLightning,
+        label: db.hourlyLightning,
         value: `${data?.lightning?.category ?? "Low"}`,
         Icon: Zap,
         trend: null,
@@ -166,9 +116,9 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
         {/* HEADER */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
           <Clock className="size-4" />
-          {t.compactTitle}
+          {db.hourlyNextHours}
           <span className="ml-auto text-[10px] font-semibold text-muted-foreground uppercase">
-            {t.compactSubtitle}
+            {db.hourlyNext6}
           </span>
         </div>
 
@@ -187,8 +137,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
           <div className="flex-1 flex items-center justify-center gap-2 text-muted-foreground select-none">
             <CloudOff className="size-6" />
             <span className="text-sm font-medium">
-              Something went wrong while fetching the Data. Please try again
-              later.
+              {db.hourlyLoadError}
             </span>
           </div>
         ) : (
@@ -207,7 +156,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                   {slot.icon ? (
                     <Image
                       src={`/weatherIcons/${slot.icon}`}
-                      alt={getConditionAlt(slot.weatherCode)}
+                          alt={getConditionAlt(slot.weatherCode, t)}
                       width={24}
                       height={24}
                       className="my-0.5 drop-shadow-xs/40 dark:drop-shadow-none"
@@ -245,7 +194,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                     </span>
                     <span className="text-xs font-bold text-foreground flex items-center gap-0.5">
                       {value}
-                      <TrendArrow trend={trend} />
+                      <TrendArrow trend={trend} t={t} />
                     </span>
                   </div>
                 </div>
@@ -260,13 +209,13 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
   return (
     <div className="w-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none">
       {/* HEADER SECTION */}
-      <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
-        <Clock className="size-4.5" />
-        {t.title}
-        <Badge variant={"secondary"} className="text-[10px] ml-auto rounded-sm">
-          {t.subtitle}
-        </Badge>
-      </div>
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
+          <Clock className="size-4.5" />
+          {db.hourlyForecastTitle}
+          <Badge variant={"secondary"} className="text-[10px] ml-auto rounded-sm">
+            {db.hourlyNext24}
+          </Badge>
+        </div>
 
       <div className="flex gap-0 justify-start overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
         {isLoading ? (
@@ -290,8 +239,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
               <div className="w-full h-25 flex items-center justify-center gap-2 text-muted-foreground select-none">
                 <CloudOff className="size-6" />
                 <span className="text-sm font-medium">
-                  Something went wrong while fetching the Data. Please try again
-                  later.
+                  {db.hourlyLoadError}
                 </span>
               </div>
             ) : (
@@ -311,7 +259,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                       {slot.icon ? (
                         <Image
                           src={`/weatherIcons/${slot.icon}`}
-                          alt={getConditionAlt(slot.weatherCode)}
+                      alt={getConditionAlt(slot.weatherCode, t)}
                           width={26}
                           height={26}
                           className="my-0.5 drop-shadow-xs/40 dark:drop-shadow-none"

@@ -83,7 +83,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                         {t.heroSubheadingPart1}
                       </a>
                       <span className="flex items-center gap-2 absolute -top-8 left-1/2 -translate-x-1/2 bg-black/85 text-white text-sm px-2 py-1 rounded shadow-md pointer-events-none opacity-0 group-hover/src1:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                        Go to source (Down To Earth, Dec 2025)
+                        {t.heroSourceTooltipDTE}
                         <ExternalLink className="w-4 h-4" />
                       </span>
                     </span>
@@ -97,7 +97,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                         {t.heroSubheadingPart3}
                       </a>
                       <span className="flex items-center gap-2 absolute -top-8 left-1/2 -translate-x-1/2 bg-black/85 text-white text-sm px-2 py-1 rounded shadow-md pointer-events-none opacity-0 group-hover/src2:opacity-100 transition-opacity duration-200 whitespace-nowrap z-50">
-                        Go to source (ScienceDirect)
+                        {t.heroSourceTooltipSD}
                         <ExternalLink className="w-4 h-4" />
                       </span>
                     </span>
@@ -161,7 +161,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                     <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border-border bg-background p-2 shadow-2xl ring-1">
                       <Image
                         src="/dashlight.webp"
-                        alt="Dashboard"
+                        alt={t.nav.dashboard}
                         width={2200}
                         height={1200}
                         priority
@@ -170,7 +170,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
 
                       <Image
                         src="/dashdark.webp"
-                        alt="Dashboard"
+                        alt={t.nav.dashboard}
                         width={2200}
                         height={1200}
                         priority

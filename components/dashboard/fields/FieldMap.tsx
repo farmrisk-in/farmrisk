@@ -473,9 +473,7 @@ export default function FieldMap({
       console.error("[FieldMap] MapLibre error event:", e);
       const sourceId = (e as unknown as { sourceId?: string }).sourceId;
       if (sourceId === SOURCE_ID) {
-        setError(
-          "Could not load field boundaries. Please check your connection and try again.",
-        );
+        setError(t.fields.fieldErrorDesc);
       }
     });
 
@@ -530,9 +528,7 @@ export default function FieldMap({
         setError(null);
       } catch (e) {
         console.error("[FieldMap] Could not load FTW tiles:", e);
-        setError(
-          "Could not load field boundaries. Please check your connection and try again.",
-        );
+        setError(t.fields.fieldErrorDesc);
       } finally {
         setReady(true);
       }
@@ -725,7 +721,7 @@ export default function FieldMap({
           <div className="flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3.5 shadow-sm">
             <Loader2 className="size-5 animate-spin text-primary" />
             <span className="text-sm font-medium text-foreground">
-              Loading field boundaries…
+              {t.fields.fieldLoading}
             </span>
           </div>
         </div>

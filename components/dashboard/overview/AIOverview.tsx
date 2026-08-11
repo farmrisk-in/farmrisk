@@ -97,7 +97,7 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
                     <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
                       {Array.from(
                         new Set(
-                          sources.map((s: any) => s.source || "ICAR Guideline"),
+                          sources.map((s: any) => s.source || t.dashboard.icarGuideline),
                         ),
                       ).map((sourceName: any, idx: number) => (
                         <div
@@ -128,7 +128,7 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
         isAiLoading ||
         isForecastLoading ? (
           <div className="flex flex-col items-center justify-center gap-4 w-full h-full py-6">
-            <LoaderFive text={"Generating Overview"} />
+            <LoaderFive text={t.dashboard.generatingOverview} />
           </div>
         ) : (
           <div className=" pr-1 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">

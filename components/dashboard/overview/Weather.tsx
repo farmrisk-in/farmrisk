@@ -95,7 +95,7 @@ const Weather = () => {
       <div className="w-full flex items-start gap-2 border border-border border-x-0 py-2.5 mb-3 shrink-0">
         <div className="flex flex-col min-w-0">
           <p className="text-sm font-semibold truncate leading-tight">
-            {location?.name || "No location selected"}
+            {location?.name || t.dashboard.noLocationSelected}
           </p>
           {location && (
             <p className="text-[10px] text-muted-foreground font-mono mt-0.5 truncate tracking-tight">

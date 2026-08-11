@@ -10,42 +10,59 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAI } from "@/hooks/useAI";
 import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useIrrigation } from "@/hooks/useIrrigation";
+import { TranslationType } from "@/constants/content";
 import { ForecastRow } from "@/types/forecast";
 
 const RAINY_DAY_THRESHOLD_MM = 2.5;
 
-const formatDateText = (dateStr: string) => {
+const formatDateText = (dateStr: string, locale: string) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+  return date.toLocaleDateString(locale, { day: "numeric", month: "short" });
 };
+
+type SoilWordKey =
+  | "smExceptionalWet"
+  | "smExtremeWet"
+  | "smSevereWet"
+  | "smModerateWet"
+  | "smAbnormallyWet"
+  | "smNormal"
+  | "smAbnormallyDry"
+  | "smModerateDry"
+  | "smExtremeDry"
+  | "smSevereDry"
+  | "smExceptionalDry";
 
 // Matches backend "soil_word" band mapping (app/llm/advisory_engine.py:40)
-const soilWord = (pct: number): string => {
-  if (pct > 98) return "Exceptional Wet";
-  if (pct > 95) return "Extreme Wet";
-  if (pct > 90) return "Severe Wet";
-  if (pct > 80) return "Moderate Wet";
-  if (pct > 70) return "Abnormally Wet";
-  if (pct > 30) return "Normal";
-  if (pct > 20) return "Abnormally Dry";
-  if (pct > 10) return "Moderate Dry";
-  if (pct > 5) return "Extreme Dry";
-  if (pct > 2) return "Severe Dry";
-  return "Exceptional Dry";
+const soilWord = (pct: number): SoilWordKey => {
+  if (pct > 98) return "smExceptionalWet";
+  if (pct > 95) return "smExtremeWet";
+  if (pct > 90) return "smSevereWet";
+  if (pct > 80) return "smModerateWet";
+  if (pct > 70) return "smAbnormallyWet";
+  if (pct > 30) return "smNormal";
+  if (pct > 20) return "smAbnormallyDry";
+  if (pct > 10) return "smModerateDry";
+  if (pct > 5) return "smExtremeDry";
+  if (pct > 2) return "smSevereDry";
+  return "smExceptionalDry";
 };
 
-const extractOutlook = (text?: string) => {
+type OutlookKey = "outlookFavorable" | "outlookCautionary" | "outlookUnfavorable";
+
+const extractOutlook = (text?: string): OutlookKey | "" => {
   if (!text) return "";
 
   const outlookMatch = text.match(
     /agricultural\s+outlook\s+for this period is\s+\*?(favorable|cautionary|unfavorable)\*?/i,
   );
-  if (outlookMatch) {
-    const outlook = outlookMatch[1];
-    return outlook.charAt(0).toUpperCase() + outlook.slice(1);
-  }
-  return "";
+  if (!outlookMatch) return "";
+  const outlook = outlookMatch[1];
+  return `outlook${outlook.charAt(0).toUpperCase()}${outlook.slice(1)}` as OutlookKey;
 };
+
+const soilWordText = (pct: number, t: TranslationType) =>
+  t.dashboard[soilWord(pct)];
 
 const useSelectedCropId = () => {
   const [cropId, setCropId] = useState<string>(() => {
@@ -107,6 +124,7 @@ const ModelSummary = () => {
     isError: isAdvisoryError,
   } = useAI(cropId, "en");
   const outlook = extractOutlook(advisory);
+  const outlookLabel = outlook ? t.dashboard[outlook] : "";
   const advisoryPending =
     isAdvisoryLoading && !advisory && !isAdvisoryError;
 
@@ -125,10 +143,10 @@ const ModelSummary = () => {
     const startPct = forecastDays[0].sm_percentile;
     const endPct = forecastDays[forecastDays.length - 1].sm_percentile;
     if (startPct == null || endPct == null) return "";
-    const startWord = soilWord(startPct);
-    const endWord = soilWord(endPct);
+    const startWord = soilWordText(startPct, t);
+    const endWord = soilWordText(endPct, t);
     return startWord === endWord ? startWord : `${startWord} → ${endWord}`;
-  }, [soilResponse]);
+  }, [soilResponse, t]);
   const soilPending = isSoilLoading && !soilTrend;
 
   const metrics = useMemo(() => {
@@ -212,7 +230,7 @@ const ModelSummary = () => {
       t.dashboard.peakDayRain,
       `${metrics.peakRain.toFixed(1)} mm`,
       t.dashboard.peakDate,
-      formatDateText(metrics.peakDate),
+      formatDateText(metrics.peakDate, t.locale),
     ],
     [
       t.dashboard.maxTemp,
@@ -224,7 +242,7 @@ const ModelSummary = () => {
       t.dashboard.soilTrend,
       soilTrend || "—",
       t.dashboard.outlook,
-      outlook || "—",
+      outlookLabel || "—",
     ],
   ];
 

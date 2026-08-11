@@ -34,7 +34,7 @@ export function LoginForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mode, setMode] = useState<Mode>("login");
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   // Form fields
   const [name, setName] = useState("");
@@ -135,20 +135,12 @@ export function LoginForm({
 
     const normalizedPhone = normalizePhoneNumber(resetPhone);
     if (!normalizedPhone) {
-      toast.error(
-        language === "hi"
-          ? "कृपया 10 अंकों का वैध फोन नंबर दर्ज करें"
-          : "Please enter a valid 10-digit Indian phone number",
-      );
+      toast.error(t.auth.resetPhoneInvalidDigits);
       return;
     }
 
     if (!resetPassword || resetPassword.length < 6) {
-      toast.error(
-        language === "hi"
-          ? "नया पासवर्ड कम से कम 6 अक्षरों का होना चाहिए"
-          : "New password must be at least 6 characters long",
-      );
+      toast.error(t.auth.resetPasswordTooShort);
       return;
     }
 
@@ -165,19 +157,15 @@ export function LoginForm({
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to reset password");
+        throw new Error(data.error || t.auth.resetFailed);
       }
 
-      toast.success(
-        language === "hi"
-          ? "पासवर्ड रीसेट लिंक भेजा गया!"
-          : "Password reset instructions sent for this account!",
-      );
+      toast.success(t.auth.resetInstructionsSent);
       setIsForgotOpen(false);
       setResetPhone("");
       setResetPassword("");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to reset password");
+      toast.error(err?.message || t.auth.resetFailed);
     } finally {
       setIsResetting(false);
     }
@@ -275,7 +263,7 @@ export function LoginForm({
                 onClick={() => setIsForgotOpen(true)}
                 className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-medium cursor-pointer"
               >
-                {language === "hi" ? "पासवर्ड भूल गए?" : "Forgot Password?"}
+                {t.auth.forgotPassword}
               </button>
             )}
           </div>
@@ -362,14 +350,14 @@ export function LoginForm({
           <DialogHeader className="pb-2 border-b border-border">
             <DialogTitle className="text-sm font-bold flex items-center gap-2">
               <KeyRound className="size-4 text-emerald-500" />
-              {language === "hi" ? "पासवर्ड रीसेट करें" : "Reset Password"}
+              {t.auth.resetTitle}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleResetSubmit} className="space-y-3 py-1">
             <div className="space-y-1">
               <label htmlFor="resetPhone" className="text-xs font-semibold text-foreground">
-                {language === "hi" ? "फ़ोन नंबर" : "Registered Phone Number"}
+                {t.auth.resetPhoneLabel}
               </label>
               <Input
                 id="resetPhone"
@@ -384,7 +372,7 @@ export function LoginForm({
 
             <div className="space-y-1">
               <label htmlFor="resetPassword" className="text-xs font-semibold text-foreground">
-                {language === "hi" ? "नया पासवर्ड" : "New Password"}
+                {t.auth.resetNewPasswordLabel}
               </label>
               <Input
                 id="resetPassword"
@@ -406,7 +394,7 @@ export function LoginForm({
                 onClick={() => setIsForgotOpen(false)}
                 className="text-xs h-8 rounded-md"
               >
-                Cancel
+                {t.auth.cancel}
               </Button>
               <Button
                 type="submit"
@@ -417,10 +405,10 @@ export function LoginForm({
                 {isResetting ? (
                   <>
                     <LoaderCircle className="size-3.5 animate-spin" />
-                    <span>Resetting...</span>
+                    <span>{t.auth.resetting}</span>
                   </>
                 ) : (
-                  <span>Reset Password</span>
+                  <span>{t.auth.resetButton}</span>
                 )}
               </Button>
             </DialogFooter>

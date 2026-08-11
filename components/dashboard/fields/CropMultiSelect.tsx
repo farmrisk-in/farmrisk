@@ -90,7 +90,7 @@ export default function CropMultiSelect({
               <button
                 type="button"
                 onClick={() => toggle(id)}
-                aria-label={`Remove ${labelFor(id)}`}
+                aria-label={`${f.removeBtn} ${labelFor(id)}`}
                 className="shrink-0 cursor-pointer rounded-full p-0.5 text-white/80 transition-colors hover:text-white focus-visible:outline-none"
               >
                 <X className="size-3" />

@@ -2,6 +2,7 @@
 
 import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useLanguage } from "@/hooks/useLanguage";
 
 export function riskColor(score: number): string {
   if (score >= 80) return "#e53e3e"; // Extreme — vivid red
@@ -9,14 +10,6 @@ export function riskColor(score: number): string {
   if (score >= 40) return "#d69e2e"; // Moderate — amber
   if (score >= 20) return "#38a169"; // Low — green
   return "#718096"; // Minimal — muted grey
-}
-
-function bandLabel(score: number): string {
-  if (score >= 80) return "Extreme";
-  if (score >= 60) return "High";
-  if (score >= 40) return "Moderate";
-  if (score >= 20) return "Low";
-  return "No Risk";
 }
 
 interface RiskChartProps {
@@ -38,6 +31,7 @@ export default function RiskChart({
   const gaugeRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const caretRef = useRef<HTMLDivElement>(null);
+  const { t } = useLanguage();
 
   // Place the tooltip relative to its gauge and keep it inside the viewport.
   // The tooltip is rendered through a portal (document.body), so it is never
@@ -107,6 +101,14 @@ export default function RiskChart({
   const color = riskColor(clampedScore);
   const band = bandLabel(clampedScore);
   const trackColor = `${color}20`; // 12% opacity tint
+
+  function bandLabel(score: number): string {
+    if (score >= 80) return t.dashboard.hazardBandExtreme;
+    if (score >= 60) return t.dashboard.hazardBandHigh;
+    if (score >= 40) return t.dashboard.hazardBandModerate;
+    if (score >= 20) return t.dashboard.hazardBandLow;
+    return t.dashboard.hazardBandNoRisk;
+  }
 
   // Math for 180° semi-circle SVG arc (from left 180° to right 0°)
   // cx = 50, cy = 50, r = 36

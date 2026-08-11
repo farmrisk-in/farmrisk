@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import type { ReactNode } from "react";
 import { useIsDarkMode } from "@/hooks/useTheme";
+import { useLanguage } from "@/hooks/useLanguage";
 import { cn } from "@/lib/utils";
 
 export interface LeafletSelectMapProps {
@@ -162,6 +163,7 @@ export default function Map({
   // High-performance map layer selection matching your standard context
 
   const isDark = useIsDarkMode();
+  const { t } = useLanguage();
 
   const tileUrl = isDark
     ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -222,7 +224,7 @@ export default function Map({
         <div className="flex items-center gap-2 text-white text-sm font-semibold tracking-wide drop-shadow-xs select-none">
           {Icon && <Icon size={20} />}
           <h3 className="text-white font-semibold text-base tracking-wide drop-shadow-xs select-none">
-            {title || "Map"}
+            {title || t.dashboard.map}
           </h3>
         </div>
         {topRightAction}

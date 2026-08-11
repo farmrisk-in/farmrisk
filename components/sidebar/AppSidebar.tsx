@@ -33,7 +33,7 @@ const SECTIONS: { key: "daily" | "risks" | "advanced"; names: string[] }[] = [
 export function AppSidebar() {
   const { currentPage, setCurrentPage } = useNavigation();
   const { isMobile: isSidebarMobile, state, setOpenMobile } = useSidebar();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const router = useRouter();
@@ -46,7 +46,10 @@ export function AppSidebar() {
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || "";
   const firstName = profile?.first_name || user?.user_metadata?.first_name || "";
   const lastName = profile?.last_name || user?.user_metadata?.last_name || "";
-  const displayName = `${firstName} ${lastName}`.trim() || user?.email?.split("@")[0] || "Farmer";
+  const displayName =
+    `${firstName} ${lastName}`.trim() ||
+    user?.email?.split("@")[0] ||
+    t.profile.displayNameFallback;
 
   function redirectToLogin() {
     if (!user) {
@@ -64,16 +67,7 @@ export function AppSidebar() {
     router.refresh();
   }
 
-  const loggingOutText =
-    language === "hi"
-      ? "लॉग आउट हो रहा है..."
-      : language === "mr"
-        ? "लॉग आउट होत आहे..."
-        : language === "ta"
-          ? "வெளியேறுகிறது..."
-          : language === "gu"
-            ? "લૉગ આઉટ થઈ રહ્યું છે..."
-            : "Logging out...";
+  const loggingOutText = t.sidebar.loggingOut;
 
   return (
     <Sidebar

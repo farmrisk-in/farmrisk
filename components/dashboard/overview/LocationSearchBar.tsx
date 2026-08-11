@@ -39,61 +39,24 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-const Map = dynamic(() => import("./Map"), {
-  ssr: false,
-  loading: () => (
+function MapLoading() {
+  const { t } = useLanguage();
+  return (
     <div className="h-[60vh] w-full flex flex-col items-center justify-center text-muted-foreground gap-2 bg-muted/20">
       <Loader2 className="w-6 h-6 animate-spin text-primary" />
-      <span className="text-sm font-medium">Loading Select Map...</span>
+      <span className="text-sm font-medium">{t.locationSearchBar.mapLoading}</span>
     </div>
-  ),
+  );
+}
+
+const Map = dynamic(() => import("./Map"), {
+  ssr: false,
+  loading: () => <MapLoading />,
 });
 
-const BUTTON_TRANSLATIONS: Record<
-  string,
-  {
-    locationShort: string;
-    locationMedium: string;
-    mapShort: string;
-    mapMedium: string;
-  }
-> = {
-  en: {
-    locationShort: "Location",
-    locationMedium: "Use Location",
-    mapShort: "Map",
-    mapMedium: "Select Map",
-  },
-  hi: {
-    locationShort: "स्थान",
-    locationMedium: "स्थान का उपयोग",
-    mapShort: "नक्शा",
-    mapMedium: "नक्शा चुनें",
-  },
-  mr: {
-    locationShort: "स्थान",
-    locationMedium: "स्थान वापरा",
-    mapShort: "नकाशा",
-    mapMedium: "नकाशा निवडा",
-  },
-  ta: {
-    locationShort: "இடம்",
-    locationMedium: "இடத்தைப் பயன்படுத்து",
-    mapShort: "வரைபடம்",
-    mapMedium: "வரைபடம் தேர்வு",
-  },
-  gu: {
-    locationShort: "સ્થાન",
-    locationMedium: "સ્થાન વાપરો",
-    mapShort: "નકશો",
-    mapMedium: "નકશો પસંદ કરો",
-  },
-};
-
 export function LocationSearchBar() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const locTrans = t.locationSearchBar;
-  const btnTrans = BUTTON_TRANSLATIONS[language] || BUTTON_TRANSLATIONS.en;
   const { user } = useAuth();
   const searchPlaceholder = user
     ? locTrans.searchPlaceholder
@@ -208,11 +171,7 @@ export function LocationSearchBar() {
   // --- GEOLOCATION LOGIC ---
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
-      toast.error(
-        language === "hi"
-          ? "भौगोलिक स्थान (GPS) इस ब्राउज़र में उपलब्ध नहीं है। कृपया सुरक्षित कनेक्शन (HTTPS) का उपयोग करें।"
-          : "Geolocation is not supported in this browser or context. Make sure you are using a secure connection (HTTPS).",
-      );
+      toast.error(locTrans.geoNotSupported);
       return;
     }
 
@@ -242,7 +201,7 @@ export function LocationSearchBar() {
         updateGlobalLocation({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          name: "Current Location",
+          name: locTrans.currentLocation,
           displayName: formatCoordinates(
             position.coords.latitude,
             position.coords.longitude,
@@ -263,13 +222,7 @@ export function LocationSearchBar() {
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1";
 
-        const msg = !isSecure
-          ? language === "hi"
-            ? "जीपीएस विफल: असुरक्षित कनेक्शन (HTTP)। भौगोलिक स्थान के लिए मोबाइल पर HTTPS (सुरक्षित कनेक्शन) होना आवश्यक है।"
-            : "GPS failed: Insecure connection (HTTP). Geolocation requires a secure HTTPS connection on mobile devices."
-          : language === "hi"
-            ? "स्थान अनुमति अस्वीकार कर दी गई। कृपया अपनी डिवाइस सेटिंग्स में स्थान अनुमति सक्षम करें।"
-            : "Location permission denied. Please enable location access in your device/browser settings.";
+        const msg = !isSecure ? locTrans.geoInsecure : locTrans.geoPermissionDenied;
 
         toast.error(msg);
         setIsLocating(false);
@@ -279,11 +232,7 @@ export function LocationSearchBar() {
           successCallback,
           (fallbackErr) => {
             console.error("Geolocation failed:", fallbackErr);
-            toast.error(
-              language === "hi"
-                ? "भौगोलिक स्थान प्राप्त करने में विफल। कृपया स्थान सेटिंग जांचें या मैन्युअल रूप से खोजें।"
-                : "Unable to retrieve your location. Please check settings or search manually.",
-            );
+            toast.error(locTrans.geoUnavailable);
             setIsLocating(false);
           },
           { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
@@ -313,7 +262,7 @@ export function LocationSearchBar() {
     } catch {
       updateGlobalLocation({
         name: formatCoordinates(center.lat, center.lng),
-        displayName: "Selected from Map",
+        displayName: locTrans.selectedFromMap,
         lat: center.lat,
         lng: center.lng,
       });
@@ -402,7 +351,7 @@ export function LocationSearchBar() {
                 {loadingResults ? (
                   <div className="flex bg-background rounded-xl items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
                     <Loader2 className="size-4 animate-spin" />
-                    Searching...
+                    {locTrans.searching}
                   </div>
                 ) : results.length === 0 ? (
                   selectableFields.length === 0 ? (
@@ -461,10 +410,10 @@ export function LocationSearchBar() {
           <span className="text-xs sm:text-sm font-medium truncate">
             {/* Responsive Label Gating */}
             <span className="sm:hidden">
-              {isLocating ? "..." : btnTrans.locationShort}
+              {isLocating ? "..." : locTrans.useLocationShort}
             </span>
             <span className="hidden sm:inline md:hidden">
-              {isLocating ? locTrans.locatingState : btnTrans.locationMedium}
+              {isLocating ? locTrans.locatingState : locTrans.useLocationMedium}
             </span>
             <span className="hidden md:inline">
               {isLocating ? locTrans.locatingState : locTrans.useLocationBtn}
@@ -479,9 +428,9 @@ export function LocationSearchBar() {
               <MapPinned className="size-4 shrink-0 sm:mr-2" />
               <span className="text-xs sm:text-sm font-medium truncate">
                 {/* Responsive Label Gating */}
-                <span className="sm:hidden">{btnTrans.mapShort}</span>
+                <span className="sm:hidden">{locTrans.mapShort}</span>
                 <span className="hidden sm:inline md:hidden">
-                  {btnTrans.mapMedium}
+                  {locTrans.mapMedium}
                 </span>
                 <span className="hidden md:inline">
                   {locTrans.selectMapBtn}
@@ -498,7 +447,7 @@ export function LocationSearchBar() {
               zoom={location?.fieldId ? FIELD_LOCATION_ZOOM : undefined}
               marker={location ? { lat: location.lat, lng: location.lng } : null}
               onCenterChange={handleCenterChange}
-              title={locTrans.selectMapBtn || "Verify Farm Coordinates"}
+              title={locTrans.selectMapBtn}
               dialog={true}
               bottomLeftBadge={
                 <Badge className="rounded-sm">
@@ -517,7 +466,7 @@ export function LocationSearchBar() {
                   ) : (
                     <Crosshair className="size-4 mr-2" />
                   )}
-                  {locTrans.selectLocation || "Select Location"}
+                  {locTrans.selectLocation}
                 </Button>
               }
             />

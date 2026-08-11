@@ -70,7 +70,7 @@ export default function Risk() {
     return (
       <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm flex items-center gap-2 text-muted-foreground text-xs">
         <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
-        <span>{t.dashboard?.agricultureRiskUnavailable || "Agricultural risk scores currently unavailable."}</span>
+        <span>{t.dashboard.agricultureRiskUnavailable}</span>
       </div>
     );
   }
@@ -82,7 +82,7 @@ export default function Risk() {
       {/* Header row */}
       <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
         <Gauge className="size-4.5" />
-        {t.dashboard?.agricultureRisk || "Weather Risk"}
+        {t.dashboard.agricultureRisk}
         {overall && (
           <Badge
             variant={"default"}
@@ -92,7 +92,7 @@ export default function Risk() {
               color: overallFg(overall.score),
             }}
           >
-            {t.dashboard?.overall || "Overall"}: {overall.band}
+            {t.dashboard.overall}: {overall.band}
           </Badge>
         )}
       </div>
@@ -115,15 +115,15 @@ export default function Risk() {
 
           const icon = HAZARD_ICONS[key];
           const label = key === "heavy_rain"
-            ? (t.dashboard?.hazardHeavyRain || "Heavy Rain")
+            ? t.dashboard.hazardHeavyRain
             : key === "heat_stress"
-            ? (t.dashboard?.hazardHeatStress || "Heat Stress")
+            ? t.dashboard.hazardHeatStress
             : key === "lightning"
-            ? (t.dashboard?.hazardLightning || "Lightning")
+            ? t.dashboard.hazardLightning
             : key === "wind"
-            ? (t.dashboard?.hazardWind || "Wind")
+            ? t.dashboard.hazardWind
             : key === "frost"
-            ? (t.dashboard?.hazardFrost || "Frost")
+            ? t.dashboard.hazardFrost
             : key;
 
           return (

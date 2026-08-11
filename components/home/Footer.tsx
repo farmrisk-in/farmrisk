@@ -16,140 +16,42 @@ interface FooterSection {
   links: FooterLink[];
 }
 
-const footerLinks: FooterSection[] = [
-  {
-    label: "Product",
-    links: [
-      { title: "Features", href: "#" },
-      { title: "Pricing", href: "#" },
-      { title: "Testimonials", href: "#" },
-      { title: "Integration", href: "#" },
-    ],
-  },
-  {
-    label: "Company",
-    links: [
-      { title: "FAQs", href: "#" },
-      { title: "About Us", href: "#" },
-      { title: "Privacy Policy", href: "#" },
-      { title: "Terms of Services", href: "#" },
-    ],
-  },
-  {
-    label: "Resources",
-    links: [
-      { title: "Blog", href: "#" },
-      { title: "Changelog", href: "#" },
-      { title: "Brand", href: "#" },
-      { title: "Help", href: "#" },
-    ],
-  },
-  {
-    label: "Social Links",
-    links: [],
-  },
-];
-
-const labelTranslations: Record<string, Record<string, string>> = {
-  en: {
-    Product: "Product",
-    Company: "Company",
-    Resources: "Resources",
-    "Social Links": "Social Links",
-    Features: "Features",
-    Pricing: "Pricing",
-    Testimonials: "Testimonials",
-    Integration: "Integration",
-    FAQs: "FAQs",
-    "About Us": "About Us",
-    "Privacy Policy": "Privacy Policy",
-    "Terms of Services": "Terms of Services",
-    Blog: "Blog",
-    Changelog: "Changelog",
-    Brand: "Brand",
-    Help: "Help",
-  },
-  hi: {
-    Product: "उत्पाद",
-    Company: "कंपनी",
-    Resources: "संसाधन",
-    "Social Links": "सामाजिक संबंध",
-    Features: "विशेषताएं",
-    Pricing: "मूल्य निर्धारण",
-    Testimonials: "प्रशंसापत्र",
-    Integration: "एकीकरण",
-    FAQs: "पूछे जाने वाले प्रश्न",
-    "About Us": "हमारे बारे में",
-    "Privacy Policy": "गोपनीयता नीति",
-    "Terms of Services": "सेवा की शर्तें",
-    Blog: "ब्लॉग",
-    Changelog: "बदलाव सूची",
-    Brand: "ब्रांड",
-    Help: "मदद",
-  },
-  mr: {
-    Product: "उत्पादन",
-    Company: "कंपनी",
-    Resources: "संसाधने",
-    "Social Links": "सोशल लिंक्स",
-    Features: "वैशिष्ट्ये",
-    Pricing: "किंमत",
-    Testimonials: "प्रशंसापत्रे",
-    Integration: "एकीकरण",
-    FAQs: "प्रश्न",
-    "About Us": "आमच्याबद्दल",
-    "Privacy Policy": "गोपनीयता धोरण",
-    "Terms of Services": "अटी आणि शर्ती",
-    Blog: "ब्लॉग",
-    Changelog: "बदलाव",
-    Brand: "ब्रँड",
-    Help: "मदत",
-  },
-  ta: {
-    Product: "தயாரிப்பு",
-    Company: "நிறுவனம்",
-    Resources: "வளங்கள்",
-    "Social Links": "சமூக இணைப்புகள்",
-    Features: "அம்சங்கள்",
-    Pricing: "விலை",
-    Testimonials: "சான்றுகள்",
-    Integration: "ஒருங்கிணைப்பு",
-    FAQs: "கேள்விகள்",
-    "About Us": "எங்களைப் பற்றி",
-    "Privacy Policy": "தனியுரிமைக் கொள்கை",
-    "Terms of Services": "சேவை விதிமுறைகள்",
-    Blog: "வலைப்பதிவு",
-    Changelog: "மாற்றங்கள்",
-    Brand: "பிராண்ட்",
-    Help: "உதவி",
-  },
-  gu: {
-    Product: "ઉત્પાદન",
-    Company: "કંપની",
-    Resources: "સંસાધનો",
-    "Social Links": "સોશિયલ લિંક્સ",
-    Features: "વિશેષતાઓ",
-    Pricing: "કિંમત",
-    Testimonials: "પ્રશંસાપત્રો",
-    Integration: "એકીકરણ",
-    FAQs: "પ્રશ્નો",
-    "About Us": "અમારા વિશે",
-    "Privacy Policy": "ગોપનીયતા નીતિ",
-    "Terms of Services": "સેવાની શરતો",
-    Blog: "બ્લોગ",
-    Changelog: "ફેરફારો",
-    Brand: "બ્રાન્ડ",
-    Help: "મદદ",
-  },
-};
-
 export function Footer() {
-  const { language, t } = useLanguage();
-  const translations = labelTranslations[language] || labelTranslations.en;
+  const { t } = useLanguage();
 
-  const translate = (text: string) => {
-    return translations[text] || text;
-  };
+  const footerLinks: FooterSection[] = [
+    {
+      label: t.footer.product,
+      links: [
+        { title: t.footer.features, href: "#" },
+        { title: t.footer.pricing, href: "#" },
+        { title: t.footer.testimonials, href: "#" },
+        { title: t.footer.integration, href: "#" },
+      ],
+    },
+    {
+      label: t.footer.company,
+      links: [
+        { title: t.footer.faqs, href: "#" },
+        { title: t.footer.aboutUs, href: "#" },
+        { title: t.footer.privacyPolicy, href: "#" },
+        { title: t.footer.terms, href: "#" },
+      ],
+    },
+    {
+      label: t.footer.resources,
+      links: [
+        { title: t.footer.blog, href: "#" },
+        { title: t.footer.changelog, href: "#" },
+        { title: t.footer.brand, href: "#" },
+        { title: t.footer.help, href: "#" },
+      ],
+    },
+    {
+      label: t.footer.socialLinks,
+      links: [],
+    },
+  ];
 
   const [mounted, setMounted] = useState(false);
 
@@ -185,7 +87,7 @@ export function Footer() {
             <AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
               <div className="mb-10 md:mb-0">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  {translate(section.label)}
+                  {section.label}
                 </h3>
                 <ul className="text-muted-foreground mt-4 space-y-2 text-sm">
                   {section.links.map((link) => (
@@ -195,7 +97,7 @@ export function Footer() {
                         className="hover:text-foreground inline-flex items-center transition-all duration-300"
                       >
                         {link.icon && <link.icon className="me-1 size-4" />}
-                        {translate(link.title)}
+                        {link.title}
                       </a>
                     </li>
                   ))}

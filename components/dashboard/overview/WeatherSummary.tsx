@@ -7,14 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Loader2, Summary } from "lucide-react";
 
-const TITLE_TRANSLATIONS: Record<string, string> = {
-  en: "24-Hour Weather Summary",
-  hi: "24-घंटे का मौसम सारांश",
-  mr: "24-तासांचा हवामान सारांश",
-  ta: "24-மணிநேர வானிலை சுருக்கம்",
-  gu: "24-કલાક હવામાન સારાંશ",
-};
-
 export default function WeatherSummary() {
   const { language, t } = useLanguage();
   const {
@@ -25,7 +17,7 @@ export default function WeatherSummary() {
     refetch,
   } = useWeatherSummary(language);
 
-  const title = TITLE_TRANSLATIONS[language] || TITLE_TRANSLATIONS.en;
+  const title = t.dashboard.weatherSummary;
 
   const handleRetry = () => {
     refetch().catch(() => {

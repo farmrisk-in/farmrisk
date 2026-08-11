@@ -45,7 +45,7 @@ export const NavBar = ({ type }: { type: "small" | "large" }) => {
             <div className="flex w-full justify-between lg:flex-1 lg:justify-start items-center">
               <Link
                 href="/"
-                aria-label="home"
+                aria-label={t.nav.home}
                 className={
                   "gap-2 flex items-center transition-colors duration-300 text-black dark:text-white"
                 }
@@ -61,7 +61,7 @@ export const NavBar = ({ type }: { type: "small" | "large" }) => {
               </Link>
               <button
                 onClick={() => setMenuState(!menuState)}
-                aria-label={menuState == true ? "Close Menu" : "Open Menu"}
+                aria-label={menuState == true ? t.nav.closeMenu : t.nav.openMenu}
                 className="relative z-20 -m-2.5 block cursor-pointer p-2.5 lg:hidden transition-colors duration-300 text-black dark:text-white"
               >
                 <Menu className="in-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0 m-auto size-6 duration-200" />

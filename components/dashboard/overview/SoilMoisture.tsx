@@ -74,68 +74,68 @@ interface CustomDotProps {
 }
 
 // --- COLOR & CATEGORY MAPPING ---
-const getCategoryAndColor = (pct: number, t?: TranslationType) => {
+const getCategoryAndColor = (pct: number, t: TranslationType) => {
   if (pct > 98)
     return {
-      label: t?.dashboard?.smExceptionalWet || "Exceptional Wet",
+      label: t.dashboard.smExceptionalWet,
       color: "#0284c7",
     };
   if (pct > 95)
     return {
-      label: t?.dashboard?.smExtremeWet || "Extreme Wet",
+      label: t.dashboard.smExtremeWet,
       color: "#0ea5e9",
     };
   if (pct > 90)
     return {
-      label: t?.dashboard?.smSevereWet || "Severe Wet",
+      label: t.dashboard.smSevereWet,
       color: "#38bdf8",
     };
   if (pct > 80)
     return {
-      label: t?.dashboard?.smModerateWet || "Moderate Wet",
+      label: t.dashboard.smModerateWet,
       color: "#7dd3fc",
     };
   if (pct > 70)
     return {
-      label: t?.dashboard?.smAbnormallyWet || "Abnormally Wet",
+      label: t.dashboard.smAbnormallyWet,
       color: "#bae6fd",
     };
   if (pct > 30)
     return {
-      label: t?.dashboard?.smNormal || "Normal",
+      label: t.dashboard.smNormal,
       color: "#64748b",
     };
   if (pct > 20)
     return {
-      label: t?.dashboard?.smAbnormallyDry || "Abnormally Dry",
+      label: t.dashboard.smAbnormallyDry,
       color: "#fed7aa",
     };
   if (pct > 10)
     return {
-      label: t?.dashboard?.smModerateDry || "Moderate Dry",
+      label: t.dashboard.smModerateDry,
       color: "#fdba74",
     };
   if (pct > 5)
     return {
-      label: t?.dashboard?.smExtremeDry || "Extreme Dry",
+      label: t.dashboard.smExtremeDry,
       color: "#f97316",
     };
   if (pct > 2)
     return {
-      label: t?.dashboard?.smSevereDry || "Severe Dry",
+      label: t.dashboard.smSevereDry,
       color: "#ea580c",
     };
   return {
-    label: t?.dashboard?.smExceptionalDry || "Exceptional Dry",
+    label: t.dashboard.smExceptionalDry,
     color: "#9a3412",
   };
 };
 
 // --- CUSTOM DOT ---
-const CustomDot = (props: CustomDotProps) => {
-  const { cx, cy, payload } = props;
+const CustomDot = (props: CustomDotProps & { t: TranslationType }) => {
+  const { cx, cy, payload, t } = props;
   if (!cx || !cy || !payload) return null;
-  const { color } = getCategoryAndColor(payload.sm_percentile);
+  const { color } = getCategoryAndColor(payload.sm_percentile, t);
 
   return (
     <circle
@@ -216,22 +216,22 @@ const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
             typeof value === "number" ? value.toFixed(1) : value;
 
           if (key === "sm_percentile") {
-            name = "Soil Percentile";
+            name = t.dashboard.smSoilPercentile;
             formattedValue = `${value.toFixed(1)}%`;
           } else if (key === "P_obs") {
-            name = "Precipitation";
+            name = t.dashboard.smPrecipitation;
             formattedValue = `${value.toFixed(1)} mm`;
           } else if (key === "PE") {
-            name = "Potential Evap";
+            name = t.dashboard.smPotentialEvap;
             formattedValue = `${value.toFixed(1)} mm`;
           } else if (key === "E") {
-            name = "Actual Evap";
+            name = t.dashboard.smActualEvap;
             formattedValue = `${value.toFixed(1)} mm`;
           } else if (key === "R") {
-            name = "Runoff";
+            name = t.dashboard.smRunoff;
             formattedValue = `${value.toFixed(1)} mm`;
           } else if (key === "G") {
-            name = "Deep Drainage";
+            name = t.dashboard.smDeepDrainage;
             formattedValue = `${value.toFixed(1)} mm`;
           }
 
@@ -277,7 +277,7 @@ const SERIES_ICONS: Record<
 
 export default function SoilMoisture() {
   const { location, isResolving } = useLocationContext();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { isPro } = usePro();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -492,17 +492,17 @@ export default function SoilMoisture() {
   const formatKeyLabel = (key: string) => {
     switch (key) {
       case "sm_percentile":
-        return "Soil Percentile (%)";
+        return `${t.dashboard.smSoilPercentile} (%)`;
       case "P_obs":
-        return "Precipitation (mm)";
+        return `${t.dashboard.smPrecipitation} (mm)`;
       case "PE":
-        return "Potential Evap (mm)";
+        return `${t.dashboard.smPotentialEvap} (mm)`;
       case "E":
-        return "Actual Evap (mm)";
+        return `${t.dashboard.smActualEvap} (mm)`;
       case "R":
-        return "Runoff (mm)";
+        return `${t.dashboard.smRunoff} (mm)`;
       case "G":
-        return "Deep Drainage (mm)";
+        return `${t.dashboard.smDeepDrainage} (mm)`;
       default:
         return key;
     }
@@ -531,39 +531,20 @@ export default function SoilMoisture() {
     const diffTime = tObj.getTime() - d.getTime();
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
 
-    if (language === "hi") {
-      if (diffDays === 0) return "आज (आज ही सिंचाई की)";
-      if (diffDays === 1) return "कल (1 दिन पहले)";
-      return `${diffDays} दिन पहले (${d.toLocaleDateString("hi-IN", { month: "short", day: "numeric" })})`;
-    }
-    if (language === "mr") {
-      if (diffDays === 0) return "आज (आजच पाणी दिले)";
-      if (diffDays === 1) return "काल (1 दिवस पूर्वी)";
-      return `${diffDays} दिवसांपूर्वी (${d.toLocaleDateString("mr-IN", { month: "short", day: "numeric" })})`;
-    }
-    if (language === "ta") {
-      if (diffDays === 0) return "இன்று";
-      if (diffDays === 1) return "நேற்று";
-      return `${diffDays} நாட்களுக்கு முன்பு (${d.toLocaleDateString("ta-IN", { month: "short", day: "numeric" })})`;
-    }
-    if (language === "gu") {
-      if (diffDays === 0) return "આજે";
-      if (diffDays === 1) return "ગઇકાલે";
-      return `${diffDays} દિવસ પહેલા (${d.toLocaleDateString("gu-IN", { month: "short", day: "numeric" })})`;
-    }
+    const locale = t.locale || "en-US";
+    const dateStr = d.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+    });
 
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    return `${diffDays} days ago (${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })})`;
+    if (diffDays === 0) return t.dashboard.smIrrigatedToday;
+    if (diffDays === 1) return t.dashboard.smIrrigatedYesterday;
+    return t.dashboard.smIrrigatedDaysAgo
+      .replace("{n}", String(diffDays))
+      .replace("{date}", dateStr);
   };
 
-  const questionText = (() => {
-    if (language === "hi") return "पिछली सिंचाई कब की थी?";
-    if (language === "mr") return "शेवटचे पाणी कधी दिले?";
-    if (language === "ta") return "கடைசியாக எப்போது நீர் பாய்ச்சினீர்கள்?";
-    if (language === "gu") return "છેલ્લે ક્યારે સિંચાઈ કરી?";
-    return "When did you last irrigate?";
-  })();
+  const questionText = t.dashboard.smWhenLastIrrigate;
 
   const defaultMonth = isMobile
     ? today
@@ -573,7 +554,7 @@ export default function SoilMoisture() {
     return (
       <div className="w-full bg-card border border-border rounded-xl p-4 shadow-sm flex items-center justify-center min-h-75">
         <p className="text-muted-foreground text-sm">
-          Select a location to view soil moisture.
+          {t.dashboard.smSelectLocation}
         </p>
       </div>
     );
@@ -585,7 +566,7 @@ export default function SoilMoisture() {
         <div className="h-65 w-full flex flex-col items-center justify-center gap-2 text-muted-foreground bg-muted/5 rounded-lg border border-dashed border-border mt-2">
           <LoaderCircle className="w-8 h-8 animate-spin text-emerald-500" />
           <span className="text-xs font-medium">
-            Analyzing soil hydrology...
+            {t.dashboard.smAnalyzing}
           </span>
         </div>
       );
@@ -596,11 +577,10 @@ export default function SoilMoisture() {
         <div className="h-65 w-full flex flex-col justify-center items-center text-center gap-2 bg-destructive/5 rounded-lg border border-dashed border-destructive/20 mt-2 p-4 animate-in fade-in duration-300">
           <CloudOff className="size-8 text-destructive/60 mb-1 animate-pulse" />
           <h4 className="text-destructive font-semibold text-sm">
-            Analysis Failed
+            {t.dashboard.smAnalysisFailed}
           </h4>
           <p className="text-xs text-muted-foreground max-w-64">
-            Failed to retrieve soil moisture data. Please select another
-            location or try again later.
+            {t.dashboard.smLoadErrorDesc}
           </p>
         </div>
       );
@@ -609,7 +589,7 @@ export default function SoilMoisture() {
     if (chartData.length === 0) {
       return (
         <div className="h-65 w-full flex items-center justify-center text-muted-foreground text-xs mt-2 bg-muted/5 rounded-lg border border-dashed border-border">
-          No soil moisture data available.
+          {t.dashboard.smNoData}
         </div>
       );
     }
@@ -701,7 +681,7 @@ export default function SoilMoisture() {
                       strokeDasharray={
                         key === "sm_percentile" ? "6 6" : undefined
                       }
-                      dot={key === "sm_percentile" ? <CustomDot /> : false}
+                      dot={key === "sm_percentile" ? <CustomDot t={t} /> : false}
                       activeDot={{ r: 5, strokeWidth: 0 }}
                       isAnimationActive={false}
                       className={isDark ? "stroke-white text-white" : ""}
@@ -720,7 +700,7 @@ export default function SoilMoisture() {
               onClick={handleStepLeft}
               disabled={resolvedOffset <= 0}
               className="shrink-0 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              aria-label="Scroll chart left"
+              aria-label={t.dashboard.smScrollLeft}
             >
               <ChevronLeft className="size-4" />
             </button>
@@ -744,7 +724,7 @@ export default function SoilMoisture() {
               onClick={handleStepRight}
               disabled={resolvedOffset >= maxOffset}
               className="shrink-0 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              aria-label="Scroll chart right"
+              aria-label={t.dashboard.smScrollRight}
             >
               <ChevronRight className="size-4" />
             </button>
@@ -760,7 +740,7 @@ export default function SoilMoisture() {
       <div className="flex items-center justify-between text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2 relative">
         <div className="flex items-center gap-2">
           <Droplets className="size-4.5 text-blue-500" />
-          {t.dashboard?.soilMoisture || "SOIL MOISTURE"}
+          {t.dashboard.soilMoisture}
         </div>
         <div className="flex items-center gap-2">
           {/* IRRIGATION DATE DIALOG BUTTON */}
@@ -778,15 +758,7 @@ export default function SoilMoisture() {
                 >
                   <CalendarIcon className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span className="truncate">
-                    {language === "hi"
-                      ? "सिंचाई तारीख"
-                      : language === "mr"
-                        ? "सिंचन तारीख"
-                        : language === "ta"
-                          ? "நீர் பாசனம்"
-                          : language === "gu"
-                            ? "સિંચાઈ તારીખ"
-                            : "Irrigation Date"}
+                    {t.dashboard.smIrrigationDate}
                   </span>
                 </Button>
               </DialogTrigger>
@@ -826,7 +798,7 @@ export default function SoilMoisture() {
                     onClick={handleSkipQuestions}
                     className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors px-3 py-1.5 rounded-md hover:bg-muted cursor-pointer"
                   >
-                    {daysbefore !== undefined ? "Clear / Reset Filter" : "Skip"}
+                    {daysbefore !== undefined ? t.dashboard.smClearReset : t.dashboard.smSkip}
                   </button>
                   <Button
                     type="button"
@@ -835,7 +807,7 @@ export default function SoilMoisture() {
                     disabled={!selectedDate}
                     className="h-8 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-lg shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    Submit & Forecast
+                    {t.dashboard.smSubmitForecast}
                   </Button>
                 </div>
               </DialogContent>
@@ -855,7 +827,7 @@ export default function SoilMoisture() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 z-9999" align="end">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>Chart Series Settings</DropdownMenuLabel>
+                <DropdownMenuLabel>{t.dashboard.smChartSeriesSettings}</DropdownMenuLabel>
                 {Object.keys(charts).map((key) => {
                   const Icon = SERIES_ICONS[key];
                   return (

@@ -12,16 +12,19 @@ import { useState } from "react";
 import { Drawing } from "@/components/ui/drawing";
 import { LightningData } from "@/types/weather";
 
+function MapLoading() {
+  const { t } = useLanguage();
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
+      <LoaderCircle className="w-6 h-6 animate-spin text-primary" />
+      <span className="text-xs">{t.dashboard.loadingMap}</span>
+    </div>
+  );
+}
+
 const Map = dynamic(() => import("./Map"), {
   ssr: false,
-  loading: () => {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-        <LoaderCircle className="w-6 h-6 animate-spin text-primary" />
-        <span className="text-xs">Loading Interactive Map...</span>
-      </div>
-    );
-  },
+  loading: () => <MapLoading />,
 });
 
 export const Lightning = () => {
@@ -36,26 +39,26 @@ export const Lightning = () => {
       case "Severe":
         return {
           color: "#FF040E",
-          advisory: t.dashboard?.advSevere || "Severe risk of lightning.",
+          advisory: t.dashboard.advSevere,
           zoom: 11,
         };
       case "High":
         return {
           color: "#FF4116",
-          advisory: t.dashboard?.advHigh || "High risk of lightning.",
+          advisory: t.dashboard.advHigh,
           zoom: 12,
         };
       case "Moderate":
         return {
           color: "#FF9C04",
-          advisory: t.dashboard?.advModerate || "Moderate risk of lightning.",
+          advisory: t.dashboard.advModerate,
           zoom: 13,
         };
       case "Low":
       default:
         return {
           color: "#006045",
-          advisory: t.dashboard?.advLow || "Low risk of lightning.",
+          advisory: t.dashboard.advLow,
           zoom: 14,
         };
     }
@@ -78,12 +81,12 @@ export const Lightning = () => {
         {/* HEADER SECTION */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
           <Zap className="size-4.5" />
-          {t.dashboard?.lightningRisk || "LIGHTNING RISK"}
+          {t.dashboard.lightningRisk}
         </div>
         <div className="w-full grow flex items-center justify-center gap-2 text-muted-foreground select-none">
           <LoaderCircle className="w-6 h-6 animate-spin text-primary" />
           <span className="text-sm font-medium">
-            {t.dashboard?.loadingMap || "Fetching Lightning Risk Data..."}
+            {t.dashboard.loadingMap}
           </span>
         </div>
       </div>
@@ -96,11 +99,11 @@ export const Lightning = () => {
         {/* HEADER SECTION */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
           <Zap className="size-4.5" />
-          {t.dashboard?.lightningRisk || "LIGHTNING RISK"}
+          {t.dashboard.lightningRisk}
         </div>
         <div className="w-full grow flex items-center justify-center gap-2 text-muted-foreground select-none">
           <CloudOff className="size-6" />
-          <span className="text-sm font-medium">Something went wrong</span>
+          <span className="text-sm font-medium">{t.dashboard.somethingWentWrong}</span>
         </div>
       </div>
     );
@@ -113,7 +116,7 @@ export const Lightning = () => {
           <Map
             initialLat={location.lat}
             initialLng={location.lng}
-            title={t.dashboard?.lightningRisk || "Lightning Risk"}
+            title={t.dashboard.lightningRisk}
             showZoomControls={false}
             showCenterIndicator={false}
             doubleClickZoom={false}
@@ -126,11 +129,11 @@ export const Lightning = () => {
                 className={`rounded-sm`}
                 style={{ backgroundColor: color }}
               >
-                {(lightning.category === "Low" && t.dashboard?.advLow) ||
+                {(lightning.category === "Low" && t.dashboard.advLow) ||
                   (lightning.category === "Moderate" &&
-                    t.dashboard?.advModerate) ||
-                  (lightning.category === "High" && t.dashboard?.advHigh) ||
-                  (lightning.category === "Severe" && t.dashboard?.advSevere) ||
+                    t.dashboard.advModerate) ||
+                  (lightning.category === "High" && t.dashboard.advHigh) ||
+                  (lightning.category === "Severe" && t.dashboard.advSevere) ||
                   advisory}
               </Badge>
             }
@@ -154,7 +157,7 @@ export const Lightning = () => {
             initialLat={location.lat}
             initialLng={location.lng}
             showCenterIndicator={false}
-            title={t.dashboard?.lightningRisk || "Lightning Risk"}
+            title={t.dashboard.lightningRisk}
             Icon={Zap}
             zoom={zoom}
             dialog={true}
@@ -163,11 +166,11 @@ export const Lightning = () => {
                 className={`rounded-sm`}
                 style={{ backgroundColor: color }}
               >
-                {(lightning.category === "Low" && t.dashboard?.advLow) ||
+                {(lightning.category === "Low" && t.dashboard.advLow) ||
                   (lightning.category === "Moderate" &&
-                    t.dashboard?.advModerate) ||
-                  (lightning.category === "High" && t.dashboard?.advHigh) ||
-                  (lightning.category === "Severe" && t.dashboard?.advSevere) ||
+                    t.dashboard.advModerate) ||
+                  (lightning.category === "High" && t.dashboard.advHigh) ||
+                  (lightning.category === "Severe" && t.dashboard.advSevere) ||
                   advisory}
               </Badge>
             }

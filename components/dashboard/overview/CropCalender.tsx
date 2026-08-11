@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { useCalendar } from "@/hooks/useCalendar";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   Tooltip,
   TooltipContent,
@@ -33,6 +34,7 @@ const MONTHS_LABELS = [
 
 const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
   const { data, error } = useCalendar(selectedCrop.id);
+  const { t } = useLanguage();
   const [activeTooltipId, setActiveTooltipId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
       <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between border-b border-border mb-2 pb-2">
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
           <Calendar className="size-4.5" />
-          <span>Crop Calendar</span>
+          <span>{t.dashboard.cropCalendar}</span>
           <Badge variant={"default"} className="text-[10px] ml-auto rounded-[7px]">
             {data.calendar[0]?.crop || selectedCrop.name}
           </Badge>
@@ -77,21 +79,21 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
             className="text-[10px] rounded-none gap-2 rounded-l-[7px]"
           >
             <div className="w-3 h-2 bg-emerald-500 rounded-xs" />
-            Sowing
+            {t.dashboard.calSowing}
           </Badge>
           <Badge
             variant={"outline"}
             className="text-[10px] rounded-none gap-2"
           >
             <div className="w-3 h-2 bg-amber-500/30 rounded-xs border border-amber-500/20" />
-            Growing
+            {t.dashboard.calGrowing}
           </Badge>
           <Badge
             variant={"outline"}
             className="text-[10px] rounded-none rounded-r-[7px] gap-2"
           >
             <div className="w-3 h-2 bg-rose-500 rounded-xs" />
-            Harvesting
+            {t.dashboard.calHarvesting}
           </Badge>
         </div>
       </div>
@@ -119,7 +121,14 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
           <div key={idx} className="mb-6 last:mb-0 select-none">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-foreground/90">
-                {event.season || "Kharif"} Season
+                {event.season === "Kharif"
+                  ? t.fields.seasonKharif
+                  : event.season === "Rabi"
+                    ? t.fields.seasonRabi
+                    : event.season === "Zaid"
+                      ? t.fields.seasonZaid
+                      : event.season || ""}{" "}
+                {t.fields.seasonLabel}
               </span>
             </div>
 
@@ -168,10 +177,12 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
                       </TooltipTrigger>
                       <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
                         <p className="font-semibold text-amber-600 dark:text-amber-400">
-                          Growing Window
+                          {t.dashboard.calGrowingWindow}
                         </p>
                         <p className="text-muted-foreground text-[11px]">
-                          Est. Duration: {startSowLabel} to {endHarvLabel}
+                          {t.dashboard.calEstDuration
+                            .replace("{from}", startSowLabel)
+                            .replace("{to}", endHarvLabel)}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -210,10 +221,10 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
                       </TooltipTrigger>
                       <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
                         <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          Sowing Window
+                          {t.dashboard.calSowingWindow}
                         </p>
                         <p className="text-muted-foreground text-[11px] font-medium">
-                          {event.sowingPeriod || "Active Phase"}
+                          {event.sowingPeriod || t.dashboard.calSowingPeriod}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -252,10 +263,10 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
                       </TooltipTrigger>
                       <TooltipContent className="bg-popover border text-xs p-2 rounded-md shadow-md">
                         <p className="font-semibold text-rose-600 dark:text-rose-400">
-                          Harvest Window
+                          {t.dashboard.calHarvestWindow}
                         </p>
                         <p className="text-muted-foreground text-[11px] font-medium">
-                          {event.harvestingPeriod || "Active Phase"}
+                          {event.harvestingPeriod || t.dashboard.calHarvestingPeriod}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -275,7 +286,7 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
                   className="bg-zinc-950 text-zinc-50 border border-zinc-800 font-mono text-[11px] p-2 rounded-sm shadow-lg"
                 >
                   <span>
-                    Today:{" "}
+                    {t.dashboard.today}:{" "}
                     {new Date().toLocaleDateString(undefined, {
                       month: "short",
                       day: "numeric",

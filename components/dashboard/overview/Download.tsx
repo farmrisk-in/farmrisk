@@ -34,50 +34,9 @@ import { GENERAL_CROP } from "@/types/crops";
 
 // Ensure you have run: npm install html2canvas jspdf
 
-const DOWNLOAD_TRANSLATIONS: Record<
-  string,
-  {
-    download: string;
-    generating: string;
-    jpeg: string;
-    pdf: string;
-  }
-> = {
-  en: {
-    download: "Download",
-    generating: "Generating...",
-    jpeg: "Download Image (JPEG)",
-    pdf: "Download Document (PDF)",
-  },
-  hi: {
-    download: "डाउनलोड",
-    generating: "तैयार किया जा रहा है...",
-    jpeg: "छवि डाउनलोड करें (JPEG)",
-    pdf: "दस्तावेज़ डाउनलोड करें (PDF)",
-  },
-  mr: {
-    download: "डाउनलोड",
-    generating: "तयार होत आहे...",
-    jpeg: "प्रतिमा डाउनलोड करा (JPEG)",
-    pdf: "दस्तऐवज डाउनलोड करा (PDF)",
-  },
-  ta: {
-    download: "பதிவிறக்கு",
-    generating: "உருவாக்கப்படுகிறது...",
-    jpeg: "படம் பதிவிறக்கம் (JPEG)",
-    pdf: "ஆவணம் பதிવிறக்கம் (PDF)",
-  },
-  gu: {
-    download: "ડાઉનલોડ કરો",
-    generating: "તૈયાર થઈ રહ્યું છે...",
-    jpeg: "છબી ડાઉનલોડ કરો (JPEG)",
-    pdf: "દસ્તાવેજ ડાઉનલોડ કરો (PDF)",
-  },
-};
-
 const Download = ({ className }: { className?: string }) => {
-  const { language } = useLanguage();
-  const trans = DOWNLOAD_TRANSLATIONS[language] || DOWNLOAD_TRANSLATIONS.en;
+  const { language, t } = useLanguage();
+  const trans = t.export;
   const printRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const { location } = useLocationContext();

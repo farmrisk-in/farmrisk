@@ -18,7 +18,8 @@ export default function Greeting() {
   const { t } = useLanguage();
 
   const greeting = getGreeting(t);
-  const displayName = [firstName, lastName].filter(Boolean).join(" ") || "there";
+  const displayName =
+    [firstName, lastName].filter(Boolean).join(" ") || t.dashboard.greetingFallback;
 
   return (
     <div className="flex items-center justify-between gap-3 px-1 min-h-[44px]">
