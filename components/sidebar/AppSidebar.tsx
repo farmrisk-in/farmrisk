@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { createClient } from "@/supabase/client";
 import { Leaf, LockIcon, LoaderCircle, LogOut, LogIn } from "lucide-react";
 import {
   Sidebar,
@@ -35,7 +34,7 @@ export function AppSidebar() {
   const { currentPage, setCurrentPage } = useNavigation();
   const { isMobile: isSidebarMobile, state, setOpenMobile } = useSidebar();
   const { t, language } = useLanguage();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { profile } = useProfile();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -57,19 +56,10 @@ export function AppSidebar() {
 
   async function logout() {
     setIsLoading(true);
-    
-    // Clear irrigation session storage immediately
-    if (typeof window !== "undefined") {
-      sessionStorage.removeItem("irrigation_days_before");
-      sessionStorage.removeItem("irrigation_questions_answered");
-      window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
-    }
 
-    const supabase = createClient();
-    await supabase.auth.signOut({ scope: "local" });
-    if (process.env.NODE_ENV === "development") {
-      await fetch("/auth/dev-logout", { method: "POST" });
-    }
+    // Route through the shared auth provider so the React context, Supabase
+    // session, React Query cache and navigation state are all reset together.
+    await signOut();
     router.replace("/auth/login");
     router.refresh();
   }

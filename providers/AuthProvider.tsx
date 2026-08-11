@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import { createClient } from "@/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { User, Session } from "@supabase/supabase-js";
 
 export interface AuthContextType {
@@ -20,6 +21,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+  const queryClient = useQueryClient();
+
+  /**
+   * Clears every piece of client-side state that was tied to the previous
+   * authenticated user so a signed-out (free) session never inherits it.
+   */
+  const clearAuthDependentState = useCallback(() => {
+    // React Query cache: drop any cached profile / saved-fields data belonging
+    // to the previous user so it can never leak into a new session.
+    queryClient.removeQueries({ queryKey: ["profile"] });
+    queryClient.removeQueries({ queryKey: ["saved-fields"] });
+
+    if (typeof window !== "undefined") {
+      // Navigation state can point at locked pages (FarmRisk / Profile) that a
+      // signed-out user must not land on — clear it.
+      localStorage.removeItem("lastPage");
+      localStorage.removeItem("awpl-auth");
+      localStorage.removeItem("supabase.auth.token");
+
+      // Clear irrigation session storage items
+      sessionStorage.removeItem("irrigation_days_before");
+      sessionStorage.removeItem("irrigation_questions_answered");
+      window.dispatchEvent(
+        new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }),
+      );
+    }
+  }, [queryClient]);
 
   useEffect(() => {
     let refreshInterval: NodeJS.Timeout | null = null;
@@ -63,11 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (event === "SIGNED_OUT" || !session) {
-        if (typeof window !== "undefined") {
-          sessionStorage.removeItem("irrigation_days_before");
-          sessionStorage.removeItem("irrigation_questions_answered");
-          window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
-        }
+        clearAuthDependentState();
       }
 
       // Only refresh session if it exists and user is not signing out
@@ -94,29 +118,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearInterval(refreshInterval);
       }
     };
-  }, [supabase.auth]);
+  }, [supabase.auth, clearAuthDependentState]);
 
   const signOut = async () => {
-    // Clear any session data
+    // Clear any session data and auth-dependent state immediately so the UI
+    // reacts to the logged-out state right away.
     setSession(null);
     setUser(null);
+    clearAuthDependentState();
 
     // Clear the auth state from Supabase
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error signing out:", error);
-    }
-
-    // Clear local storage
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("awpl-auth");
-      // Clear any other auth-related items
-      localStorage.removeItem("supabase.auth.token");
-      
-      // Clear irrigation session storage items
-      sessionStorage.removeItem("irrigation_days_before");
-      sessionStorage.removeItem("irrigation_questions_answered");
-      window.dispatchEvent(new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }));
     }
   };
 
