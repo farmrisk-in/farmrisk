@@ -324,30 +324,6 @@ export function LocationSearchBar() {
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
               <CommandList className="max-h-72">
-                {selectableFields.length > 0 && (
-                  <CommandGroup heading={t.fields.myFieldsTitle}>
-                    {selectableFields.map((field) => (
-                      <CommandItem
-                        key={field.id}
-                        value={`field-${field.id}-${field.centerLat}-${field.centerLng}`}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onSelect={() => handleSelectField(field)}
-                        className="cursor-pointer py-3 bg-background rounded-xl"
-                      >
-                        <LandPlot className="mr-3 size-7 shrink-0 text-primary" />
-                        <div className="flex min-w-0 flex-col">
-                          <span className="truncate font-medium">
-                            {fieldDisplayName(field)}
-                          </span>
-                          <span className="truncate text-xs text-muted-foreground">
-                            {formatCoordinates(field.centerLat!, field.centerLng!)}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                )}
-
                 {loadingResults ? (
                   <div className="flex bg-background rounded-xl items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
                     <Loader2 className="size-4 animate-spin" />
@@ -381,6 +357,30 @@ export function LocationSearchBar() {
 
                           <span className="truncate text-xs text-muted-foreground">
                             {res.displayName}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+
+                {selectableFields.length > 0 && (
+                  <CommandGroup heading={t.fields.myFieldsTitle}>
+                    {selectableFields.map((field) => (
+                      <CommandItem
+                        key={field.id}
+                        value={`field-${field.id}-${field.centerLat}-${field.centerLng}`}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onSelect={() => handleSelectField(field)}
+                        className="cursor-pointer py-3 bg-background rounded-xl"
+                      >
+                        <LandPlot className="mr-3 size-7 shrink-0 text-primary" />
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate font-medium">
+                            {fieldDisplayName(field)}
+                          </span>
+                          <span className="truncate text-xs text-muted-foreground">
+                            {formatCoordinates(field.centerLat!, field.centerLng!)}
                           </span>
                         </div>
                       </CommandItem>

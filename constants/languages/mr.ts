@@ -214,6 +214,18 @@ export const mr = {
     weatherSummaryRetryHint:
       "कृपया काही मिनिटांत पुन्हा प्रयत्न करा किंवा पृष्ठ रिफ्रेश करा.",
     weatherSummaryRetry: "पुन्हा प्रयत्न करा",
+    rainSpellLight: "हलका पाऊस",
+    rainSpellModerate: "मध्यम पाऊस",
+    rainSpellIntense: "तीव्र पाऊस",
+    rainSpellVeryIntense: "अत्यंत तीव्र पाऊस",
+    rainSpellExtremelyIntense: "अति भीषण पाऊस",
+    rainSpellSentenceLight: "सुमारे {time} वाजता हलक्या पावसाची शक्यता आहे.",
+    rainSpellSentenceModerate: "सुमारे {time} वाजता मध्यम पावसाची शक्यता आहे.",
+    rainSpellSentenceIntense: "सुमारे {time} वाजता तीव्र पावसाची शक्यता आहे.",
+    rainSpellSentenceVeryIntense:
+      "सुमारे {time} वाजता अत्यंत तीव्र पावसाची शक्यता आहे.",
+    rainSpellSentenceExtremelyIntense:
+      "सुमारे {time} वाजता अति भीषण पावसाची शक्यता आहे.",
     rainfall: "पाऊस",
     wind: "वारा",
     clouds: "ढग",

@@ -214,6 +214,20 @@ export const gu = {
     weatherSummaryRetryHint:
       "કૃપા કરીને થોડી મિનિટોમાં ફરી પ્રયાસ કરો અથવા પૃષ્ઠ તાજું કરો.",
     weatherSummaryRetry: "ફરી પ્રયાસ કરો",
+    rainSpellLight: "હળવો વરસાદ",
+    rainSpellModerate: "મધ્યમ વરસાદ",
+    rainSpellIntense: "તીવ્ર વરસાદ",
+    rainSpellVeryIntense: "ખૂબ તીવ્ર વરસાદ",
+    rainSpellExtremelyIntense: "અત્યંત તીવ્ર વરસાદ",
+    rainSpellSentenceLight: "લગભગ {time} ના સમયે હળવા વરસાદનો ગાળો અપેક્ષિત છે.",
+    rainSpellSentenceModerate:
+      "લગભગ {time} ના સમયે મધ્યમ વરસાદનો ગાળો અપેક્ષિત છે.",
+    rainSpellSentenceIntense:
+      "લગભગ {time} ના સમયે તીવ્ર વરસાદનો ગાળો અપેક્ષિત છે.",
+    rainSpellSentenceVeryIntense:
+      "લગભગ {time} ના સમયે ખૂબ તીવ્ર વરસાદનો ગાળો અપેક્ષિત છે.",
+    rainSpellSentenceExtremelyIntense:
+      "લગભગ {time} ના સમયે અત્યંત તીવ્ર વરસાદનો ગાળો અપેક્ષિત છે.",
     rainfall: "વરસાદ",
     wind: "પવન",
     clouds: "વાદળો",

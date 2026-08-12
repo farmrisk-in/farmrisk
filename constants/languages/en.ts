@@ -212,6 +212,19 @@ export const en = {
     weatherSummaryRetryHint:
       "Please try again in a few minutes or refresh the page.",
     weatherSummaryRetry: "Retry",
+    rainSpellLight: "Light spell",
+    rainSpellModerate: "Moderate spell",
+    rainSpellIntense: "Intense spell",
+    rainSpellVeryIntense: "Very Intense spell",
+    rainSpellExtremelyIntense: "Extremely Intense spell",
+    rainSpellSentenceLight: "Expect a Light spell of rainfall around {time}.",
+    rainSpellSentenceModerate:
+      "Expect a Moderate spell of rainfall around {time}.",
+    rainSpellSentenceIntense: "Expect an Intense spell of rainfall around {time}.",
+    rainSpellSentenceVeryIntense:
+      "Expect a Very Intense spell of rainfall around {time}.",
+    rainSpellSentenceExtremelyIntense:
+      "Expect an Extremely Intense spell of rainfall around {time}.",
     rainfall: "Rainfall",
     wind: "Wind",
     clouds: "Clouds",
