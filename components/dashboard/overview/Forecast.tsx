@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForecast } from "@/hooks/useForecast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
@@ -11,6 +11,7 @@ import {
   TrendingUpDown,
   CheckCheck,
   CloudOff,
+  TriangleAlert,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -35,6 +36,114 @@ const formatDayName = (dateStr: string) => {
 const formatDateText = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+};
+
+type RainCategoryKey =
+  | "very_light"
+  | "light"
+  | "moderate"
+  | "heavy"
+  | "very_heavy"
+  | "extremely_heavy";
+
+interface HighlightBlock {
+  start: number;
+  end: number;
+  category: Exclude<RainCategoryKey, "very_light">;
+  totalRain: number;
+  maxPcp: number;
+}
+
+const isValidRain = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
+const rainCategoryKey = (pcp: number): RainCategoryKey => {
+  if (pcp >= 204.5) return "extremely_heavy";
+  if (pcp >= 115.6) return "very_heavy";
+  if (pcp >= 64.5) return "heavy";
+  if (pcp >= 15.6) return "moderate";
+  if (pcp >= 2.5) return "light";
+  return "very_light";
+};
+
+const RAIN_HIGHLIGHT: Record<
+  Exclude<RainCategoryKey, "very_light">,
+  { bg: string; hover: string; text: string }
+> = {
+  light: {
+    bg: "bg-emerald-500/10",
+    hover: "hover:bg-emerald-500/20",
+    text: "text-emerald-600 dark:text-emerald-400",
+  },
+  moderate: {
+    bg: "bg-yellow-500/15",
+    hover: "hover:bg-yellow-500/25",
+    text: "text-yellow-600 dark:text-yellow-400",
+  },
+  heavy: {
+    bg: "bg-orange-500/15",
+    hover: "hover:bg-orange-500/25",
+    text: "text-orange-600 dark:text-orange-500",
+  },
+  very_heavy: {
+    bg: "bg-red-500/15",
+    hover: "hover:bg-red-500/25",
+    text: "text-red-600 dark:text-red-500",
+  },
+  extremely_heavy: {
+    bg: "bg-red-500/15",
+    hover: "hover:bg-red-500/25",
+    text: "text-red-600 dark:text-red-500",
+  },
+};
+
+const CATEGORY_LABEL: Record<
+  Exclude<RainCategoryKey, "very_light">,
+  string
+> = {
+  light: "Light rain",
+  moderate: "Moderate rain",
+  heavy: "Heavy rain",
+  very_heavy: "Very heavy rain",
+  extremely_heavy: "Extremely heavy rain",
+};
+
+const findHighlightBlock = (days: ForecastRow[]): HighlightBlock | null => {
+  let maxIdx = -1;
+  let maxPcp = -Infinity;
+  days.forEach((day, idx) => {
+    const pcp = day?.pcp_corrected;
+    if (isValidRain(pcp) && pcp > maxPcp) {
+      maxPcp = pcp;
+      maxIdx = idx;
+    }
+  });
+
+  if (maxIdx === -1) return null;
+
+  const category = rainCategoryKey(maxPcp);
+  if (category === "very_light") return null;
+
+  let start = maxIdx;
+  while (start > 0) {
+    const pcp = days[start - 1]?.pcp_corrected;
+    if (!isValidRain(pcp) || rainCategoryKey(pcp) !== category) break;
+    start -= 1;
+  }
+
+  let end = maxIdx;
+  while (end < days.length - 1) {
+    const pcp = days[end + 1]?.pcp_corrected;
+    if (!isValidRain(pcp) || rainCategoryKey(pcp) !== category) break;
+    end += 1;
+  }
+
+  let totalRain = 0;
+  for (let i = start; i <= end; i += 1) {
+    totalRain += days[i].pcp_corrected;
+  }
+
+  return { start, end, category, totalRain, maxPcp };
 };
 
 const Forcast = () => {
@@ -66,6 +175,21 @@ const Forcast = () => {
     predictions.length > 0 ? predictions : fallbackPredictions;
   const isFallbackUsed =
     predictions.length === 0 && fallbackPredictions.length > 0;
+
+  const highlight = useMemo(
+    () => findHighlightBlock(finalPredictions),
+    [finalPredictions],
+  );
+
+  const alertCategory = highlight
+    ? RAIN_HIGHLIGHT[highlight.category]
+    : null;
+
+  const alertRange = highlight
+    ? highlight.start === highlight.end
+      ? `${formatDayName(finalPredictions[highlight.start].date)} ${formatDateText(finalPredictions[highlight.start].date)}`
+      : `${formatDayName(finalPredictions[highlight.start].date)} ${formatDateText(finalPredictions[highlight.start].date)} – ${formatDayName(finalPredictions[highlight.end].date)} ${formatDateText(finalPredictions[highlight.end].date)}`
+    : "";
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -156,19 +280,27 @@ const Forcast = () => {
           </div>
         </div>
       ) : (
-        /* HORIZONTAL SCROLL TIMELINE PANEL / GRID */
-        <div className="w-full flex overflow-x-auto pb-2 custom-scrollbar snap-x scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-          {finalPredictions.map((day, idx) => {
+        <>
+          {/* HORIZONTAL SCROLL TIMELINE PANEL / GRID */}
+          <div className="w-full flex overflow-x-auto pb-2 custom-scrollbar snap-x scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+            {finalPredictions.map((day, idx) => {
             const maxTemp = Math.round(day.tmax_corrected);
             const minTemp = Math.round(day.tmin_corrected);
             const rainVolume = day.pcp_corrected;
+
+            const dayBg =
+              highlight && idx >= highlight.start && idx <= highlight.end
+                ? `${RAIN_HIGHLIGHT[highlight.category].bg} ${RAIN_HIGHLIGHT[highlight.category].hover}`
+                : idx === 0
+                  ? "bg-emerald-500/5"
+                  : "hover:bg-muted/50";
 
             return (
               <div
                 key={day.date}
                 className={cn(
                   `shrink-0 w-[77.4px] flex border-r last:border-0 flex-col items-center py-3 first:rounded-l-md last:rounded-r-md transition-all snap-start
-                  ${idx === 0 ? "bg-emerald-500/5" : "hover:bg-muted/50"}`,
+                  ${dayBg}`,
                 )}
               >
                 {/* Numeric Calendar Label */}
@@ -211,9 +343,27 @@ const Forcast = () => {
             );
           })}
         </div>
-      )}
-    </div>
-  );
+        {highlight && alertCategory && (
+          <div className="border-t border-border pt-2.5 mt-1">
+            <p className="flex items-start gap-2 text-xs sm:text-sm text-foreground leading-relaxed">
+              <TriangleAlert
+                className={`shrink-0 mt-0.5 size-4 ${alertCategory.text}`}
+              />
+              <span>
+                <span
+                  className={`font-semibold ${alertCategory.text}`}
+                >
+                  {CATEGORY_LABEL[highlight.category]}
+                </span>
+                {` alert: ${highlight.totalRain.toFixed(1)} mm expected ${alertRange}`}
+              </span>
+            </p>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+);
 };
 
 export default Forcast;
