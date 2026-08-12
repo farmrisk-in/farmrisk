@@ -8,88 +8,12 @@ import {
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useWeather } from "@/hooks/useWeather";
-import { useForecast } from "@/hooks/useForecast";
-import { useSoilMoisture } from "@/hooks/useSoilMoisture";
-import { useIrrigation } from "@/hooks/useIrrigation";
-import { VillageReportAPIResponse } from "@/types/forecast";
 
 export function useWeatherSummary(language: string) {
   const { location, isResolving } = useLocationContext();
 
-  const daysbefore = useIrrigation();
-
   const calendarData = useCalendar("general").data;
   const weatherData = useWeather().data;
-  const { forecastRows, isLoading: isForecastLoading } = useForecast();
-  const { data: soilMoistureResponse, isLoading: isSoilLoading } =
-    useSoilMoisture(daysbefore);
-
-  // Construct the exact original VillageReportAPIResponse schema for AI backend compatibility
-  const villageReport: VillageReportAPIResponse | undefined =
-    (forecastRows.length > 0 && location)
-      ? {
-          requested_lat: location.lat,
-          requested_lon: location.lng,
-          village_id: 12345,
-          forecast: {
-            success: true,
-            location: {
-              lat: location.lat,
-              lon: location.lng,
-              elevation_m: weatherData?.elevation || 0,
-            },
-            grids_used: [],
-            forecast_source: "bias-corrected",
-            forecast: forecastRows.map((row) => ({
-              date: row.date,
-              tmax_raw: row.tmax,
-              tmax_corrected: row.tmax_corrected,
-              tmin_raw: row.tmin,
-              tmin_corrected: row.tmin_corrected,
-              pcp_raw: row.pcp,
-              pcp_corrected: row.pcp_corrected,
-            })),
-            runtime_seconds: 0,
-          },
-          soil_moisture: {
-            success: true,
-            location: {
-              lat: location.lat,
-              lon: location.lng,
-            },
-            cold_start: false,
-            days_computed: soilMoistureResponse?.soil_moisture?.length || 0,
-            checkpoint_last_date: "",
-            soil_moisture: (soilMoistureResponse?.soil_moisture || []).map(
-              (row) => ({
-                date: row.date,
-                P_obs: row.P_obs ?? 0,
-                Tmean: row.Tmean,
-                PE: row.PE,
-                P_eff: row.P_eff,
-                snowpack: row.snowpack,
-                w: row.w,
-                E: row.E,
-                R: row.R,
-                G: row.G,
-                w_frac: row.w_frac,
-                sm_percentile: row.sm_percentile ?? 0,
-                is_forecast: row.is_forecast,
-              }),
-            ),
-            runtime_seconds: 0,
-          },
-          cache_hit: false,
-          total_runtime_seconds: 0,
-          cache_key: null,
-        }
-      : undefined;
-
-  // Create a stable fingerprint of the forecast data to ensure cache uniqueness
-  const forecastHash =
-    forecastRows.length > 0
-      ? forecastRows.map((d) => `${d.date}:${d.pcp_corrected}`).join(",")
-      : "none";
 
   const query = useQuery<WeatherSummaryResponse, Error>({
     queryKey: [
@@ -97,7 +21,6 @@ export function useWeatherSummary(language: string) {
       location?.lat,
       location?.lng,
       language,
-      forecastHash,
     ],
     queryFn: () => {
       if (!calendarData || !weatherData || !location) {
@@ -110,14 +33,11 @@ export function useWeatherSummary(language: string) {
         cropId: "general",
         calendarData,
         weatherData,
-        forecastData: villageReport,
         language,
       });
     },
     enabled:
       !isResolving &&
-      !isForecastLoading &&
-      !isSoilLoading &&
       !!location?.lat &&
       !!location?.lng &&
       !!language &&
@@ -134,8 +54,6 @@ export function useWeatherSummary(language: string) {
       isResolving ||
       !location ||
       query.isLoading ||
-      isForecastLoading ||
-      isSoilLoading ||
       !calendarData ||
       !weatherData,
     isFetching: query.isFetching,
