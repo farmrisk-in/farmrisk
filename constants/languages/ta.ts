@@ -216,6 +216,18 @@ export const ta = {
     weatherSummaryRetryHint:
       "சில நிமிடங்களில் மீண்டும் முயற்சிக்கவும் அல்லது பக்கத்தை புதுப்பிக்கவும்.",
     weatherSummaryRetry: "மீண்டும் முயற்சி",
+    rainSpellLight: "லேசான மழை",
+    rainSpellModerate: "மிதமான மழை",
+    rainSpellIntense: "கனமான மழை",
+    rainSpellVeryIntense: "மிகக் கனமான மழை",
+    rainSpellExtremelyIntense: "மிகக் கடுமையான மழை",
+    rainSpellSentenceLight: "சுமார் {time} மணிக்கு லேசான மழை பெய்யும்.",
+    rainSpellSentenceModerate: "சுமார் {time} மணிக்கு மிதமான மழை பெய்யும்.",
+    rainSpellSentenceIntense: "சுமார் {time} மணிக்கு கனமான மழை பெய்யும்.",
+    rainSpellSentenceVeryIntense:
+      "சுமார் {time} மணிக்கு மிகக் கனமான மழை பெய்யும்.",
+    rainSpellSentenceExtremelyIntense:
+      "சுமார் {time} மணிக்கு மிகக் கடுமையான மழை பெய்யும்.",
     rainfall: "மழைப்பொழிவு",
     wind: "காற்று",
     clouds: "மேகங்கள்",

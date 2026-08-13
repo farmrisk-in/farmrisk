@@ -8,6 +8,8 @@ import AIOverview from "@/components/dashboard/overview/AIOverview";
 import CropCalender from "@/components/dashboard/overview/CropCalender";
 import PestAndDisease from "@/components/dashboard/farmrisk/PestAndDisease";
 import { useSelectedCrop } from "@/hooks/useSelectedCrop";
+import { useAI } from "@/hooks/useAI";
+import { useLanguage } from "@/hooks/useLanguage";
 
 /**
  * "Farm Risk" page — agronomic risks that need judgement.
@@ -16,6 +18,10 @@ import { useSelectedCrop } from "@/hooks/useSelectedCrop";
  */
 const FarmRisk = () => {
   const { selectedCrop } = useSelectedCrop();
+  const { language } = useLanguage();
+
+  // Shared with AIOverview via React Query — same query key, single request.
+  const { irrigationInsight } = useAI(selectedCrop.id, language);
 
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -31,7 +37,7 @@ const FarmRisk = () => {
           <PestAndDisease />
         </div>
         <div className="col-span-1 flex">
-          <SoilMoisture />
+          <SoilMoisture irrigationInsight={irrigationInsight} />
         </div>
       </div>
 
