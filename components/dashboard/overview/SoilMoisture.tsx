@@ -49,6 +49,7 @@ import {
   Sun,
   Waves,
   Download,
+  Sprout,
 } from "lucide-react";
 import { TranslationType } from "@/constants/content";
 import { Button } from "@/components/ui/button";
@@ -275,7 +276,11 @@ const SERIES_ICONS: Record<
   G: Download,
 };
 
-export default function SoilMoisture() {
+export default function SoilMoisture({
+  irrigationInsight,
+}: {
+  irrigationInsight?: string | null;
+}) {
   const { location, isResolving } = useLocationContext();
   const { t } = useLanguage();
   const { isPro } = usePro();
@@ -853,6 +858,16 @@ export default function SoilMoisture() {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* IRRIGATION INSIGHT — compact, deterministic, above the graph */}
+      {irrigationInsight ? (
+        <div className="flex items-start gap-2 px-3 py-2 mb-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/30 text-xs animate-in fade-in duration-300">
+          <Sprout className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <p className="text-foreground/90 font-medium leading-snug">
+            {irrigationInsight}
+          </p>
+        </div>
+      ) : null}
 
       {renderInnerContent()}
     </div>

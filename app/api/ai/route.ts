@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
         data.advisory ??
         data.text ??
         JSON.stringify(data),
+      irrigation_insight: data.irrigation_insight ?? null,
       translated: data.translated ?? false,
       language: data.language ?? "en",
       sources: data.sources ?? [],

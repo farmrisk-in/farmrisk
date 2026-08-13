@@ -147,6 +147,7 @@ export function useAI(cropId: string, language: string) {
 
   return {
     data: query.data?.advisory_summary,
+    irrigationInsight: query.data?.irrigation_insight || null,
     sources: query.data?.sources || [],
     isLoading:
       isResolving ||
