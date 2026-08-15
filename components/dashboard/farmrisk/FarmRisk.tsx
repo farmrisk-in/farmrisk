@@ -33,8 +33,8 @@ const FarmRisk = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full items-stretch">
-        <div className="col-span-1 flex">
-          <PestAndDisease />
+        <div className="col-span-1 self-start">
+          <PestAndDisease selectedCrop={selectedCrop} />
         </div>
         <div className="col-span-1 flex">
           <SoilMoisture irrigationInsight={irrigationInsight} />

@@ -1,246 +1,412 @@
 "use client";
 
 import React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoaderFive } from "@/components/ui/loader";
 import { riskColor } from "@/components/ui/riskChart";
-import { useRisk } from "@/hooks/useRisk";
+import { usePestDisease } from "@/hooks/usePestDisease";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useForecast } from "@/hooks/useForecast";
-import { useWeather } from "@/hooks/useWeather";
-import { useSoilMoisture } from "@/hooks/useSoilMoisture";
+import { type PestDiseaseCardResponse } from "@/lib/api/pestDisease";
 import {
   Bug,
-  Thermometer,
+  BookOpen,
   Droplets,
-  CloudRain,
-  Percent,
+  Eye,
+  Leaf,
+  Sprout,
+  SprayCan,
+  Trash2,
+  Wind,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { type CropOption } from "@/components/dashboard/overview/Overview";
+
+interface PestAndDiseaseProps {
+  selectedCrop: CropOption;
+}
+
+/** Escape regex-special characters so user terms match literally. */
+function escapeRegex(s: string) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 /**
- * "Pest & Disease" card for the Farm Risk page.
- * Reuses the existing pest hazard data (score, band, major_factor, reasons)
- * and the exact same inputs that drive the pest score:
- *   - 5-day average of the (bias-corrected) max temperature
- *   - current relative humidity
- *   - next-5-day rainfall / rainy days
- *   - latest historical soil moisture percentile
- *
- * All labels and the interpretation sentence are localized through the
- * constants/languages files. The CURRENT CONDITIONS values are derived
- * dynamically from live data — no hardcoded figures.
+ * Split `text` on the given terms and wrap every match in an emerald span.
+ * Only meaningful keywords (crop name, named pests/diseases, key weather
+ * conditions) are highlighted — never the whole sentence. Multi-word terms
+ * (e.g. "high humidity", "root and stem rot") match as one phrase.
  */
-const PestAndDisease = () => {
-  const { data: riskData, isLoading: isRiskLoading } = useRisk();
-  const { forecastRows, isLoading: isForecastLoading } = useForecast();
-  const { data: weatherData, isLoading: isWeatherLoading } = useWeather();
-  const { data: soilData, isLoading: isSoilLoading } = useSoilMoisture();
-  const { t } = useLanguage();
+function highlightSummary(
+  text: string,
+  terms: string[],
+): React.ReactNode[] {
+  const unique = Array.from(
+    new Set(
+      terms
+        .map((t) => t.trim())
+        .filter((t) => t.length >= 2)
+        .sort((a, b) => b.length - a.length),
+    ),
+  );
+  if (unique.length === 0) return [text];
 
-  const hazard = riskData?.pest;
+  const pattern = new RegExp(
+    `(?<![\\p{L}\\p{M}\\p{N}])(${unique.map(escapeRegex).join("|")})(?![\\p{L}\\p{M}\\p{N}])`,
+    "giu",
+  );
+  return text.split(pattern).map((part, i) =>
+    unique.some((t) => t.toLowerCase() === part.toLowerCase())
+      ? React.createElement(
+          "span",
+          { key: i, className: HIGHLIGHT_CLASS },
+          part,
+        )
+      : part,
+  );
+}
+
+/** Emerald treatment used for every highlighted entity (FarmRisk theme). */
+const HIGHLIGHT_CLASS =
+  "text-emerald-600 dark:text-emerald-400 font-bold";
+
+/**
+ * Controlled category mappings for meaningful agricultural entities.
+ * The summary/action text is LLM-phrased plain text, so alongside the
+ * structured fields (crop name, `potential`, season, stage) we add curated
+ * multi-word phrases for the pest/disease and environmental categories the
+ * card is designed to surface. Terms only highlight if they literally appear.
+ */
+
+/** Environmental risk conditions derived from weather/soil/risk inputs. */
+const ENV_RISK_TERMS = [
+  "high humidity",
+  "low humidity",
+  "warm temperatures",
+  "warm temperature",
+  "high temperature",
+  "high temperatures",
+  "wet soil",
+  "wet soil conditions",
+  "prolonged wetness",
+  "heavy rainfall",
+  "heavy rain",
+  "high rainfall",
+  "waterlogging",
+  "waterlogged",
+  "soil moisture",
+  "drought stress",
+  "excess moisture",
+  "excessive moisture",
+  "prolonged rain",
+  "rainy conditions",
+];
+
+/** Controlled agricultural pest/disease entity phrases. */
+const PEST_DISEASE_TERMS = [
+  "sucking pests",
+  "sucking pest",
+  "bollworms",
+  "bollworm",
+  "fall armyworm",
+  "aphids",
+  "aphid",
+  "jassids",
+  "jassid",
+  "whiteflies",
+  "whitefly",
+  "thrips",
+  "stem borers",
+  "stem borer",
+  "shoot borers",
+  "shoot borer",
+  "fruit borers",
+  "fruit borer",
+  "pod borers",
+  "pod borer",
+  "leaf hoppers",
+  "leaf hopper",
+  "leaf miner",
+  "spider mites",
+  "cutworms",
+  "earworms",
+  "root and stem rot",
+  "root rot",
+  "stem rot",
+  "leaf spot",
+  "alternaria",
+  "anthracnose",
+  "powdery mildew",
+  "downy mildew",
+  "fungal diseases",
+  "fungal disease",
+  "fungal pathogens",
+  "fungal pathogen",
+  "bacterial diseases",
+  "bacterial disease",
+  "viral diseases",
+  "viral disease",
+  "blight",
+  "wilt",
+  "rust",
+  "smut",
+  "mildew",
+];
+
+/** Crop stage / season terms. */
+const STAGE_SEASON_TERMS = [
+  "kharif",
+  "rabi",
+  "zaid",
+  "flowering stage",
+  "boll formation stage",
+  "vegetative stage",
+  "fruiting stage",
+  "sowing stage",
+  "seedling stage",
+];
+
+/** Common crop names (matched only when they actually appear in the text). */
+const CROP_NAME_TERMS = [
+  "castor",
+  "cotton",
+  "maize",
+  "pearlmillet",
+  "pearl millet",
+  "wheat",
+  "rice",
+  "sorghum",
+  "groundnut",
+  "soybean",
+  "sugarcane",
+  "pigeonpea",
+  "chickpea",
+  "mungbean",
+  "blackgram",
+  "mustard",
+];
+
+/**
+ * Build the full highlight term list for a card:
+ *  - dynamic structured fields from the RAG response (crop, season, stage,
+ *    named pests/diseases in `potential`)
+ *  - controlled category mappings for environment / pests / diseases / stage
+ */
+function buildHighlightTerms(
+  card: PestDiseaseCardResponse | undefined,
+  isGeneral: boolean,
+): string[] {
+  const set = new Set<string>();
+
+  if (!isGeneral && card?.crop_name) set.add(card.crop_name);
+
+  for (const p of card?.potential ?? []) {
+    const v = String(p ?? "").trim();
+    if (v) set.add(v);
+  }
+
+  if (card?.season) set.add(card.season);
+
+  const stage = String(card?.crop_stage ?? "").trim();
+  if (stage && !/unknown|not known|n\/a/i.test(stage)) set.add(stage);
+
+  for (const t of [
+    ...CROP_NAME_TERMS,
+    ...PEST_DISEASE_TERMS,
+    ...ENV_RISK_TERMS,
+    ...STAGE_SEASON_TERMS,
+  ]) {
+    set.add(t);
+  }
+
+  return Array.from(set);
+}
+
+/** Small icon per action, chosen from the (English) action title keywords. */
+function actionIcon(title: string) {
+  const t = title.toLowerCase();
+  if (/air|flow|spacing|prun|foliage|ventilat/i.test(t)) return Wind;
+  if (/inspect|scout|check|monitor|look|underside|examin|sign|watch/i.test(t)) return Eye;
+  if (/drain|waterlog|water|moisture|drainage|irrigat/i.test(t)) return Droplets;
+  if (/pest|insect|bug|bollworm|aphid|jassid|whitefly|suck|infest/i.test(t)) return Bug;
+  if (/weed|residue|remove|clean/i.test(t)) return Trash2;
+  if (/spray|chemical|pesticide|fungicid|insecticid|treat/i.test(t)) return SprayCan;
+  if (/soil|fert|nutrient|top.?dress|amend/i.test(t)) return Sprout;
+  return Leaf;
+}
+
+/**
+ * "Pest & Disease" card for the Farm Risk page — compact design.
+ *
+ * Uses the FULL advisory payload (weather + forecast + soil moisture), so it
+ * renders only once that complete context is ready, with the same centered
+ * "Generating…" loader as the AI Overview card. Content (summary, actions) is
+ * generated by the existing RAG + deterministic pipeline — the risk band is
+ * decided by the backend score, never the LLM.
+ */
+const PestAndDisease = ({ selectedCrop }: PestAndDiseaseProps) => {
+  const { language, t } = useLanguage();
+  const {
+    data: card,
+    isLoading,
+    isFetching,
+    error,
+  } = usePestDisease(selectedCrop.id, language);
+
   const title = t.dashboard.hazardPest;
 
-  // ---- same inputs the pest score is built from (see useRisk) ----
-  const soilRows = soilData?.soil_moisture ?? [];
-  const latestHistoricalRow = [...soilRows]
-    .filter((r) => r.is_forecast === 0)
-    .at(-1);
-  const soilPercentile = latestHistoricalRow?.sm_percentile ?? null;
+  // While fetching for a different crop (crop switch) the previous crop's card
+  // would otherwise linger via keepPreviousData — show the loader instead,
+  // mirroring the AI Overview advisory.
+  const isStaleCrop = isFetching && card?.crop_id !== selectedCrop.id;
 
-  const next5Rows = forecastRows.slice(0, 5);
-
-  const rainNext5 =
-    next5Rows.length > 0
-      ? next5Rows.map((r) => r.pcp_corrected ?? r.pcp ?? 0)
-      : weatherData?.daily?.precipitation_sum?.slice(0, 5) ?? null;
-
-  const avgMaxTemp =
-    next5Rows.length > 0
-      ? next5Rows.reduce(
-          (sum, r) => sum + (r.tmax_corrected ?? r.tmax ?? 0),
-          0,
-        ) / next5Rows.length
-      : weatherData?.daily?.temperature_2m_max &&
-        weatherData.daily.temperature_2m_max.length > 0
-        ? weatherData.daily.temperature_2m_max.reduce((a, b) => a + b, 0) /
-          weatherData.daily.temperature_2m_max.length
-        : null;
-
-  const humidity = weatherData?.current?.relative_humidity_2m ?? null;
-
-  const rainTotal = rainNext5 ? rainNext5.reduce((a, b) => a + (b ?? 0), 0) : null;
-  const rainyDays = rainNext5
-    ? rainNext5.filter((v) => v != null && v >= 1).length
-    : null;
-
-  if (isRiskLoading || isWeatherLoading || isForecastLoading || isSoilLoading || !hazard) {
+  if (isLoading || isStaleCrop) {
     return (
-      <div className="w-full h-full min-h-55 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none">
-        <div className="flex flex-col gap-3">
-          <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-            <Bug className="size-4.5 shrink-0 text-muted-foreground" />
-            {title}
-          </h3>
-          <Skeleton className="h-3 w-36 rounded-sm" />
-          <Skeleton className="h-3 w-44 rounded-sm" />
-          <Skeleton className="h-3 w-40 rounded-sm" />
+      <div className="w-full bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none flex flex-col">
+        {/* Full card header */}
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2.5 pb-2 shrink-0">
+          <Bug className="size-4.5 shrink-0 text-muted-foreground" />
+          {title}
+        </div>
+        {/* Centered loading state, same as AI Overview */}
+        <div className="flex flex-col items-center justify-center gap-4 w-full h-full min-h-32 py-6">
+          <LoaderFive text={t.dashboard.generatingPestDisease} />
         </div>
       </div>
     );
   }
 
-  const color = riskColor(hazard.score);
+  const score = card?.score ?? 0;
+  const color = riskColor(score);
+  const band = card?.risk ?? "";
+  const isGeneral = card?.is_general ?? selectedCrop.id.toLowerCase() === "general";
 
-  // ---- dynamic factor description, derived from live values ----
-  const pestFactorRainy = t.dashboard.pestFactorRainyDays;
-  const factors: string[] = [];
-  if (avgMaxTemp != null && avgMaxTemp >= 25 && avgMaxTemp <= 35) {
-    factors.push(t.dashboard.pestFactorWarm);
-  }
-  if (humidity != null && humidity >= 70) {
-    factors.push(t.dashboard.pestFactorHumidity);
-  }
-  if (rainyDays != null && rainyDays >= 1) {
-    factors.push(pestFactorRainy.replace("{n}", String(rainyDays)));
-  } else if (rainTotal != null && rainTotal >= 5) {
-    factors.push(t.dashboard.pestFactorFreshRain);
-  }
-  if (soilPercentile != null && soilPercentile >= 70) {
-    factors.push(t.dashboard.pestFactorWetSoil);
-  }
+  // Sources backing the named pests/diseases (for RAG transparency).
+  const sources = card?.potential_sources ?? [];
+  const actions = card?.actions ?? [];
 
-  const factorsLabel = factors.join(", ");
-
-  const interpKey =
-    hazard.score >= 60
-      ? factors.length > 0
-        ? "pestInterpHigh"
-        : "pestInterpHighNoFact"
-      : hazard.score >= 40
-        ? factors.length > 0
-          ? "pestInterpModerate"
-          : "pestInterpModerateNoFact"
-        : factors.length > 0
-          ? "pestInterpLow"
-          : "pestInterpLowNoFact";
-
-  const interpretation = t.dashboard[interpKey].replace(
-    "{factors}",
-    factorsLabel,
-  );
-
-  const pill = (
-    icon: React.ReactNode,
-    label: string,
-    value: string,
-    sub?: string,
-  ) => (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-border bg-muted/30 px-2.5 py-2 min-w-0">
-      <div className="flex items-center gap-1 text-muted-foreground uppercase tracking-wide text-[9px] font-bold">
-        <span className="shrink-0">{icon}</span>
-        <span className="truncate">{label}</span>
-      </div>
-      <div className="text-sm font-bold text-foreground leading-none">
-        {value}
-      </div>
-      {sub && (
-        <div className="text-[10px] text-muted-foreground leading-none">
-          {sub}
-        </div>
-      )}
-    </div>
-  );
-
-  const wetDaysLabel =
-    rainyDays != null && rainyDays === 1
-      ? t.dashboard.pestWetDay
-      : t.dashboard.pestWetDays;
+  // Terms to highlight in the summary: crop name, named pests/diseases from
+  // the RAG response, and relevant weather conditions. Never empty/generic.
+  const summaryTerms = buildHighlightTerms(card, isGeneral);
 
   return (
-    <div className="w-full h-full min-h-55 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none flex flex-col">
-      {/* Header row */}
-      <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2 shrink-0">
+    <div className="w-full bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none flex flex-col">
+      {/* Header row — title cluster with the SOURCES control beside the title,
+          risk band pinned right */}
+      <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2.5 pb-2 shrink-0">
         <Bug className="size-4.5 shrink-0" style={{ color }} />
         {title}
+        {!isGeneral &&
+          (sources.length > 0 ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <button className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-emerald-500 active:scale-95 transition-all uppercase cursor-pointer py-0.5 px-1.5 rounded hover:bg-emerald-500/10">
+                  <BookOpen className="size-3" />
+                  {t.dashboard.sources}
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto bg-popover border border-border rounded-2xl shadow-xl flex flex-col p-6">
+                <DialogHeader className="border-b pb-4 mb-4">
+                  <DialogTitle className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                    <BookOpen className="size-5 text-emerald-500" />
+                    {t.dashboard.retrievedSources}
+                  </DialogTitle>
+                  <DialogDescription className="text-xs text-muted-foreground mt-1">
+                    {t.dashboard.sourcesDescription}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-emerald-500/20 scrollbar-track-transparent">
+                  {Array.from(
+                    new Set(
+                      sources.map(
+                        (s) => s.source || t.dashboard.icarGuideline,
+                      ),
+                    ),
+                  ).map((sourceName, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg border border-border bg-emerald-50/5 dark:bg-emerald-950/5 hover:border-emerald-500/20 transition-all font-mono text-xs text-foreground/85 flex items-center gap-2"
+                    >
+                      <span className="text-emerald-500">📄</span>
+                      {sourceName}
+                    </div>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/40 uppercase select-none py-0.5 px-1.5">
+              <BookOpen className="size-3 opacity-40" />
+              {t.dashboard.noSources}
+            </span>
+          ))}
         <span
           className="text-[10px] font-bold px-2 py-0.5 rounded-md ml-auto"
           style={{ background: `${color}20`, color }}
         >
-          {hazard.band}
+          {band}
         </span>
       </div>
 
-      {/* Scrollable body — keeps the card from overflowing the page */}
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 -mr-1.5 space-y-2.5">
-        {/* Major factor description */}
-        {hazard.major_factor && (
-          <p
-            className="text-[12px] text-muted-foreground leading-relaxed italic border-l-2 pl-2"
-            style={{ borderColor: color }}
-          >
-            {hazard.major_factor}
+      {/* Body — content-driven height. No flex-1 filler: the card grows with
+          the summary and actions, never leaving a forced empty area. */}
+      <div className="flex flex-col">
+        {error ? (
+          <p className="text-[12px] text-muted-foreground leading-relaxed">
+            {t.dashboard.advisoryError}
           </p>
+        ) : (
+          <>
+            {/* One summary paragraph — key terms highlighted, advisory-sized */}
+            {card?.summary && (
+              <p
+                className="text-[13px] sm:text-sm text-foreground/90 font-medium leading-relaxed border-l-2 pl-2 pb-4"
+                style={{ borderColor: color }}
+              >
+                {highlightSummary(card.summary, summaryTerms)}
+              </p>
+            )}
+
+            {/* Action rows — natural flow, gap-driven spacing, with a subtle
+                divider between actions (never after the final one). */}
+            {actions.length > 0 && (
+              <ul className="flex flex-col divide-y divide-border/60">
+                {actions.map((a, i) => {
+                  const Icon = actionIcon(a.title);
+                  return (
+                    <li key={i} className="flex items-start gap-2.5 py-2.5">
+                      <span
+                        className="mt-0.5 w-7 h-7 rounded-md shrink-0 flex items-center justify-center border"
+                        style={{
+                          color,
+                          borderColor: `${color}35`,
+                          background: `${color}10`,
+                        }}
+                      >
+                        <Icon className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <span className="text-[13px] font-semibold text-foreground/95 leading-snug block">
+                          {a.title}
+                        </span>
+                        {a.detail && (
+                          <span className="text-xs text-muted-foreground leading-snug block">
+                            {highlightSummary(a.detail, summaryTerms)}
+                          </span>
+                        )}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
         )}
-
-        {/* Bullet list of reasons */}
-        <ul className="space-y-1">
-          {hazard.reasons.map((r, i) => (
-            <li key={i} className="flex items-start gap-1.5">
-              <span
-                className="mt-1 w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ background: color }}
-              />
-              <span className="text-[12px] text-foreground/90 leading-snug">
-                {r}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        {/* CURRENT CONDITIONS — live values feeding the pest score */}
-        <section>
-          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-            {t.dashboard.pestCurrentConditions}
-          </h4>
-          <div className="grid grid-cols-2 gap-1.5">
-            {pill(
-              <Thermometer className="size-3" />,
-              t.dashboard.pestAvgMaxTemp,
-              avgMaxTemp != null ? `${avgMaxTemp.toFixed(1)} °C` : "–",
-              t.dashboard.pestNext5Days,
-            )}
-            {pill(
-              <Droplets className="size-3" />,
-              t.dashboard.pestHumidity,
-              humidity != null ? `${Math.round(humidity)}%` : "–",
-              t.dashboard.pestCurrent,
-            )}
-            {pill(
-              <CloudRain className="size-3" />,
-              t.dashboard.pestRain,
-              rainTotal != null ? `${rainTotal.toFixed(1)} mm` : "–",
-              rainyDays != null ? `${rainyDays} ${wetDaysLabel}` : undefined,
-            )}
-            {pill(
-              <Percent className="size-3" />,
-              t.dashboard.pestSoilMoisture,
-              soilPercentile != null ? `${Math.round(soilPercentile)}%` : "–",
-              t.dashboard.pestPercentile,
-            )}
-          </div>
-        </section>
-
-        {/* Interpretation — built from the live values and risk band */}
-        <section>
-          <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-            {t.dashboard.pestInterpretation}
-          </h4>
-          <p
-            className="text-[12px] text-foreground/90 leading-relaxed border-l-2 pl-2"
-            style={{ borderColor: color }}
-          >
-            {interpretation}
-          </p>
-        </section>
       </div>
     </div>
   );
