@@ -143,7 +143,16 @@ export default function MyFields() {
   const handleEditCrop = async (cropId: string) => {
     if (!editingField) return;
     try {
-      await updateField({ id: editingField.id, patch: { crops: [cropId] } });
+      await updateField({
+        id: editingField.id,
+        patch: {
+          crops: [cropId],
+          properties: {
+            ...(editingField.properties ?? {}),
+            lastCropEditedAt: new Date().toISOString(),
+          },
+        },
+      });
       try {
         const activeCrops = [
           ...new Set([
@@ -306,8 +315,16 @@ export default function MyFields() {
                 </dl>
 
                 {/* ID */}
-                <p className="mt-3 truncate border-t border-border pt-2.5 text-[10px] text-muted-foreground/70">
-                  {t.fields.idLabel}: {String(field.fieldId || field.id).slice(0, 20)}
+                <p className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5 text-[10px] text-muted-foreground/70">
+                  <span className="truncate">
+                    {t.fields.idLabel}: {String(field.fieldId || field.id).slice(0, 20)}
+                  </span>
+                  <span className="shrink-0">
+                    {t.fields.lastCropEdited}:{" "}
+                    {field.lastCropEditedAt
+                      ? fmtDate(field.lastCropEditedAt)
+                      : t.fields.notEditedYet}
+                  </span>
                 </p>
 
                 {/* Actions */}

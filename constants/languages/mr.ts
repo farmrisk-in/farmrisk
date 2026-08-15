@@ -561,6 +561,8 @@ export const mr = {
     editCropTitle: "पीक संपादित करा",
     editCropBtn: "पीक संपादित करा",
     cropUpdated: "सध्याचे पीक अपडेट केले.",
+    lastCropEdited: "शेवटचे पीक संपादित",
+    notEditedYet: "अद्याप संपादित नाही",
     nameRequired: "कृपया या शेतासाठी नाव प्रविष्ट करा.",
     cropsRequired: "कृपया किमान एक पीक निवडा.",
     fieldFallbackName: "शेत",

@@ -560,6 +560,8 @@ export const hi = {
     editCropTitle: "फसल संपादित करें",
     editCropBtn: "फसल संपादित करें",
     cropUpdated: "वर्तमान फसल अपडेट हो गई।",
+    lastCropEdited: "फसल आखिरी बार संपादित",
+    notEditedYet: "अभी संपादित नहीं",
     nameRequired: "कृपया इस खेत के लिए नाम दर्ज करें।",
     cropsRequired: "कृपया कम से कम एक फसल चुनें।",
     fieldFallbackName: "खेत",

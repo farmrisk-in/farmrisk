@@ -561,6 +561,8 @@ export const gu = {
     editCropTitle: "પાક સંપાદિત કરો",
     editCropBtn: "પાક સંપાદિત કરો",
     cropUpdated: "હાલનો પાક અપડેટ થયો.",
+    lastCropEdited: "છેલ્લે પાક સંપાદિત",
+    notEditedYet: "હજી સંપાદિત થયું નથી",
     nameRequired: "કૃપા કરીને આ ખેતર માટે નામ દાખલ કરો.",
     cropsRequired: "કૃપા કરીને ઓછામાં ઓછો એક પાક પસંદ કરો.",
     fieldFallbackName: "ખેતર",

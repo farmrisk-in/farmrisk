@@ -562,6 +562,8 @@ export const ta = {
     editCropTitle: "பயிரைத் திருத்து",
     editCropBtn: "பயிரைத் திருத்து",
     cropUpdated: "தற்போதைய பயிர் புதுப்பிக்கப்பட்டது.",
+    lastCropEdited: "கடைசியாக பயிர் திருத்தப்பட்டது",
+    notEditedYet: "இன்னும் திருத்தப்படவில்லை",
     nameRequired: "இந்த வயலுக்கு ஒரு பெயரை உள்ளிடவும்.",
     cropsRequired: "குறைந்தது ஒரு பயிரையாவது தேர்ந்தெடுக்கவும்.",
     fieldFallbackName: "வயல்",

@@ -23,6 +23,8 @@ export interface SavedField {
   season?: string;
   /** Crop stage id: sowing | vegetative | flowering | maturity */
   cropStage?: string;
+  /** ISO timestamp of the last time the crop was edited via "Edit Crop". */
+  lastCropEditedAt?: string | null;
 }
 
 export interface ClickedField {

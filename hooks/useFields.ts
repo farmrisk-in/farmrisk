@@ -50,6 +50,10 @@ function mapRowToField(row: SavedFieldsRow): SavedField {
     crops: row.crops ?? [],
     season: row.season ?? undefined,
     cropStage: row.crop_stage ?? undefined,
+    lastCropEditedAt:
+      (row.properties as Record<string, unknown> | null)?.[
+        "lastCropEditedAt"
+      ] as string | null | undefined,
   };
 }
 

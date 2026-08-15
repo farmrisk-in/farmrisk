@@ -559,6 +559,8 @@ export const en = {
     editCropTitle: "Edit Crop",
     editCropBtn: "Edit Crop",
     cropUpdated: "Current crop updated.",
+    lastCropEdited: "Last crop edited",
+    notEditedYet: "Not edited yet",
     nameRequired: "Please enter a name for this field.",
     cropsRequired: "Please select at least one crop.",
     fieldFallbackName: "Field",
