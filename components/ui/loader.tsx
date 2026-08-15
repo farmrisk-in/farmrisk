@@ -182,10 +182,27 @@ export const LoaderFour = ({ text = "Loading..." }: { text?: string }) => {
   );
 };
 
+// Split text into grapheme clusters so each animated span is a complete
+// glyph unit. For Latin this is identical to per-character splitting, while
+// Gujarati/Devanagari/Tamil clusters (consonant + matra, conjuncts) stay
+// together so the browser shapes them correctly instead of breaking them
+// into detached, distorted glyphs.
+const GRAPHEME_SEGMENTER: Intl.Segmenter | null =
+  typeof Intl !== "undefined" && "Segmenter" in Intl
+    ? new Intl.Segmenter(undefined, { granularity: "grapheme" })
+    : null;
+
+function splitIntoGraphemes(text: string): string[] {
+  if (GRAPHEME_SEGMENTER) {
+    return Array.from(GRAPHEME_SEGMENTER.segment(text), (s) => s.segment);
+  }
+  return Array.from(text);
+}
+
 export const LoaderFive = ({ text }: { text: string }) => {
   return (
     <div className="font-sans font-bold [--shadow-color:var(--color-neutral-500)] dark:[--shadow-color:var(--color-neutral-100)]">
-      {text.split("").map((char, i) => (
+      {splitIntoGraphemes(text).map((grapheme, i) => (
         <motion.span
           key={i}
           className="inline-block"
@@ -208,7 +225,7 @@ export const LoaderFive = ({ text }: { text: string }) => {
             repeatDelay: 2,
           }}
         >
-          {char === " " ? "\u00A0" : char}
+          {grapheme === " " ? "\u00A0" : grapheme}
         </motion.span>
       ))}
     </div>
