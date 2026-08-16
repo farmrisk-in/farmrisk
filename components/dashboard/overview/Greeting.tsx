@@ -3,6 +3,7 @@
 import { usePro } from "@/hooks/usePro";
 import { Sparkles } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { CropSelector } from "@/components/dashboard/farmrisk/CropSelector";
 
 function getGreeting(t: { dashboard: { goodMorning: string; goodAfternoon: string; goodEvening: string; goodNight: string } }): string {
   const hour = new Date().getHours();
@@ -39,6 +40,7 @@ export default function Greeting() {
           </div>
         )}
       </div>
+      <CropSelector />
     </div>
   );
 }
