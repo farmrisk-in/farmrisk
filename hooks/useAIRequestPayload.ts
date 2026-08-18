@@ -8,6 +8,76 @@ import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useIrrigation } from "@/hooks/useIrrigation";
 import { AIAdvisoryRequestPayload } from "@/types/ai";
 import { VillageReportAPIResponse } from "@/types/forecast";
+import { OpenMeteoResponse } from "@/types/weather";
+import { CalendarAPIResponse, CalendarEvent } from "@/types/calendar";
+
+const num = (v: unknown): number => {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const sanitizeCalendar = (
+  calendarData: CalendarAPIResponse,
+): CalendarAPIResponse => {
+  return {
+    ...calendarData,
+    calendar: calendarData.calendar.map((ev: CalendarEvent) => {
+      const extra = ev as CalendarEvent & Record<string, unknown>;
+      return {
+        ...ev,
+        sowFromMon: num(ev.sowFromMon),
+        sowToMon: num(ev.sowToMon),
+        harvFromMon: num(ev.harvFromMon),
+        harvToMon: num(ev.harvToMon),
+        sowFromDay: num(extra.sowFromDay),
+        sowToDay: num(extra.sowToDay),
+        harvFromDay: num(extra.harvFromDay),
+        harvToDay: num(extra.harvToDay),
+      };
+    }),
+  };
+};
+
+const sanitizeWeather = (w: OpenMeteoResponse): OpenMeteoResponse => ({
+  ...w,
+  latitude: num(w.latitude),
+  longitude: num(w.longitude),
+  elevation: num(w.elevation),
+  utcOffsetSeconds: num(w.utcOffsetSeconds),
+  current: {
+    ...w.current,
+    temperature_2m: num(w.current.temperature_2m),
+    relative_humidity_2m: num(w.current.relative_humidity_2m),
+    apparent_temperature: num(w.current.apparent_temperature),
+    weather_code: num(w.current.weather_code),
+    pressure_msl: num(w.current.pressure_msl),
+    surface_pressure: num(w.current.surface_pressure),
+    wind_speed_10m: num(w.current.wind_speed_10m),
+    wind_direction_10m: num(w.current.wind_direction_10m),
+    wind_gusts_10m: num(w.current.wind_gusts_10m),
+    precipitation: num(w.current.precipitation),
+    cloud_cover: num(w.current.cloud_cover),
+  },
+  hourly: {
+    ...w.hourly,
+    temperature_2m: w.hourly.temperature_2m.map(num),
+    precipitation_probability: w.hourly.precipitation_probability.map(num),
+    wind_speed_10m: w.hourly.wind_speed_10m.map(num),
+    wind_gusts_10m: w.hourly.wind_gusts_10m.map(num),
+    weather_code: w.hourly.weather_code.map(num),
+    rain: w.hourly.rain.map(num),
+  },
+  daily: {
+    ...w.daily,
+    temperature_2m_max: w.daily.temperature_2m_max.map(num),
+    temperature_2m_min: w.daily.temperature_2m_min.map(num),
+    precipitation_sum: w.daily.precipitation_sum.map(num),
+  },
+  lightning: {
+    score: num(w.lightning.score),
+    category: w.lightning.category,
+  },
+});
 
 /**
  * Shared builder for the exact backend advisory payload (location + crop +
@@ -49,12 +119,12 @@ export function useAIRequestPayload(cropId: string, language: string) {
           forecast_source: "bias-corrected",
           forecast: forecastRows.map((row) => ({
             date: row.date,
-            tmax_raw: row.tmax,
-            tmax_corrected: row.tmax_corrected,
-            tmin_raw: row.tmin,
-            tmin_corrected: row.tmin_corrected,
-            pcp_raw: row.pcp ?? 0,
-            pcp_corrected: row.pcp_corrected ?? 0,
+            tmax_raw: num(row.tmax),
+            tmax_corrected: num(row.tmax_corrected),
+            tmin_raw: num(row.tmin),
+            tmin_corrected: num(row.tmin_corrected),
+            pcp_raw: num(row.pcp),
+            pcp_corrected: num(row.pcp_corrected),
           })),
           runtime_seconds: 0,
         },
@@ -69,18 +139,18 @@ export function useAIRequestPayload(cropId: string, language: string) {
           checkpoint_last_date: "",
           soil_moisture: (soilMoistureResponse?.soil_moisture || []).map((row) => ({
             date: row.date,
-            P_obs: row.P_obs ?? 0,
-            Tmean: row.Tmean,
-            PE: row.PE,
-            P_eff: row.P_eff,
-            snowpack: row.snowpack,
-            w: row.w,
-            E: row.E,
-            R: row.R,
-            G: row.G,
-            w_frac: row.w_frac,
-            sm_percentile: row.sm_percentile ?? 0,
-            is_forecast: row.is_forecast,
+            P_obs: num(row.P_obs),
+            Tmean: num(row.Tmean),
+            PE: num(row.PE),
+            P_eff: num(row.P_eff),
+            snowpack: num(row.snowpack),
+            w: num(row.w),
+            E: num(row.E),
+            R: num(row.R),
+            G: num(row.G),
+            w_frac: num(row.w_frac),
+            sm_percentile: num(row.sm_percentile),
+            is_forecast: num(row.is_forecast),
           })),
           runtime_seconds: 0,
         },
@@ -118,8 +188,8 @@ export function useAIRequestPayload(cropId: string, language: string) {
     ? {
         location,
         cropId,
-        calendarData,
-        weatherData,
+        calendarData: sanitizeCalendar(calendarData!),
+        weatherData: sanitizeWeather(weatherData),
         forecastData: mockVillageReport,
         language,
       }
