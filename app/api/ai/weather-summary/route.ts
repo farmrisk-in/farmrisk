@@ -27,12 +27,21 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
+      let detail: unknown = null;
+      try {
+        const raw = await response.text();
+        detail = raw ? JSON.parse(raw) : null;
+      } catch {
+        detail = null;
+      }
       console.error(
         `Weather Summary Model Error: ${response.status} ${response.statusText}`,
+        JSON.stringify(detail, null, 2),
       );
       return NextResponse.json(
         {
           error: `Failed to query weather summary model: ${response.statusText}`,
+          detail,
         },
         { status: response.status },
       );

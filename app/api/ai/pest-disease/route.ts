@@ -40,11 +40,22 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
+      let detail: unknown = null;
+      try {
+        const raw = await response.text();
+        detail = raw ? JSON.parse(raw) : null;
+      } catch {
+        detail = null;
+      }
       console.error(
         `Pest card model error: ${response.status} ${response.statusText}`,
+        JSON.stringify(detail, null, 2),
       );
       return NextResponse.json(
-        { error: `Failed to query pest card model: ${response.statusText}` },
+        {
+          error: `Failed to query pest card model: ${response.statusText}`,
+          detail,
+        },
         { status: response.status },
       );
     }

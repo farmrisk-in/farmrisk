@@ -463,7 +463,9 @@ function normalizeArray(
   roundTo: number,
 ): number[] {
   if (!arr) return [];
-  return Array.from(arr).map((v) => roundToNDecimals(v, roundTo));
+  return Array.from(arr).map((v) =>
+    Number.isNaN(v) ? 0 : roundToNDecimals(v, roundTo),
+  );
 }
 
 export async function GET(request: NextRequest) {
