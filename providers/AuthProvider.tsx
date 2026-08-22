@@ -63,9 +63,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
 
-        // Sanitize legacy bloated avatar_url from Auth metadata if present
-        if (session?.user?.user_metadata?.avatar_url?.length > 500) {
-          console.warn("[AuthProvider] Cleaning up bloated avatar_url from Supabase Auth metadata...");
+        // Sanitize legacy avatar_url from Auth metadata if present (avatars live in Supabase Storage/profiles table)
+        if (session?.user?.user_metadata?.avatar_url) {
+          console.warn("[AuthProvider] Cleaning up legacy avatar_url from Supabase Auth metadata to prevent JWT cookie bloat...");
           supabase.auth.updateUser({
             data: { avatar_url: null },
           });
