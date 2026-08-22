@@ -52,6 +52,7 @@ import {
   Lock,
   ChevronRight,
   LandPlot,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function Profile() {
@@ -63,6 +64,8 @@ export default function Profile() {
     isUpdating,
     updatePassword,
     isUpdatingPassword,
+    deleteAccount,
+    isDeletingAccount,
   } = useProfile();
   const { language, t } = useLanguage();
   const { setCurrentPage } = useNavigation();
@@ -141,6 +144,25 @@ export default function Profile() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Delete Account Modal States
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmInput.trim().toLowerCase() !== "delete") {
+      return;
+    }
+    try {
+      await deleteAccount();
+      toast.success(t.profile.accountDeleted);
+      setIsDeleteOpen(false);
+      setDeleteConfirmInput("");
+      setCurrentPage("Today");
+    } catch (err: any) {
+      toast.error(err?.message || t.profile.accountDeleteFailed);
+    }
+  };
 
   // Crop & Resize Modal States
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
@@ -679,6 +701,35 @@ export default function Profile() {
         </div>
       </form>
 
+      {/* 4. DANGER ZONE (Delete Account) */}
+      <div className="rounded-md border border-destructive/30 bg-destructive/5 dark:bg-destructive/10 p-4 sm:p-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-destructive font-bold text-sm">
+              <AlertTriangle className="size-4 shrink-0" />
+              <span>{t.profile.dangerZone}</span>
+            </div>
+            <p className="text-xs text-muted-foreground max-w-xl">
+              {t.profile.deleteAccountWarning}
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={() => {
+              setDeleteConfirmInput("");
+              setIsDeleteOpen(true);
+            }}
+            className="h-8.5 px-4 text-xs font-semibold rounded-md shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 self-start sm:self-auto"
+          >
+            <Trash2 className="size-3.5" />
+            <span>{t.profile.deleteAccount}</span>
+          </Button>
+        </div>
+      </div>
+
       {/* 3. CHANGE PASSWORD DIALOG MODAL */}
       <Dialog open={isPasswordOpen} onOpenChange={setIsPasswordOpen}>
         <DialogContent className="sm:max-w-md border border-border p-4 rounded-md gap-3">
@@ -773,6 +824,75 @@ export default function Profile() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* DELETE ACCOUNT CONFIRMATION MODAL */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="sm:max-w-md border border-destructive/30 p-4 rounded-md gap-3">
+          <DialogHeader className="pb-2 border-b border-border">
+            <DialogTitle className="text-sm font-bold text-destructive flex items-center gap-2">
+              <AlertTriangle className="size-4.5" />
+              {t.profile.deleteAccountConfirmTitle}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 py-1">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t.profile.deleteAccountConfirmMessage}
+            </p>
+
+            <div className="space-y-1.5 p-3 rounded-md bg-destructive/10 border border-destructive/20">
+              <label htmlFor="confirmDelete" className="text-xs font-semibold text-foreground block">
+                {t.profile.deleteAccountTypeConfirmation}
+              </label>
+              <Input
+                id="confirmDelete"
+                type="text"
+                autoComplete="off"
+                placeholder={t.profile.deleteAccountKeyword}
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                className="bg-background h-8 text-xs rounded-md border-destructive/40 focus-visible:ring-destructive"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-border pt-3 flex justify-between gap-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteOpen(false)}
+              disabled={isDeletingAccount}
+              className="text-xs h-8 rounded-md"
+            >
+              {t.profile.cancel}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={
+                deleteConfirmInput.trim().toLowerCase() !== "delete" ||
+                isDeletingAccount
+              }
+              onClick={handleDeleteAccount}
+              className="text-xs h-8 rounded-md font-semibold flex items-center gap-1.5"
+            >
+              {isDeletingAccount ? (
+                <>
+                  <LoaderCircle className="size-3.5 animate-spin" />
+                  <span>{t.profile.deletingAccount}</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-3.5" />
+                  <span>{t.profile.deleteAccountBtn}</span>
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

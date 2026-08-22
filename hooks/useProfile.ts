@@ -24,7 +24,7 @@ export interface ExtendedProfileData {
 }
 
 export function useProfile() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
   const supabase = createClient();
 
@@ -272,6 +272,26 @@ export function useProfile() {
     },
   });
 
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      if (!user) throw new Error("User must be logged in to delete account");
+
+      const res = await fetch("/api/profile/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      await signOut();
+      queryClient.clear();
+      return true;
+    },
+  });
+
   /**
    * Synchronizes the recorded crop history so that the currently active crops
    * match the union of crops across all saved fields. A crop that stops being
@@ -296,5 +316,7 @@ export function useProfile() {
     isUpdating: updateMutation.isPending,
     updatePassword: updatePasswordMutation.mutateAsync,
     isUpdatingPassword: updatePasswordMutation.isPending,
+    deleteAccount: deleteAccountMutation.mutateAsync,
+    isDeletingAccount: deleteAccountMutation.isPending,
   };
 }
