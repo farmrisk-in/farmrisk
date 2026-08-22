@@ -11,6 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useFields } from "@/hooks/useFields";
 import { useLanguage } from "@/hooks/useLanguage";
+import { createClient } from "@/supabase/client";
+import { uploadAvatarImage, deleteAvatarImage } from "@/lib/storage/avatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +67,7 @@ export default function Profile() {
   const { language, t } = useLanguage();
   const { setCurrentPage } = useNavigation();
   const { fields: savedFields } = useFields();
+  const supabase = createClient();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,6 +98,8 @@ export default function Profile() {
   const [age, setAge] = useState<string>("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [pendingAvatarBlob, setPendingAvatarBlob] = useState<Blob | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
 // Crops are managed from the Farm Selection / My Fields edit flows. The
   // profile renders the derived union of active + historical crops. Every crop
@@ -166,6 +171,11 @@ export default function Profile() {
       return;
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Please select an image smaller than 10MB");
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.result) {
@@ -214,13 +224,16 @@ export default function Profile() {
       targetSize,
     );
 
-    // Compress to 80% JPEG
-    const compressedDataUrl = canvas.toDataURL("image/jpeg", 0.8);
-    setAvatarUrl(compressedDataUrl);
-    setIsCropOpen(false);
-    setRawImageSrc(null);
-
-    toast.success(t.profile.imageCropped);
+    // Convert cropped avatar to Blob and create a temporary preview URL
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      setPendingAvatarBlob(blob);
+      const previewUrl = URL.createObjectURL(blob);
+      setAvatarUrl(previewUrl);
+      setIsCropOpen(false);
+      setRawImageSrc(null);
+      toast.success(t.profile.imageCropped);
+    }, "image/jpeg", 0.85);
   }, [zoom, t]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -237,19 +250,33 @@ export default function Profile() {
     }
 
     try {
+      setIsUploadingAvatar(true);
+      let finalAvatarUrl = avatarUrl.trim();
+
+      if (pendingAvatarBlob && user?.id) {
+        finalAvatarUrl = await uploadAvatarImage(supabase, user.id, pendingAvatarBlob);
+        setPendingAvatarBlob(null);
+      } else if (!avatarUrl && profile?.avatar_url && user?.id) {
+        await deleteAvatarImage(supabase, user.id);
+        finalAvatarUrl = "";
+      }
+
       await updateProfile({
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         phone: phone.trim(),
         age: ageNum,
         location: location.trim(),
-        avatar_url: avatarUrl.trim(),
+        avatar_url: finalAvatarUrl,
       });
 
+      setAvatarUrl(finalAvatarUrl);
       toast.success(t.profile.profileUpdated);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       toast.error(err?.message || t.profile.profileUpdateFailed);
+    } finally {
+      setIsUploadingAvatar(false);
     }
   };
 
@@ -454,7 +481,10 @@ export default function Profile() {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => setAvatarUrl("")}
+                  onClick={() => {
+                    setAvatarUrl("");
+                    setPendingAvatarBlob(null);
+                  }}
                   className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer shrink-0"
                   title={t.profile.removePhoto}
                 >
@@ -631,10 +661,10 @@ export default function Profile() {
         <div className="flex justify-end pt-1">
           <Button
             type="submit"
-            disabled={isUpdating}
+            disabled={isUpdating || isUploadingAvatar}
             className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-8.5 px-5 rounded-md shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
           >
-            {isUpdating ? (
+            {isUpdating || isUploadingAvatar ? (
               <>
                 <LoaderCircle className="size-3.5 animate-spin" />
                 <span>{t.profile.saving}</span>
