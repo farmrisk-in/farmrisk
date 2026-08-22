@@ -46,50 +46,57 @@ export async function POST() {
       console.warn("[delete-account] profiles delete error:", profileErr);
     }
 
-    // 4. Delete user authentication identity
-    // Option A: Try SQL RPC function (defined in migration 20260812000000_delete_user_account.sql)
+    // 4. Delete user authentication identity from auth.users
     let deletedAuth = false;
+    let authErrorDetail = "";
+
+    // Option A: Try PostgreSQL RPC function (public.delete_user_account)
     try {
       const { error: rpcError } = await (supabase.rpc as any)("delete_user_account");
       if (!rpcError) {
         deletedAuth = true;
       } else {
-        console.warn("[delete-account] RPC delete_user_account error:", rpcError.message);
+        authErrorDetail = rpcError.message;
+        console.warn("[delete-account] RPC delete_user_account failed:", rpcError.message);
       }
-    } catch (rpcEx) {
+    } catch (rpcEx: any) {
+      authErrorDetail = rpcEx?.message || "RPC call exception";
       console.warn("[delete-account] RPC exception:", rpcEx);
     }
 
-    // Option B: If Service Role Key is configured, use Admin Client
+    // Option B: If RPC failed or wasn't configured, try Supabase Admin API (Service Role Key)
     if (!deletedAuth) {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
       if (url && serviceRoleKey) {
-        const adminSupabase = createSupabaseAdmin<Database>(url, serviceRoleKey);
-        const { error: adminDeleteError } = await adminSupabase.auth.admin.deleteUser(userId);
-        if (!adminDeleteError) {
-          deletedAuth = true;
-        } else {
-          console.warn("[delete-account] Admin deleteUser error:", adminDeleteError.message);
+        try {
+          const adminSupabase = createSupabaseAdmin<Database>(url, serviceRoleKey);
+          const { error: adminDeleteError } = await adminSupabase.auth.admin.deleteUser(userId);
+          if (!adminDeleteError) {
+            deletedAuth = true;
+          } else {
+            authErrorDetail = adminDeleteError.message;
+            console.warn("[delete-account] Admin deleteUser error:", adminDeleteError.message);
+          }
+        } catch (adminEx: any) {
+          authErrorDetail = adminEx?.message || "Admin delete exception";
         }
       }
     }
 
-    // Option C: If direct auth deletion is not permitted by current role, mark user metadata as deleted & sign out
     if (!deletedAuth) {
-      await supabase.auth.updateUser({
-        data: {
-          account_deleted: true,
-          deleted_at: new Date().toISOString(),
-          first_name: null,
-          last_name: null,
-          phone: null,
+      return NextResponse.json(
+        {
+          error:
+            "Could not delete login account from authentication server. Please ensure the 'delete_user_account' SQL function is created in Supabase SQL editor or SUPABASE_SERVICE_ROLE_KEY is set.",
+          details: authErrorDetail,
         },
-      });
+        { status: 500 },
+      );
     }
 
-    // 5. Sign out user session
+    // 5. Sign out user session and clear cookies
     await supabase.auth.signOut();
 
     return NextResponse.json({

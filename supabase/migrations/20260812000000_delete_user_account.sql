@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION delete_user_account()
+CREATE OR REPLACE FUNCTION public.delete_user_account()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -12,8 +12,16 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  -- Delete the user's data (if not using ON DELETE CASCADE on all tables).
-  -- Usually deleting from auth.users cascades to public.profiles etc. if configured properly.
+  -- 1. Delete user saved fields & profiles
+  DELETE FROM public.saved_fields WHERE user_id = v_user_id;
+  DELETE FROM public.profiles WHERE id = v_user_id;
+
+  -- 2. Permanently delete from auth.users (wipes login identity, email/phone & password)
   DELETE FROM auth.users WHERE id = v_user_id;
 END;
 $$;
+
+-- Grant execution permission to authenticated users
+REVOKE EXECUTE ON FUNCTION public.delete_user_account() FROM public;
+GRANT EXECUTE ON FUNCTION public.delete_user_account() TO authenticated;
+
