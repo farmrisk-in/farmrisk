@@ -24,9 +24,13 @@ import { navigationItems } from "@/constants/navigation";
 
 // Sidebar items are grouped into labelled sections. Order and membership here
 // only reorganise the visual hierarchy — navigation behaviour is unchanged.
-const SECTIONS: { key: "daily" | "risks" | "advanced"; names: string[] }[] = [
+const SECTIONS: {
+  key: "daily" | "risks" | "tools" | "advanced";
+  names: string[];
+}[] = [
   { key: "daily", names: ["Today"] },
   { key: "risks", names: ["Weather", "FarmRisk"] },
+  { key: "tools", names: ["Pre-Sowing", "Post-Harvest"] },
   { key: "advanced", names: ["Insights", "Profile"] },
 ];
 

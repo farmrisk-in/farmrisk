@@ -5,6 +5,8 @@ import {
   ChartLine,
   UserRound,
   LandPlot,
+  Sprout,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 import Overview from "@/components/dashboard/overview/Overview";
@@ -14,6 +16,8 @@ import MyFields from "@/components/dashboard/fields/MyFields";
 import WeatherRisks from "@/components/dashboard/weather/WeatherRisks";
 import FarmRisk from "@/components/dashboard/farmrisk/FarmRisk";
 import Insights from "@/components/dashboard/insights/Insights";
+import PreSowing from "@/components/dashboard/tools/PreSowing";
+import PostHarvest from "@/components/dashboard/tools/PostHarvest";
 import { ReactNode } from "react";
 
 export interface NavigationItem {
@@ -27,7 +31,9 @@ export interface NavigationItem {
     | "profile"
     | "fields"
     | "myFields"
-    | "selectFields";
+    | "selectFields"
+    | "preSowing"
+    | "postHarvest";
   icon: LucideIcon;
   component: ReactNode;
   isLocked: boolean;
@@ -65,6 +71,22 @@ export const navigationItems: NavigationItem[] = [
     labelKey: "insights",
     icon: ChartLine,
     component: <Insights />,
+    isLocked: false,
+    inSidebar: true,
+  },
+  {
+    name: "Pre-Sowing",
+    labelKey: "preSowing",
+    icon: Sprout,
+    component: <PreSowing />,
+    isLocked: false,
+    inSidebar: true,
+  },
+  {
+    name: "Post-Harvest",
+    labelKey: "postHarvest",
+    icon: Store,
+    component: <PostHarvest />,
     isLocked: false,
     inSidebar: true,
   },
