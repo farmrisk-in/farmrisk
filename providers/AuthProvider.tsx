@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { createClient } from "@/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { User, Session } from "@supabase/supabase-js";
 
@@ -50,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [queryClient]);
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
+
     let refreshInterval: NodeJS.Timeout | null = null;
 
     // Get initial session

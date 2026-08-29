@@ -13,7 +13,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { normalizePhoneNumber } from "@/lib/auth/phone";
-import { createClient } from "@/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/supabase/client";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/hooks/useLanguage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -85,6 +85,13 @@ export function LoginForm({
         setError(t.auth.errorPasswordRequired);
         return;
       }
+    }
+
+    if (!isSupabaseConfigured()) {
+      setError(
+        "Supabase is not configured. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in .env.local and rebuild/restart the app.",
+      );
+      return;
     }
 
     setIsLoading(true);
