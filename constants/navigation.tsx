@@ -79,7 +79,7 @@ export const navigationItems: NavigationItem[] = [
     labelKey: "preSowing",
     icon: Sprout,
     component: <PreSowing />,
-    isLocked: false,
+    isLocked: true,
     inSidebar: true,
   },
   {
@@ -87,7 +87,7 @@ export const navigationItems: NavigationItem[] = [
     labelKey: "postHarvest",
     icon: Store,
     component: <PostHarvest />,
-    isLocked: false,
+    isLocked: true,
     inSidebar: true,
   },
   {

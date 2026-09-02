@@ -6,6 +6,8 @@ import { LocationSearchBar } from "@/components/dashboard/overview/LocationSearc
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSelectedCrop } from "@/hooks/useSelectedCrop";
 import { useLocationContext } from "@/providers/LocationProvider";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 import {
   Sprout,
   Sparkles,
@@ -17,6 +19,7 @@ import {
   Calendar,
   Droplets,
   Languages,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -82,6 +85,8 @@ function matchCanonicalCrop(cropName?: string): string {
  * Distributes the 7 Markdown advisory sections to their dedicated widgets.
  */
 export function PreSowing() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const { language, t } = useLanguage();
   const { selectedCrop } = useSelectedCrop();
   const { location } = useLocationContext();
@@ -95,7 +100,7 @@ export function PreSowing() {
   const [season, setSeason] = useState<Season>("Kharif");
   const [irrigationType, setIrrigationType] = useState<IrrigationType>("flood");
 
-  // Pre-Sowing React Query Hook with language support
+  // Pre-Sowing React Query Hook with language support and auth gate
   const {
     data,
     sections,
@@ -110,6 +115,7 @@ export function PreSowing() {
     season,
     irrigation_type: irrigationType,
     language,
+    enabled: Boolean(user),
   });
 
   const isGenerating = isLoading || isFetching;
@@ -118,6 +124,28 @@ export function PreSowing() {
     e.preventDefault();
     refetch();
   };
+
+  if (!authLoading && !user) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 px-4 text-center select-none bg-card border border-border rounded-xl shadow-sm my-6">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-4 border border-emerald-500/20">
+          <Lock className="size-7" />
+        </div>
+        <h2 className="text-lg font-bold text-foreground">
+          {t.tools?.preSowing || "Pre-Sowing Advisory"}
+        </h2>
+        <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
+          Pre-Sowing agronomic decision support and ICAR guidelines are exclusive to registered accounts. Please sign in to access.
+        </p>
+        <Button
+          onClick={() => router.push("/auth/login")}
+          className="mt-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs px-5 h-9 rounded-lg cursor-pointer"
+        >
+          {t.nav?.signIn || "Sign In"}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full">
