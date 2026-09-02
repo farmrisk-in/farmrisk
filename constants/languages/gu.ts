@@ -95,6 +95,17 @@ export const gu = {
     minPrice: "લઘુત્તમ ભાવ",
     maxPrice: "મહત્તમ ભાવ",
     arrivals: "કુલ આવક",
+    selectCrop: "પાક",
+    selectState: "રાજ્ય",
+    selectSoilType: "જમીનનો પ્રકાર",
+    selectSeason: "ઋતુ / સિઝન",
+    selectIrrigation: "પિયત પદ્ધતિ",
+    generateAdvisory: "સલાહ મેળવો",
+    generating: "સલાહ તૈયાર થઈ રહી છે...",
+    advisorySettings: "વાવણી પૂર્વ પરિમાણો",
+    advisorySettingsDesc: "ICAR માર્ગદર્શિકા મેળવવા માટે તમારા પાક, પ્રદેશ અને જમીનની વિગતો પસંદ કરો.",
+    sourcesUsed: "સ્રોતો ઉપયોગમાં લેવાયેલ",
+    runtime: "સમય",
   },
 
   landing: {

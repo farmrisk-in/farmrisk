@@ -94,6 +94,17 @@ export const en = {
     minPrice: "Min Price",
     maxPrice: "Max Price",
     arrivals: "Arrivals",
+    selectCrop: "Crop",
+    selectState: "State",
+    selectSoilType: "Soil Type",
+    selectSeason: "Season",
+    selectIrrigation: "Irrigation",
+    generateAdvisory: "Generate Advisory",
+    generating: "Generating...",
+    advisorySettings: "Pre-Sowing Parameters",
+    advisorySettingsDesc: "Configure crop, region, and soil characteristics to retrieve RAG-grounded ICAR guidelines.",
+    sourcesUsed: "sources used",
+    runtime: "Runtime",
   },
 
   landing: {

@@ -96,6 +96,17 @@ export const mr = {
     minPrice: "किमान भाव",
     maxPrice: "कमाल भाव",
     arrivals: "एकूण आवक",
+    selectCrop: "पीक",
+    selectState: "राज्य",
+    selectSoilType: "मातीचा प्रकार",
+    selectSeason: "हंगाम",
+    selectIrrigation: "सिंचन पद्धती",
+    generateAdvisory: "सल्ला तयार करा",
+    generating: "सल्ला तयार होत आहे...",
+    advisorySettings: "पेरणीपूर्व मापदंड",
+    advisorySettingsDesc: "आयसीएआर मार्गदर्शक तत्त्वे मिळविण्यासाठी तुमचे पीक, राज्य आणि माती निवडा.",
+    sourcesUsed: "संदर्भ वापरले",
+    runtime: "वेळ",
   },
 
   landing: {

@@ -58,12 +58,7 @@ export function ToolCard({
       {/* CARD HEADER */}
       <div className="flex items-center justify-between border-b border-border pb-3 mb-3 gap-2 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-            style={iconColor ? { color: iconColor } : undefined}
-          >
-            <Icon className="size-4.5" />
-          </div>
+          <Icon className="size-5" />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold tracking-tight text-foreground truncate">
@@ -137,7 +132,8 @@ export function ToolCard({
               {emptyMessage || "No data available yet"}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5 max-w-sm">
-              {emptySubtext || "Advisory information will appear here once generated."}
+              {emptySubtext ||
+                "Advisory information will appear here once generated."}
             </p>
           </div>
         )}

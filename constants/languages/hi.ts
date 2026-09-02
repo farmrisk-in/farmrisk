@@ -95,6 +95,17 @@ export const hi = {
     minPrice: "न्यूनतम भाव",
     maxPrice: "अधिकतम भाव",
     arrivals: "कुल आवक",
+    selectCrop: "फसल",
+    selectState: "राज्य",
+    selectSoilType: "मिट्टी का प्रकार",
+    selectSeason: "मौसम / ऋतु",
+    selectIrrigation: "सिंचाई विधि",
+    generateAdvisory: "सलाह तैयार करें",
+    generating: "सलाह तैयार हो रही है...",
+    advisorySettings: "बुवाई पूर्व पैरामीटर",
+    advisorySettingsDesc: "आईसीआर दिशानिर्देश प्राप्त करने के लिए अपनी फसल, क्षेत्र और मिट्टी के गुण चुनें।",
+    sourcesUsed: "स्रोत उपयोग किए गए",
+    runtime: "समय",
   },
 
   landing: {

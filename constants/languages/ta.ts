@@ -95,6 +95,17 @@ export const ta = {
     minPrice: "குறைந்தபட்ச விலை",
     maxPrice: "அதிகபட்ச விலை",
     arrivals: "மொத்த வரத்து",
+    selectCrop: "பயிர்",
+    selectState: "மாநிலம்",
+    selectSoilType: "மண் வகை",
+    selectSeason: "பருவம்",
+    selectIrrigation: "பாசன முறை",
+    generateAdvisory: "ஆலோசனையைப் பெறுங்கள்",
+    generating: "ஆலோசனை உருவாக்கப்படுகிறது...",
+    advisorySettings: "விதைப்புக்கு முந்தைய அளவுருக்கள்",
+    advisorySettingsDesc: "ICAR வழிகாட்டுதல்களைப் பெற உங்கள் பயிர், பகுதி மற்றும் மண் பண்புகளைத் தேர்ந்தெடுக்கவும்.",
+    sourcesUsed: "பயன்படுத்தப்பட்ட ஆதாரங்கள்",
+    runtime: "நேரம்",
   },
 
   landing: {
