@@ -50,8 +50,13 @@ export function useSoilMoisture(daysbefore?: number, crop?: string) {
       isForecastSuccess,
     ],
     queryFn: () => {
-      const cropParam = currentCrop && currentCrop !== "general" ? currentCrop : undefined;
-      const daysbeforeParam = daysbefore && daysbefore > 0 ? daysbefore : undefined;
+      const isCustomCrop = currentCrop?.startsWith("custom_");
+      const cropParam =
+        currentCrop && currentCrop !== "general" && !isCustomCrop
+          ? currentCrop
+          : undefined;
+      const daysbeforeParam =
+        daysbefore && daysbefore > 0 ? daysbefore : undefined;
       return getSoilMoisture(
         location!.lat,
         location!.lng,

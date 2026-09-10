@@ -184,10 +184,18 @@ export function useAIRequestPayload(cropId: string, language: string) {
     isForecastLoading ||
     isSoilLoading;
 
+  const displayCropName = cropId.startsWith("custom_")
+    ? cropId
+        .replace(/^custom_/, "")
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
+    : cropId;
+
   const payload: AIAdvisoryRequestPayload | undefined = isDataReady
     ? {
         location,
-        cropId,
+        cropId: displayCropName,
         calendarData: sanitizeCalendar(calendarData!),
         weatherData: sanitizeWeather(weatherData),
         forecastData: mockVillageReport,

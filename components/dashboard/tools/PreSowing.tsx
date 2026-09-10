@@ -65,7 +65,7 @@ function matchCanonicalCrop(cropName?: string): string {
   const matched = CANONICAL_CROPS.find(
     (c) => c.toLowerCase() === lower || lower.includes(c.toLowerCase()),
   );
-  return matched || "Cotton";
+  return matched || cropName;
 }
 
 /**

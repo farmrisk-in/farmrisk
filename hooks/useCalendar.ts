@@ -8,11 +8,13 @@ import { CalendarAPIResponse } from "@/types/calendar";
 
 export function useCalendar(cropId: string) {
   const { location, isResolving } = useLocationContext();
+  const effectiveCropId =
+    cropId && cropId.startsWith("custom_") ? "general" : cropId;
 
   const query = useQuery<CalendarAPIResponse, Error>({
-    queryKey: ["calendar", cropId, location?.lat, location?.lng],
-    queryFn: () => getCalendar(cropId, location!.lat, location!.lng),
-    enabled: !isResolving && !!location?.lat && !!location?.lng && !!cropId,
+    queryKey: ["calendar", effectiveCropId, location?.lat, location?.lng],
+    queryFn: () => getCalendar(effectiveCropId, location!.lat, location!.lng),
+    enabled: !isResolving && !!location?.lat && !!location?.lng && !!effectiveCropId,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000, // 1 hour
   });

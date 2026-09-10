@@ -2,6 +2,8 @@ export interface Crop {
   id: string;
   name: string;
   area: number;
+  category?: string;
+  isCustom?: boolean;
 }
 
 export interface CropsAPIResponse {
