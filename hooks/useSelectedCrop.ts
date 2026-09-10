@@ -16,19 +16,23 @@ import type { Crop } from "@/types/crops";
 export function useSelectedCrop() {
   const { location } = useLocationContext();
 
-  const [selectedCrop, setSelectedCropState] = useState<Crop>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("farmrisk-selected-crop");
-        if (stored) {
-          return JSON.parse(stored);
+  // Initialize with GENERAL_CROP so Server SSR matches initial Client render
+  const [selectedCrop, setSelectedCropState] = useState<Crop>(GENERAL_CROP);
+
+  // Hydrate from localStorage safely on client mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("farmrisk-selected-crop");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.id) {
+          setSelectedCropState(parsed);
         }
-      } catch (e) {
-        console.error(e);
       }
+    } catch (e) {
+      console.error(e);
     }
-    return GENERAL_CROP;
-  });
+  }, []);
 
   const setSelectedCrop = useCallback((crop: Crop) => {
     setSelectedCropState(crop);

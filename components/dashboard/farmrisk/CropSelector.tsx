@@ -93,7 +93,7 @@ export function CropSelector() {
             className="w-auto h-8 text-foreground text-xs font-medium px-2.5 rounded-md flex items-center justify-between gap-1.5 cursor-pointer hover:bg-accent transition-colors"
           >
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="truncate">
+              <span className="truncate" suppressHydrationWarning>
                 {translateCropName(selectedCrop)}
               </span>
               {isCustomSelected && (
