@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Leaf, LockIcon, LoaderCircle, LogOut, LogIn } from "lucide-react";
+import { LockIcon, LoaderCircle, LogOut, LogIn } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 import {
   Sidebar,
   SidebarContent,
@@ -80,13 +81,7 @@ export function AppSidebar() {
     >
       <SidebarContent className="pt-(--standalone)] overflow-hidden">
         <SidebarHeader className="h-14 flex flex-row items-center gap-2 m-2 px-4 border-b border-sidebar-border overflow-hidden">
-          <Leaf
-            className="text-emerald-500 shrink-0"
-            style={{
-              width: state === "collapsed" ? "32px" : "32px",
-              height: state === "collapsed" ? "32px" : "32px",
-            }}
-          />
+          <Logo size={32} className="shrink-0" />
 
           {state !== "collapsed" && (
             <p className="text-xl font-bold text-nowrap logoFace animate-in fade-in duration-200">

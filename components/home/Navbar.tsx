@@ -1,11 +1,12 @@
 import React from "react";
-import { LayoutDashboard, Leaf, Menu, X } from "lucide-react";
+import { LayoutDashboard, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "../ThemeChange";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/hooks/useLanguage";
 import Link from "next/link";
 import { AuthButtons } from "../auth/AuthButtons";
+import { Logo } from "@/components/ui/logo";
 
 export const NavBar = ({ type }: { type: "small" | "large" }) => {
   const { t } = useLanguage();
@@ -50,7 +51,7 @@ export const NavBar = ({ type }: { type: "small" | "large" }) => {
                   "gap-2 flex items-center transition-colors duration-300 text-black dark:text-white"
                 }
               >
-                <Leaf className="size-6 shrink-0 text-emerald-900 dark:text-emerald-500" />
+                <Logo size={26} className="shrink-0" />
                 <span
                   className={
                     "text-2xl font-bold logoFace transition-all duration-300 ease-in-out whitespace-nowrap inline-block overflow-hidden"

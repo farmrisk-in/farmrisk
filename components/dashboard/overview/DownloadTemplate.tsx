@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import {
   Calendar,
   MapPin,
-  Leaf,
   Bot,
   TrendingUpDown,
   Droplets,
@@ -16,6 +15,7 @@ import {
   Snowflake,
   Gauge,
 } from "lucide-react";
+import { Logo } from "@/components/ui/logo";
 import { type SelectedLocation } from "@/providers/LocationProvider";
 import { type CropOption } from "./Overview";
 import { useForecast } from "@/hooks/useForecast";
@@ -760,7 +760,7 @@ export default function DownloadTemplate({
         <div className="flex justify-between items-center pb-3.5 border-b-2 border-emerald-700/30">
           <div className="flex flex-col gap-0.75">
             <div className="flex items-center gap-2">
-              <Leaf size={20} className="shrink-0 text-emerald-700" />
+              <Logo size={20} className="shrink-0" />
               <h1 className="min-w-0 text-[22px] font-black tracking-tight text-emerald-800 leading-none">
                 {t.export.reportTitle}
               </h1>
@@ -856,7 +856,7 @@ export default function DownloadTemplate({
         {/* 7. CROP CALENDAR */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-slate-700 text-[10px] font-black uppercase tracking-wider border-b border-slate-300 pb-1.5">
-            <Leaf className="size-3.5 text-emerald-700 shrink-0" />
+            <Logo size={14} className="shrink-0" />
             <span className="min-w-0">{t.export.calendarTitle}</span>
           </div>
           {renderCalendarGrid()}

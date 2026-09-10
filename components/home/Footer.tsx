@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import type { ComponentProps, ReactNode } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { Leaf } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
+import { Logo } from "@/components/ui/logo";
 
 interface FooterLink {
   title: string;
@@ -74,7 +74,7 @@ export function Footer() {
       <div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
         <AnimatedContainer className="space-y-4">
           <div className="flex items-center space-x-2">
-            <Leaf className="size-6 text-emerald-600" />
+            <Logo size={24} className="shrink-0" />
             <span className="text-xl font-bold logoFace">{t.title}</span>
           </div>
           <p className="text-muted-foreground mt-8 text-sm md:mt-0">
