@@ -14,6 +14,32 @@ export interface MarkdownViewerProps {
 }
 
 /**
+ * Normalizes RAG/LLM markdown outputs:
+ * - Unescapes literal "\\n" newlines if sent in JSON strings
+ * - Reconstructs flattened inline table lines joined by "| |" into proper multiline markdown tables
+ * - Ensures table blocks are properly isolated from surrounding text
+ */
+function preprocessMarkdown(text: string): string {
+  if (!text) return "";
+  let formatted = text;
+
+  // Unescape literal string newlines if any
+  formatted = formatted.replace(/\\n/g, "\n");
+
+  // Fix flattened table rows: "| a | b | | :--- | :--- | | c | d |"
+  // Turn " | | " into "\n| " so table rows are placed on consecutive lines
+  formatted = formatted.replace(/\|\s*\|\s*/g, "|\n|");
+
+  // Fix trailing solitary pipe at the end
+  formatted = formatted.replace(/\n\|\s*$/g, "");
+
+  // Ensure table starts on a new paragraph if attached directly to preceding text
+  formatted = formatted.replace(/([^\n|])\s*(\n\|)/g, "$1\n$2");
+
+  return formatted.trim();
+}
+
+/**
  * Base Markdown parser for RAG/AI generated agronomic reports.
  * Formats headings, tables, callouts, lists, and code blocks cleanly
  * adhering to the FarmRisk emerald theme and dark/light modes.
@@ -39,6 +65,8 @@ export function MarkdownViewer({
       </div>
     );
   }
+
+  const cleanContent = preprocessMarkdown(content);
 
   return (
     <div
@@ -143,7 +171,7 @@ export function MarkdownViewer({
           hr: ({ ...props }) => <hr className="my-3 border-border" {...props} />,
         }}
       >
-        {content}
+        {cleanContent}
       </ReactMarkdown>
     </div>
   );
