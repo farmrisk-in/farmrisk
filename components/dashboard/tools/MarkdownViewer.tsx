@@ -17,24 +17,38 @@ export interface MarkdownViewerProps {
  * Normalizes RAG/LLM markdown outputs:
  * - Unescapes literal "\\n" newlines if sent in JSON strings
  * - Reconstructs flattened inline table lines joined by "| |" into proper multiline markdown tables
- * - Ensures table blocks are properly isolated from surrounding text
+ * - Formats inline bullet list items ("- Item") onto new lines
+ * - Normalizes callout blockquotes ("> Warning:", "> Tip:")
+ * - Ensures table blocks and sections are properly isolated with standard markdown spacing
  */
 function preprocessMarkdown(text: string): string {
   if (!text) return "";
-  let formatted = text;
+  let formatted = text.replace(/\\n/g, "\n");
 
-  // Unescape literal string newlines if any
-  formatted = formatted.replace(/\\n/g, "\n");
+  // 1. Normalize callouts / blockquotes (e.g., "> Warning: ..." or "> Tip: ...")
+  formatted = formatted.replace(
+    /([^\n])\s*>\s*(Warning|Tip|Note|Important|Caution):?/gi,
+    "$1\n\n> **$2:**",
+  );
 
-  // Fix flattened table rows: "| a | b | | :--- | :--- | | c | d |"
-  // Turn " | | " into "\n| " so table rows are placed on consecutive lines
+  // 2. Separate table header from preceding introductory text
+  // e.g., "germination. | Crop Category | Optimal Window |"
+  formatted = formatted.replace(
+    /([^\n|])\s*(\|[\s\S]*?\|\s*\|[\s\S]*?\|)/,
+    "$1\n\n$2",
+  );
+
+  // 3. Turn table row boundary delimiter "| |" or "|   |" into newline "\n|"
+  formatted = formatted.replace(/\|\s+\|\s*\|/g, "|\n|");
   formatted = formatted.replace(/\|\s*\|\s*/g, "|\n|");
 
-  // Fix trailing solitary pipe at the end
-  formatted = formatted.replace(/\n\|\s*$/g, "");
+  // 4. Separate inline bullet list items starting with "- "
+  // Matches "- " after a table cell boundary "| - " or sentence terminator
+  formatted = formatted.replace(/\|\s*-\s+([A-Za-z0-9*])/g, "|\n\n- $1");
+  formatted = formatted.replace(/([.!?:])\s+-\s+([A-Za-z0-9*])/g, "$1\n\n- $2");
 
-  // Ensure table starts on a new paragraph if attached directly to preceding text
-  formatted = formatted.replace(/([^\n|])\s*(\n\|)/g, "$1\n$2");
+  // 5. Clean up any trailing solitary pipe lines
+  formatted = formatted.replace(/^\s*\|\s*$/gm, "");
 
   return formatted.trim();
 }
