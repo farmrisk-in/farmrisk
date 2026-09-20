@@ -14,40 +14,85 @@ export interface MarkdownViewerProps {
 }
 
 /**
- * Normalizes RAG/LLM markdown outputs:
- * - Unescapes literal "\\n" newlines if sent in JSON strings
- * - Reconstructs flattened inline table lines joined by "| |" into proper multiline markdown tables
- * - Formats inline bullet list items ("- Item") onto new lines
- * - Normalizes callout blockquotes ("> Warning:", "> Tip:")
- * - Ensures table blocks and sections are properly isolated with standard markdown spacing
+ * Normalizes RAG/LLM markdown outputs that may arrive with:
+ * 1. Literal "\\n" escape sequences instead of real newlines (JSON transport artifact)
+ * 2. Flattened single-line tables where all rows appear on one line
+ * 3. Callout blockquotes not preceded by a blank line
+ *
+ * SAFETY: We only restructure lines that are genuinely flat (no existing \n inside the
+ * table block), to avoid corrupting correctly formatted multi-line tables.
  */
 function preprocessMarkdown(text: string): string {
   if (!text) return "";
+
+  // Step 1: Unescape literal \n sequences from JSON transport
   let formatted = text.replace(/\\n/g, "\n");
 
-  // 1. Normalize callouts / blockquotes (e.g., "> Warning: ..." or "> Tip: ...")
+  // Step 2: Normalize callouts — ensure a blank line before "> Warning:" etc.
   formatted = formatted.replace(
     /([^\n])\s*>\s*(Warning|Tip|Note|Important|Caution):?/gi,
     "$1\n\n> **$2:**",
   );
 
-  // 2. Separate table header from preceding introductory text
-  // e.g., "germination. | Crop Category | Optimal Window |"
-  formatted = formatted.replace(
-    /([^\n|])\s*(\|[\s\S]*?\|\s*\|[\s\S]*?\|)/,
-    "$1\n\n$2",
-  );
+  // Step 3: Fix flattened tables — lines where the entire table (header + rows)
+  // appears on a single line, identified by having 3+ pipe-separated cells
+  // with NO real newlines inside. We split them line-by-line and process only
+  // flat ones.
+  const lines = formatted.split("\n");
+  const fixedLines: string[] = [];
 
-  // 3. Turn table row boundary delimiter "| |" or "|   |" into newline "\n|"
-  formatted = formatted.replace(/\|\s+\|\s*\|/g, "|\n|");
-  formatted = formatted.replace(/\|\s*\|\s*/g, "|\n|");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // A "flat table line" has 4+ pipe chars but no embedded newlines (already split),
+    // and content between pipes that suggests multiple rows joined together.
+    // Pattern: starts or contains "| text | text |" with row content that looks like
+    // multiple rows (i.e., the same line has both a header row AND data rows).
+    // We detect this by counting "| ... |" segments where a segment itself contains
+    // another table-like boundary run by looking for "|" followed by a separator row
+    // "| :--- |" patterns mixed with data — or simply: if we see more than one
+    // occurrence of "| :---" or "| ---" on the same line (separator got inlined).
+    if (
+      trimmed.startsWith("|") &&
+      trimmed.endsWith("|") &&
+      (trimmed.includes("| :---") || trimmed.includes("| ---") || trimmed.includes("|:---"))
+    ) {
+      // This line has an inline separator row — the whole table is flattened.
+      // Split on the pattern: a closing pipe followed by an opening pipe with content,
+      // but NOT when preceded by the separator marker sequence.
+      // Strategy: split on "| |" where both sides have non-space content,
+      // but avoid splitting "| :--- |" itself.
+      const parts = trimmed
+        // First, protect separator cells like "| :--- |" by adding a sentinel
+        .replace(/\|\s*:?-+:?\s*(?=\|)/g, (m) => m.replace(/\|$/, "|\x00"))
+        // Now split on "| |" = row boundary
+        .split(/\|\s*\|/)
+        .map((p) => p.replace(/\x00/g, "").trim())
+        .filter(Boolean);
 
-  // 4. Separate inline bullet list items starting with "- "
-  // Matches "- " after a table cell boundary "| - " or sentence terminator
+      // Reconstruct: each "part" is one table row (missing its trailing pipe)
+      const rows = parts.map((p) => {
+        const row = p.endsWith("|") ? p : p + " |";
+        return row.startsWith("|") ? row : "| " + row;
+      });
+      fixedLines.push(...rows);
+      continue;
+    }
+
+    // Non-flat line: keep as-is
+    fixedLines.push(line);
+  }
+
+  formatted = fixedLines.join("\n");
+
+  // Step 4: Ensure a blank line before any table block (line starting with |)
+  // that follows non-pipe content, so it renders as a block not inline text.
+  formatted = formatted.replace(/([^\n|][^\n]*)\n(\|)/g, "$1\n\n$2");
+
+  // Step 5: Separate inline bullet items after table rows or sentence endings
   formatted = formatted.replace(/\|\s*-\s+([A-Za-z0-9*])/g, "|\n\n- $1");
   formatted = formatted.replace(/([.!?:])\s+-\s+([A-Za-z0-9*])/g, "$1\n\n- $2");
 
-  // 5. Clean up any trailing solitary pipe lines
+  // Step 6: Remove any leftover solitary pipe lines
   formatted = formatted.replace(/^\s*\|\s*$/gm, "");
 
   return formatted.trim();
