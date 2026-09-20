@@ -67,17 +67,6 @@ export function NearestKVKFooter() {
             >
               {badgeLabel}
             </Badge>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/15 px-2.5 py-0.5 rounded-md">
-              <Compass className="size-3.5" />
-              <span>
-                ~{kvk.distance_km} km {kvk.bearing}
-              </span>
-            </div>
-            {kvk.zone && (
-              <span className="text-xs text-muted-foreground hidden md:inline font-medium">
-                • {kvk.zone}
-              </span>
-            )}
           </div>
 
           {/* KVK Name & Location */}
@@ -85,16 +74,16 @@ export function NearestKVKFooter() {
             <h4 className="text-sm sm:text-base font-bold text-foreground leading-snug tracking-tight">
               {kvk.kvk}
             </h4>
-            <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
-              <MapPin className="size-3.5 text-emerald-500 shrink-0" />
-              <span>
-                {kvk.district}, {kvk.state}
-              </span>
-            </p>
           </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium pt-1">
+            <MapPin className="size-3.5 text-emerald-500 shrink-0" />
+            <span>
+              {kvk.district}, {kvk.state}
+            </span>
+          </p>
 
           {/* Host & Sanction Info */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-muted-foreground pt-0.5">
+          <div className="flex flex-wrap items-center gap-x-5 text-xs text-muted-foreground pt-1">
             <div className="flex items-center gap-1.5">
               <Building2 className="size-3.5 text-muted-foreground/80 shrink-0" />
               <span className="text-xs">
@@ -104,34 +93,7 @@ export function NearestKVKFooter() {
                 {kvk.host}
               </span>
             </div>
-            {kvk.year_of_sanction && (
-              <div className="flex items-center gap-1.5">
-                <Calendar className="size-3.5 text-muted-foreground/80 shrink-0" />
-                <span className="text-xs">
-                  <strong className="text-foreground/90 font-medium">
-                    {t.tools?.kvkSanctioned || "Sanctioned"}:
-                  </strong>{" "}
-                  {kvk.year_of_sanction} ({kvk.host_type || "ICAR"})
-                </span>
-              </div>
-            )}
           </div>
-        </div>
-
-        {/* Action Button */}
-        <div className="shrink-0 self-start sm:self-center sm:pl-4">
-          <Button
-            size="sm"
-            variant="outline"
-            asChild
-            className="h-9 px-3.5 text-xs font-semibold gap-2 border-border hover:bg-emerald-500/10 hover:text-emerald-600 hover:border-emerald-500/30 cursor-pointer shadow-2xs"
-          >
-            <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-              <Navigation className="size-3.5 text-emerald-500" />
-              <span>{t.tools?.kvkDirections || "Directions / Map"}</span>
-              <ExternalLink className="size-3 opacity-60 ml-0.5" />
-            </a>
-          </Button>
         </div>
       </div>
     );
@@ -188,7 +150,8 @@ export function NearestKVKFooter() {
           renderKVKDetails(
             nearest,
             hasTwoKVKs
-              ? t.tools?.kvkNearestBadge || "Nearest KVK (Neighbouring District)"
+              ? t.tools?.kvkNearestBadge ||
+                  "Nearest KVK (Neighbouring District)"
               : t.tools?.kvkDistrictBadge || "Nearest KVK",
             !hasTwoKVKs,
           )}
