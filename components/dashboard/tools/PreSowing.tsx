@@ -41,6 +41,7 @@ import FertilizerPlan from "./presowing/FertilizerPlan";
 import IrrigationSchedule from "./presowing/IrrigationSchedule";
 import WeedManagement from "./presowing/WeedManagement";
 import PestDiseaseCalendar from "./presowing/PestDiseaseCalendar";
+import { NearestKVKFooter } from "./NearestKVKFooter";
 
 /**
  * Helper to auto-detect Indian state from location display name
@@ -386,6 +387,9 @@ export function PreSowing() {
           />
         </div>
       </div>
+
+      {/* NEAREST KRISHI VIGYAN KENDRA (KVK) GUIDANCE FOOTER */}
+      <NearestKVKFooter />
     </div>
   );
 }

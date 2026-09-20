@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Store, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MandiPrice from "./postharvest/MandiPrice";
+import { NearestKVKFooter } from "./NearestKVKFooter";
 
 /**
  * "Post-Harvest" Tool Page
@@ -81,6 +82,9 @@ export function PostHarvest() {
       <div className="w-full flex flex-col gap-4">
         <MandiPrice />
       </div>
+
+      {/* NEAREST KRISHI VIGYAN KENDRA (KVK) GUIDANCE FOOTER */}
+      <NearestKVKFooter />
     </div>
   );
 }
