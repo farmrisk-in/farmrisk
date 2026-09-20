@@ -105,6 +105,19 @@ export const en = {
     advisorySettingsDesc: "Configure crop, region, and soil characteristics to retrieve RAG-grounded ICAR guidelines.",
     sourcesUsed: "sources used",
     runtime: "Runtime",
+    kvkGuidanceTitle: "Need Local Agricultural Guidance?",
+    kvkGuidanceSubtitle:
+      "We encourage you to visit your nearest Krishi Vigyan Kendra (KVK) for certified seed testing, soil fertility health cards, practical field demonstrations, and personalized agronomic extension support.",
+    kvkDistrictBadge: "Your District's KVK",
+    kvkNearestBadge: "Nearest KVK (Neighbouring District)",
+    kvkAdministrativeNote:
+      "Agricultural extension services and state subsidy programs typically follow administrative district boundaries. We recommend contacting your district's designated KVK first.",
+    kvkDirections: "Directions / Location",
+    kvkHostOrg: "Host Organization",
+    kvkSanctioned: "Sanctioned",
+    kvkType: "Type",
+    kvkZone: "Zone",
+    kvkApproxDistance: "Straight-line distance",
   },
 
   landing: {
