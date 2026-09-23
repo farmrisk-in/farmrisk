@@ -55,10 +55,16 @@ export const Lightning = () => {
           zoom: 13,
         };
       case "Low":
-      default:
         return {
           color: "#006045",
           advisory: t.dashboard.advLow,
+          zoom: 14,
+        };
+      case "No Risk":
+      default:
+        return {
+          color: "#718096",
+          advisory: t.dashboard.hazardBandNoRisk,
           zoom: 14,
         };
     }
@@ -134,6 +140,8 @@ export const Lightning = () => {
                     t.dashboard.advModerate) ||
                   (lightning.category === "High" && t.dashboard.advHigh) ||
                   (lightning.category === "Severe" && t.dashboard.advSevere) ||
+                  (lightning.category === "No Risk" &&
+                    t.dashboard.hazardBandNoRisk) ||
                   advisory}
               </Badge>
             }
@@ -171,6 +179,8 @@ export const Lightning = () => {
                     t.dashboard.advModerate) ||
                   (lightning.category === "High" && t.dashboard.advHigh) ||
                   (lightning.category === "Severe" && t.dashboard.advSevere) ||
+                  (lightning.category === "No Risk" &&
+                    t.dashboard.hazardBandNoRisk) ||
                   advisory}
               </Badge>
             }

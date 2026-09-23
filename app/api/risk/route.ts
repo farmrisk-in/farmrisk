@@ -59,6 +59,9 @@ export async function POST(request: NextRequest) {
       soil_percentile: body.soil_percentile ?? null,
       lightning_score: body.lightning_score ?? null,
       lightning_category: body.lightning_category ?? null,
+      cloud_cover: body.cloud_cover ?? null,
+      precipitation: body.precipitation ?? null,
+      weather_code: body.weather_code ?? null,
       station_type: body.station_type ?? "plains",
       crop_heat_threshold: body.crop_heat_threshold ?? null,
     };

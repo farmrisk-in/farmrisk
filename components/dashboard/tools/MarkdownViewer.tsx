@@ -14,86 +14,40 @@ export interface MarkdownViewerProps {
 }
 
 /**
- * Normalizes RAG/LLM markdown outputs that may arrive with:
- * 1. Literal "\\n" escape sequences instead of real newlines (JSON transport artifact)
- * 2. Flattened single-line tables where all rows are concatenated on one line
- * 3. Callout blockquotes not preceded by a blank line
+ * Normalizes RAG/LLM markdown that may arrive with:
+ *  1. Literal "\n" escape sequences instead of real newlines (JSON transport artifact)
+ *  2. Flattened tables where all rows are on one line, joined by "| |"
+ *  3. Callout blockquotes not preceded by a blank line
  *
- * SAFETY: Only lines where a separator row (| :--- |) appears AFTER other pipe content
- * on the same line are treated as flat. Standalone separator lines, header lines, and
- * data rows that are already on their own lines are left completely untouched.
+ * KEY INSIGHT — why [ \t]* instead of \s*:
+ *  JavaScript \s matches \n, so \|\s*\| matches "|\n|" across properly-formatted
+ *  table rows and corrupts them. [ \t]* matches ONLY spaces and tabs — never newlines —
+ *  so it is safe to apply globally: it only fires on "| |" within a single flat line.
  */
 function preprocessMarkdown(text: string): string {
   if (!text) return "";
 
-  // Step 1: Unescape literal \n sequences from JSON transport
+  // 1. Unescape literal \n sequences from JSON transport
   let formatted = text.replace(/\\n/g, "\n");
 
-  // Step 2: Normalize callouts — ensure a blank line before "> Warning:" etc.
+  // 2. Fix flat tables: split "| |" (pipe + spaces/tabs only + pipe) into rows.
+  //    [ \t]* never matches \n so properly-formatted multi-line tables are untouched.
+  formatted = formatted.replace(/\|[ \t]*\|/g, "|\n|");
+
+  // 3. Ensure blank line before a table (| line) that follows non-table prose.
+  formatted = formatted.replace(/([^\n|][^\n]*)\n(\|)/g, "$1\n\n$2");
+
+  // 4. Normalize callouts — blank line before "> Warning:" / "> Tip:" etc.
   formatted = formatted.replace(
     /([^\n])\s*>\s*(Warning|Tip|Note|Important|Caution):?/gi,
     "$1\n\n> **$2:**",
   );
 
-  // Step 3: Fix flattened tables line-by-line.
-  // A "flat" line is one where the separator row (| :--- | or | --- |) appears
-  // AFTER some non-separator pipe content on the SAME line — meaning header + separator
-  // + data rows were all jammed together. We detect this with a regex that requires
-  // at least one non-dash, non-colon cell BEFORE the first separator segment.
-  //
-  // Example flat line:
-  //   "| Operation | Timing | Detail | | :--- | :--- | :--- | | Deep Ploughing | ..."
-  //
-  // Example NOT flat (standalone separator line — leave untouched):
-  //   "| :--- | :--- | :--- |"
-  //
-  // Detection: line starts with |, and the pattern [non-sep content] | | :--- appears.
-  const FLAT_TABLE_RE = /^\|[^-:|][^|]*\|.*\|\s*:?-+:?\s*\|/;
-
-  const lines = formatted.split("\n");
-  const fixedLines: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    if (FLAT_TABLE_RE.test(trimmed)) {
-      // Protect separator segments like "| :--- " from being split as a row boundary
-      // by tagging the pipe that ENDS a separator cell with a sentinel.
-      const sentineled = trimmed.replace(
-        /\|\s*:?-+:?\s*(?=\|)/g,
-        (m) => m.trimEnd() + "\x00",
-      );
-
-      // Split on "| |" (row boundary = closing pipe of one row + opening pipe of next)
-      const parts = sentineled
-        .split(/\|\s*\|/)
-        .map((p) => p.replace(/\x00/g, "").trim())
-        .filter(Boolean);
-
-      // Rebuild each row: ensure leading and trailing pipes
-      const rows = parts.map((p) => {
-        const withTrailing = p.endsWith("|") ? p : p + " |";
-        return withTrailing.startsWith("|") ? withTrailing : "| " + withTrailing;
-      });
-
-      fixedLines.push(...rows);
-      continue;
-    }
-
-    fixedLines.push(line);
-  }
-
-  formatted = fixedLines.join("\n");
-
-  // Step 4: Ensure a blank line before a table block that immediately follows
-  // non-pipe prose, so remark-gfm sees it as a block-level element.
-  formatted = formatted.replace(/([^\n|][^\n]*)\n(\|)/g, "$1\n\n$2");
-
-  // Step 5: Separate inline bullet items after table cells or sentence endings
+  // 5. Separate inline bullet items glued to table cell endings or sentences
   formatted = formatted.replace(/\|\s*-\s+([A-Za-z0-9*])/g, "|\n\n- $1");
   formatted = formatted.replace(/([.!?:])\s+-\s+([A-Za-z0-9*])/g, "$1\n\n- $2");
 
-  // Step 6: Remove leftover solitary pipe lines
+  // 6. Remove leftover solitary pipe lines (splitting artifact)
   formatted = formatted.replace(/^\s*\|\s*$/gm, "");
 
   return formatted.trim();

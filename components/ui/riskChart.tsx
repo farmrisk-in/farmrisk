@@ -16,6 +16,8 @@ interface RiskChartProps {
   title: string;
   icon: React.ReactNode;
   score: number;
+  band?: string;
+  color?: string;
   reasons?: string[];
   major_factor?: string;
 }
@@ -24,6 +26,8 @@ export default function RiskChart({
   title,
   icon,
   score,
+  band: customBand,
+  color: customColor,
   reasons,
   major_factor,
 }: RiskChartProps) {
@@ -98,8 +102,8 @@ export default function RiskChart({
   }, [hovered, hasReasons, computePosition]);
 
   const clampedScore = Math.max(0, Math.min(100, score ?? 0));
-  const color = riskColor(clampedScore);
-  const band = bandLabel(clampedScore);
+  const color = customColor ?? riskColor(clampedScore);
+  const band = customBand ?? bandLabel(clampedScore);
   const trackColor = `${color}20`; // 12% opacity tint
 
   function bandLabel(score: number): string {

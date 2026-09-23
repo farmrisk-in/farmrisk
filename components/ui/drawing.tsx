@@ -24,10 +24,11 @@ export const Drawing = ({
   t: ReturnType<typeof useLanguage>["t"];
 }) => {
   let radius = 2000;
-  if (color === "green") radius = 2000;
-  if (color === "yellow") radius = 5000;
-  if (color === "orange") radius = 8000;
-  if (color === "red") radius = 12000;
+  if (color === "green" || color === "#006045") radius = 2000;
+  else if (color === "yellow" || color === "#FF9C04") radius = 5000;
+  else if (color === "orange" || color === "#FF4116") radius = 8000;
+  else if (color === "red" || color === "#FF040E") radius = 12000;
+  else if (color === "#718096") radius = 1000;
   return (
     <>
       <Circle
@@ -53,6 +54,7 @@ export const Drawing = ({
                   (category === "Moderate" && t?.dashboard?.riskModerate) ||
                   (category === "High" && t?.dashboard?.riskHigh) ||
                   (category === "Severe" && t?.dashboard?.riskSevere) ||
+                  (category === "No Risk" && (t?.dashboard?.hazardBandNoRisk || "No Risk")) ||
                   category}{" "}
                 ({score}/100)
               </span>

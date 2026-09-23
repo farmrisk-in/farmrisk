@@ -49,6 +49,8 @@ export interface RiskScores {
   frost: HazardScore;
 }
 
+import { classify, lightningRisk } from "@/lib/services/lightningRisk";
+
 export interface ComputeRiskInput {
   rain_next5?: number[] | null;
   rain_dates?: (string | Date | null)[] | null;
@@ -68,6 +70,9 @@ export interface ComputeRiskInput {
   soil_percentile?: number | null;
   lightning_score?: number | null;
   lightning_category?: string | null;
+  cloud_cover?: number | null;
+  precipitation?: number | null;
+  weather_code?: number | null;
   station_type?: string;
   crop_heat_threshold?: number | null;
 }
@@ -487,59 +492,77 @@ export function scorePest(
 }
 
 /**
- * Lightning risk — driven by the upstream lightning product.
+ * Lightning risk — driven by the unified lightning model.
+ * Produces the exact same score and category as the dashboard Lightning component.
  */
 export function scoreLightning(
-  lightning_score: number | null | undefined,
-  lightning_category: string | null | undefined,
-  wind_gusts: number | null | undefined,
-): ScoreResult {
+  lightning_score?: number | null,
+  lightning_category?: string | null,
+  weather_fallback?: {
+    cloudCover?: number | null;
+    precipitation?: number | null;
+    humidity?: number | null;
+    windGusts?: number | null;
+    code?: number | null;
+  } | null,
+): [number, string, string[], string] {
   const reasons: string[] = [];
-  const contributions: [number, string][] = [];
-  let base: number | null = null;
+  let score: number = 0;
+  let category: string = "No Risk";
 
   if (lightning_score !== null && lightning_score !== undefined) {
-    base = Number(lightning_score);
-    reasons.push(`lightning index ${Math.round(base)}`);
-    contributions.push([
-      base,
-      `upstream lightning index of ${Math.round(base)}`,
-    ]);
+    score = clamp100(Number(lightning_score));
+    category = lightning_category ?? classify(score, false);
+  } else if (
+    weather_fallback &&
+    (weather_fallback.cloudCover != null ||
+      weather_fallback.precipitation != null ||
+      weather_fallback.humidity != null ||
+      weather_fallback.windGusts != null ||
+      weather_fallback.code != null)
+  ) {
+    const res = lightningRisk({
+      cloudCover: weather_fallback.cloudCover ?? 0,
+      precipitation: weather_fallback.precipitation ?? 0,
+      humidity: weather_fallback.humidity ?? 0,
+      windGusts: weather_fallback.windGusts ?? 0,
+      code: weather_fallback.code ?? 0,
+    });
+    score = res.score;
+    category = res.category;
   } else if (lightning_category) {
+    category = lightning_category;
     const catMap: Record<string, number> = {
+      "no risk": 0,
       none: 0,
-      low: 20,
-      moderate: 45,
-      high: 70,
-      severe: 90,
+      low: 25,
+      moderate: 60,
+      high: 80,
+      severe: 95,
       extreme: 95,
     };
-    const cat = lightning_category.trim().toLowerCase();
-    base = catMap[cat] ?? 30;
-    reasons.push(`lightning category '${lightning_category}'`);
-    contributions.push([base, `lightning category '${lightning_category}'`]);
+    score = catMap[category.trim().toLowerCase()] ?? 25;
   } else {
-    return [0.0, "no lightning data", ["no lightning data"]];
+    return [0.0, "no lightning data", ["no lightning data"], "No Risk"];
   }
 
-  if (
-    wind_gusts !== null &&
-    wind_gusts !== undefined &&
-    wind_gusts >= 40 &&
-    base < 90
-  ) {
-    const bump = Math.min(8.0, lerp(wind_gusts, 40, 65, 2, 8));
-    base += bump;
-    reasons.push("gusty (convective) winds present");
-    contributions.push([
-      bump,
-      "convective gusts indicating active thunderstorms",
-    ]);
+  reasons.push(`lightning risk index ${Math.round(score)}/100 (${category})`);
+  if (category === "Severe") {
+    reasons.push("thunderstorms / severe convective activity imminent");
+    reasons.push("stay indoors, avoid open fields and tall metal equipment");
+  } else if (category === "High") {
+    reasons.push("strong convective instability and thunderstorm potential");
+    reasons.push("postpone outdoor spraying and fieldwork");
+  } else if (category === "Moderate") {
+    reasons.push("moderate atmospheric instability with convective buildup");
+  } else if (category === "Low") {
+    reasons.push("low atmospheric instability, minimal lightning risk");
+  } else {
+    reasons.push("no convective activity, calm conditions");
   }
 
-  const score = clamp100(base);
-  const major = contributions.reduce((a, b) => (b[0] > a[0] ? b : a))[1];
-  return [score, major, reasons];
+  const major = `lightning risk assessed as ${category} (${Math.round(score)}/100)`;
+  return [score, major, reasons, category];
 }
 
 /**
@@ -793,10 +816,16 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     rainy_days,
     total_rainfall,
   );
-  const [li_s, li_m, li_r] = scoreLightning(
+  const [li_s, li_m, li_r, li_band] = scoreLightning(
     lightning_score,
     lightning_category,
-    peak_gust,
+    {
+      cloudCover: input.cloud_cover,
+      precipitation: input.precipitation,
+      humidity: input.humidity,
+      windGusts: peak_gust,
+      code: input.weather_code,
+    },
   );
   const [wi_s, wi_m, wi_r] = scoreWind(
     gusts_hourly,
@@ -810,7 +839,12 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     heavy_rain: pack(hr_s, hr_m, hr_r),
     heat_stress: pack(ht_s, ht_m, ht_r),
     pest: pack(pe_s, pe_m, pe_r),
-    lightning: pack(li_s, li_m, li_r),
+    lightning: {
+      score: pythonRound(li_s),
+      band: li_band,
+      major_factor: li_m,
+      reasons: li_r,
+    },
     wind: pack(wi_s, wi_m, wi_r),
     frost: pack(fr_s, fr_m, fr_r),
   };

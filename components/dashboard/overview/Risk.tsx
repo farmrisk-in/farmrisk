@@ -126,12 +126,37 @@ export default function Risk() {
             ? t.dashboard.hazardFrost
             : key;
 
+          let customBand: string | undefined;
+          let customColor: string | undefined;
+
+          if (key === "lightning") {
+            const rawCat = hazard.band;
+            if (rawCat === "Severe") {
+              customBand = t.dashboard.riskSevere;
+              customColor = "#FF040E";
+            } else if (rawCat === "High") {
+              customBand = t.dashboard.riskHigh;
+              customColor = "#FF4116";
+            } else if (rawCat === "Moderate") {
+              customBand = t.dashboard.riskModerate;
+              customColor = "#FF9C04";
+            } else if (rawCat === "Low") {
+              customBand = t.dashboard.riskLow;
+              customColor = "#006045";
+            } else {
+              customBand = t.dashboard.hazardBandNoRisk;
+              customColor = "#718096";
+            }
+          }
+
           return (
             <RiskChart
               key={key}
               icon={icon}
               title={label}
               score={hazard.score}
+              band={customBand}
+              color={customColor}
               major_factor={hazard.major_factor}
               reasons={hazard.reasons}
             />

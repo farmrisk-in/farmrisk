@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { fetchWeatherApi } from "openmeteo";
 import { Lightning, OpenMeteoResponse, WmoEntry } from "@/types/weather";
+import { lightningRisk } from "@/lib/services/lightningRisk";
 
 const pickIcon = (entry: WmoEntry | undefined, isDay: boolean) =>
   (entry && (entry.icon[isDay ? "day" : "night"] || entry.icon.day)) || "";
@@ -411,48 +412,6 @@ const params = {
 //   };
 // }
 
-function calculateLightningRisk(
-  weatherCode: number,
-  cloudCover: number,
-  precipitation: number,
-  relativeHumidity: number,
-  windGusts: number,
-): Lightning {
-  let env = 0;
-
-  if (cloudCover > 80) env += 20;
-  else if (cloudCover > 50) env += 8;
-
-  if (precipitation > 10) env += 35;
-  else if (precipitation > 2) env += 18;
-
-  if (relativeHumidity > 80) env += 15;
-  else if (relativeHumidity > 60) env += 7;
-
-  if (windGusts > 40) env += 30;
-  else if (windGusts > 20) env += 15;
-
-  const hasConvectiveCode = [95, 96, 99, 80, 81, 82, 85, 86].includes(
-    weatherCode,
-  );
-
-  let floor = 0;
-  if ([95, 96, 99].includes(weatherCode)) floor = 15;
-  else if ([80, 81, 82, 85, 86].includes(weatherCode)) floor = 10;
-
-  const score = Math.min(Math.max(env, floor), 100);
-
-  return { score, category: classify(score, hasConvectiveCode) };
-}
-
-function classify(score: number, hasConvectiveCode: boolean) {
-  // No Risk: nothing convective and negligible environmental signal
-  if (!hasConvectiveCode && score < 10) return "No Risk";
-  if (score < 50) return "Low";
-  if (score < 70) return "Moderate";
-  if (score < 90) return "High";
-  return "Severe";
-}
 
 function roundToNDecimals(num: number, decimals: number): number {
   return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
@@ -605,13 +564,13 @@ export async function GET(request: NextRequest) {
         1,
       ).splice(-16),
     },
-    lightning: calculateLightningRisk(
-      current.variables(4)!.value(),
-      current.variables(11)!.value(),
-      current.variables(10)!.value(),
-      current.variables(1)!.value(),
-      current.variables(9)!.value(),
-    ),
+    lightning: lightningRisk({
+      code: current.variables(4)!.value(),
+      cloudCover: current.variables(11)!.value(),
+      precipitation: current.variables(10)!.value(),
+      humidity: current.variables(1)!.value(),
+      windGusts: current.variables(9)!.value(),
+    }),
   };
 
   return Response.json(weatherData);

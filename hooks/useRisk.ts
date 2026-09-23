@@ -98,6 +98,11 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
   const lightning_score = lightning?.score ?? null;
   const lightning_category = lightning?.category ?? null;
 
+  // Cloud cover, precipitation, and weather code for lightning fallback
+  const cloud_cover = current?.cloud_cover ?? null;
+  const precipitation = current?.precipitation ?? null;
+  const weather_code = current?.weather_code ?? null;
+
   // Hourly wind gusts from the 24-hour forecast window
   const gusts_hourly = hourly?.wind_gusts_10m ?? null;
   const times_hourly =
@@ -119,6 +124,9 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
     wind_speed,
     lightning_score,
     lightning_category,
+    cloud_cover,
+    precipitation,
+    weather_code,
     gusts_hourly,
     times_hourly,
     soil_moisture_available,
@@ -135,6 +143,8 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
       tempHash,
       soil_percentile,
       station_type,
+      lightning_score,
+      lightning_category,
     ],
     queryFn: () => getRiskScores(payload),
     enabled:
