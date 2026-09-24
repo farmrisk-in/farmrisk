@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { ListChecks, Bug, Droplets, CloudRain, LoaderCircle } from "lucide-react";
+import { ListChecks, Bug, Droplets, CloudRain, LoaderCircle, Thermometer, Wind, Cloud } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useSelectedCrop } from "@/hooks/useSelectedCrop";
 import { useWhatToDo } from "@/hooks/useWhatToDo";
@@ -15,8 +15,14 @@ function categoryIcon(category: WhatToDoCategory) {
       return Bug;
     case "irrigation":
       return Droplets;
-    case "weather":
+    case "rain":
       return CloudRain;
+    case "temp":
+      return Thermometer;
+    case "wind":
+      return Wind;
+    case "weather":
+      return Cloud;
     default:
       return ListChecks;
   }
@@ -26,22 +32,27 @@ function categoryIcon(category: WhatToDoCategory) {
 function categoryColor(category: WhatToDoCategory) {
   switch (category) {
     case "pest":
-      return "#10b981"; // emerald-500 — matches Pest & Disease card
+      return "#f43f5e"; // rose-500
     case "irrigation":
-      return "#0ea5e9"; // sky-500 — matches Soil Moisture card
-    case "weather":
+      return "#10b981"; // emerald-500
+    case "rain":
+      return "#3b82f6"; // blue-500
+    case "temp":
       return "#f59e0b"; // amber-500
+    case "wind":
+      return "#14b8a6"; // teal-500
+    case "weather":
+      return "#0ea5e9"; // sky-500
     default:
       return "#10b981";
   }
 }
 
 /**
- * "What To Do Today" — compact, at most TWO recommendation rows.
+ * "What To Do Today" — displays dynamic recommendations based on field conditions.
  *
- * Data comes from the backend aggregation endpoint (best Pest & Disease action
- * + best Irrigation recommendation, weather as fallback). All severity and
- * selection is decided deterministically by the backend.
+ * Data comes from the backend aggregation endpoint (dynamically generating 1-4 items).
+ * Weather actions are uniquely categorized (rain, temp, wind).
  */
 export default function WhatToDoToday() {
   const { language, t } = useLanguage();
