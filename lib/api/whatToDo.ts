@@ -2,11 +2,11 @@ import { AIAdvisoryRequestPayload } from "@/types/ai";
 import { PestDiseaseSource } from "@/lib/api/pestDisease";
 
 /** Stable category key the frontend uses to pick icons/labels. */
-export type WhatToDoCategory = "pest" | "irrigation" | "weather";
+export type WhatToDoCategory = "pest" | "irrigation" | "weather" | "rain" | "temp" | "wind";
 
-/** One "What To Do Today" recommendation (at most two are returned). */
+/** One "What To Do Today" recommendation (between 1 and 4 are returned). */
 export interface WhatToDoRecommendation {
-  /** pest | irrigation | weather — never parsed from the title text. */
+  /** pest | irrigation | weather | rain | temp | wind — never parsed from the title text. */
   category: WhatToDoCategory;
   /** Source-native severity word (pest band / irrigation action / weather band). */
   severity: string;
@@ -39,7 +39,7 @@ export async function getWhatToDo(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
+  console.log(JSON.stringify(payload));
   if (!res.ok) {
     throw new Error(`What to do request failed: ${res.statusText}`);
   }

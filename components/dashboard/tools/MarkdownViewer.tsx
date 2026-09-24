@@ -35,9 +35,14 @@ function preprocessMarkdown(text: string): string {
   formatted = formatted.replace(/\|[ \t]*\|/g, "|\n|");
 
   // 3. Ensure blank line before a table (| line) that follows non-table prose.
-  formatted = formatted.replace(/([^\n|][^\n]*)\n(\|)/g, "$1\n\n$2");
+  // We use ^ and the m flag so it only matches if the prose line does not start with |
+  formatted = formatted.replace(/^([^|\n][^\n]*)\n(\|)/gm, "$1\n\n$2");
 
-  // 4. Normalize callouts — blank line before "> Warning:" / "> Tip:" etc.
+  // 4. Ensure blank line after a table (| line) that is followed by non-table prose.
+  // We use ^ and the m flag to match a table line, followed by a newline, followed by a non-pipe character.
+  formatted = formatted.replace(/^(\|[^\n]*)\n([^|\n])/gm, "$1\n\n$2");
+
+  // 5. Normalize callouts — blank line before "> Warning:" / "> Tip:" etc.
   formatted = formatted.replace(
     /([^\n])\s*>\s*(Warning|Tip|Note|Important|Caution):?/gi,
     "$1\n\n> **$2:**",
