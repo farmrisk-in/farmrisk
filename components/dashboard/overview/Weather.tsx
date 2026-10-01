@@ -45,6 +45,23 @@ const Weather = () => {
   const { data, isLoading, isError, errorMessage } = useWeather();
   const current = data?.current;
 
+  // Empty state for missing location
+  if (!location) {
+    return (
+      <div className="@container w-full h-full min-h-fit bg-card border border-border text-foreground rounded-xl shadow-sm p-5 flex flex-col justify-between select-none">
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider mb-2">
+          <CloudSun className="size-5" />
+          {t.dashboard.currentClimate}
+        </div>
+        <div className="w-full flex-1 flex flex-col items-center justify-center min-h-40">
+          <p className="text-muted-foreground text-sm font-medium">
+            {t.dashboard.noLocationSelected}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Loading skeleton rendering
   if (isLoading) {
     return (

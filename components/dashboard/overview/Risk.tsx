@@ -62,7 +62,15 @@ export default function Risk() {
   const { data, isLoading, isError } = useRisk();
   const { t } = useLanguage();
 
-  if (isLoading || isResolving || !location) {
+  if (!location) {
+    return (
+      <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm min-h-[70px] flex items-center justify-center">
+        <span className="text-xs text-muted-foreground font-medium">{t.dashboard.noLocationSelected}</span>
+      </div>
+    );
+  }
+
+  if (isLoading || isResolving) {
     return <RiskSkeleton />;
   }
 

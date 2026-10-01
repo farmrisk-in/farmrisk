@@ -81,6 +81,37 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
       }))
     : [];
 
+  if (!location) {
+    if (compact) {
+      return (
+        <div className="w-full h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-4 select-none flex flex-col gap-3">
+          <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
+            <Clock className="size-4" />
+            {db.hourlyNextHours}
+          </div>
+          <div className="flex-1 flex flex-col items-center justify-center min-h-40">
+            <p className="text-muted-foreground text-sm font-medium">
+              {t.dashboard.noLocationSelected}
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="w-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none">
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
+          <Clock className="size-4.5" />
+          {db.hourlyForecastTitle}
+        </div>
+        <div className="w-full flex items-center justify-center h-25">
+          <p className="text-muted-foreground text-sm font-medium">
+            {t.dashboard.noLocationSelected}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (compact) {
     const visible = slots.slice(0, hourCount);
     const current = data?.current;

@@ -89,6 +89,13 @@ export default function WhatToDoToday() {
         </h3>
       </div>
 
+      {/* MISSING LOCATION EMPTY STATE */}
+      {noLocation && (
+        <div className="flex flex-col items-center justify-center gap-3 min-h-28 py-4 text-muted-foreground">
+          <p className="text-xs font-medium">{t.dashboard.noLocationSelected}</p>
+        </div>
+      )}
+
       {/* LOADING */}
       {!noLocation && (isLoading || isStaleCrop || isStaleLanguage) && (
         <div className="flex flex-col items-center justify-center gap-3 min-h-28 py-4 text-muted-foreground">

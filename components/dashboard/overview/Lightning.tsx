@@ -81,6 +81,22 @@ export const Lightning = () => {
       }
     : undefined;
 
+  if (!location) {
+    return (
+      <div className="w-full h-90 lg:h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
+          <Zap className="size-4.5" />
+          {t.dashboard.lightningRisk}
+        </div>
+        <div className="w-full grow flex flex-col items-center justify-center gap-2 text-muted-foreground select-none">
+          <p className="text-sm font-medium">
+            {t.dashboard.noLocationSelected}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (isResolving || isLoading) {
     return (
       <div className="w-full h-90 lg:h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none flex flex-col">

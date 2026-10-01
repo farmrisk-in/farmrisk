@@ -4,6 +4,7 @@ import React from "react";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeatherSummary } from "@/hooks/useWeatherSummary";
 import { useWeather } from "@/hooks/useWeather";
+import { useLocationContext } from "@/providers/LocationProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Loader2, Summary } from "lucide-react";
@@ -59,6 +60,7 @@ const OLD_RAIN_REGEX =
 
 export default function WeatherSummary() {
   const { language, t } = useLanguage();
+  const { location } = useLocationContext();
   const {
     data: summary,
     isLoading,
@@ -122,6 +124,22 @@ export default function WeatherSummary() {
   };
 
   // Show a skeleton loader while loading
+  if (!location) {
+    return (
+      <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm min-h-[148px]">
+        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
+          <Summary className="size-4.5" />
+          {title}
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center min-h-[90px]">
+          <p className="text-muted-foreground text-sm font-medium">
+            {t.dashboard.noLocationSelected}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="w-full bg-card border border-border rounded-xl p-3.5 shadow-sm animate-pulse">
