@@ -1,4 +1,5 @@
 "use client";
+import { useLocationContext } from "@/providers/LocationProvider";
 
 import {
   ArrowDown,
@@ -67,6 +68,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
   const { t } = useLanguage();
   const db = t.dashboard;
   const { data, isLoading } = useWeather();
+  const { location } = useLocationContext();
   const hourly = data?.hourly;
 
   const slots = hourly

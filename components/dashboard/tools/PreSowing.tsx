@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { CropSelector } from "@/components/dashboard/farmrisk/CropSelector";
 import { LocationSearchBar } from "@/components/dashboard/overview/LocationSearchBar";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -101,6 +102,35 @@ export function PreSowing() {
   const [season, setSeason] = useState<Season>("Kharif");
   const [irrigationType, setIrrigationType] = useState<IrrigationType>("flood");
 
+  // Auto-detect soil type based on GPS coords
+  const { data: detectedSoil, isLoading: isDetectingSoil } = useQuery({
+    queryKey: ['soil-detect', location?.lat, location?.lng],
+    queryFn: async () => {
+      if (!location) return null;
+      const res = await fetch(`/api/soil?lat=${location.lat}&lon=${location.lng}`);
+      if (!res.ok) throw new Error('Soil detection failed');
+      const data = await res.json();
+      return data;
+    },
+    enabled: !!location,
+    staleTime: Infinity,
+  });
+
+  // Automatically update the dropdown if we detect the soil successfully
+  useEffect(() => {
+    if (detectedSoil?.soil_type) {
+      // Find matching SoilType enum value by matching string loosely
+      const detected = detectedSoil.soil_type.toLowerCase();
+      const match = SOIL_TYPE_OPTIONS.find(opt => 
+        detected.includes(opt.value.toLowerCase()) || 
+        opt.value.toLowerCase().includes(detected)
+      );
+      if (match) {
+        setSoilType(match.value);
+      }
+    }
+  }, [detectedSoil]);
+
   // Pre-Sowing React Query Hook with language support and auth gate
   const {
     data,
@@ -116,7 +146,7 @@ export function PreSowing() {
     season,
     irrigation_type: irrigationType,
     language,
-    enabled: Boolean(user),
+    enabled: false,
   });
 
   const isGenerating = isLoading || isFetching;
@@ -187,6 +217,16 @@ export function PreSowing() {
               <span>{state}</span>
             </div>
 
+            {/* Detected Soil Context */}
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-500/20 text-[11px] font-semibold">
+              <Layers className="size-3" />
+              {isDetectingSoil ? (
+                <LoaderCircle className="size-3 animate-spin" />
+              ) : (
+                <span>{SOIL_TYPE_OPTIONS.find((opt) => opt.value === soilType)?.label || soilType}</span>
+              )}
+            </div>
+
             {/* Language Badge */}
             <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-muted-foreground border border-border text-[11px] font-semibold uppercase">
               <Languages className="size-3" />
@@ -205,37 +245,10 @@ export function PreSowing() {
           </div>
         </div>
 
-        {/* INPUT DROPDOWNS FORM (SOIL TYPE, SEASON, IRRIGATION METHOD) */}
+        {/* INPUT DROPDOWNS FORM (SEASON, IRRIGATION METHOD) */}
         <form onSubmit={handleGenerate} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* 1. SOIL TYPE DROPDOWN */}
-            <div className="flex flex-col gap-1.5">
-              <label
-                htmlFor="presowing-soil"
-                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
-              >
-                <Layers className="size-3.5 text-emerald-500" />
-                <span>{t.tools?.selectSoilType || "Soil Type"}</span>
-              </label>
-              <div className="relative">
-                <select
-                  id="presowing-soil"
-                  value={soilType}
-                  onChange={(e) => setSoilType(e.target.value as SoilType)}
-                  disabled={isGenerating}
-                  className="w-full appearance-none rounded-lg border border-border bg-background px-3 py-2 text-xs sm:text-sm text-foreground focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors cursor-pointer"
-                >
-                  {SOIL_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              </div>
-            </div>
-
-            {/* 2. SEASON DROPDOWN */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* 1. SEASON DROPDOWN */}
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="presowing-season"
