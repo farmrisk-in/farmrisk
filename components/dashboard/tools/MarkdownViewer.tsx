@@ -30,31 +30,6 @@ function preprocessMarkdown(text: string): string {
   // 1. Unescape literal \n sequences from JSON transport
   let formatted = text.replace(/\\n/g, "\n");
 
-  // 2. Fix flat tables: split "| |" (pipe + spaces/tabs only + pipe) into rows.
-  //    [ \t]* never matches \n so properly-formatted multi-line tables are untouched.
-  formatted = formatted.replace(/\|[ \t]*\|/g, "|\n|");
-
-  // 3. Ensure blank line before a table (| line) that follows non-table prose.
-  // We use ^ and the m flag so it only matches if the prose line does not start with |
-  formatted = formatted.replace(/^([^|\n][^\n]*)\n(\|)/gm, "$1\n\n$2");
-
-  // 4. Ensure blank line after a table (| line) that is followed by non-table prose.
-  // We use ^ and the m flag to match a table line, followed by a newline, followed by a non-pipe character.
-  formatted = formatted.replace(/^(\|[^\n]*)\n([^|\n])/gm, "$1\n\n$2");
-
-  // 5. Normalize callouts — blank line before "> Warning:" / "> Tip:" etc.
-  formatted = formatted.replace(
-    /([^\n])\s*>\s*(Warning|Tip|Note|Important|Caution):?/gi,
-    "$1\n\n> **$2:**",
-  );
-
-  // 5. Separate inline bullet items glued to table cell endings or sentences
-  formatted = formatted.replace(/\|\s*-\s+([A-Za-z0-9*])/g, "|\n\n- $1");
-  formatted = formatted.replace(/([.!?:])\s+-\s+([A-Za-z0-9*])/g, "$1\n\n- $2");
-
-  // 6. Remove leftover solitary pipe lines (splitting artifact)
-  formatted = formatted.replace(/^\s*\|\s*$/gm, "");
-
   return formatted.trim();
 }
 
