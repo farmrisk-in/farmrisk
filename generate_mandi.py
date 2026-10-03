@@ -1,4 +1,6 @@
-"use client";
+import os
+
+content = """\"\"\"use client\"\"\";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Store, IndianRupee, Scale, AlertTriangle, ChevronLeft, ChevronRight, Download } from "lucide-react";
@@ -229,7 +231,7 @@ export function MandiPrice() {
         .map(v => '"' + String(v === null ? "" : v).replace(/\"/g, '""') + '"').join(",")
       )
     );
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob([lines.join("\\n")], { type: "text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = `mandi-${selectedState}-${view[0].t}.csv`;
@@ -256,10 +258,7 @@ export function MandiPrice() {
   }, [sortedView, currentPage]);
   const totalPages = Math.ceil(sortedView.length / rowsPerPage);
 
-  const bestRow = sortedView.reduce((a, b) => {
-    if (!a) return b;
-    return (b.p || 0) > (a.p || 0) ? b : a;
-  }, sortedView[0] as MandiRow | undefined);
+  const bestRow = sortedView.reduce((a, b) => (b.p || 0) > (a.p || 0) ? b : a, sortedView[0]);
 
   // Handle sort click
   const handleSort = (k: keyof MandiRow) => {
@@ -317,7 +316,7 @@ export function MandiPrice() {
         <button
           onClick={downloadCSV}
           disabled={!view.length}
-          className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20 disabled:opacity-50 flex items-center gap-1 cursor-pointer"
+          className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20 disabled:opacity-50 flex items-center gap-1"
         >
           <Download className="size-3" /> CSV
         </button>
@@ -489,7 +488,7 @@ export function MandiPrice() {
                     <button 
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="p-1 rounded hover:bg-muted disabled:opacity-50 cursor-pointer"
+                      className="p-1 rounded hover:bg-muted disabled:opacity-50"
                     >
                       <ChevronLeft className="size-4" />
                     </button>
@@ -497,7 +496,7 @@ export function MandiPrice() {
                     <button 
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="p-1 rounded hover:bg-muted disabled:opacity-50 cursor-pointer"
+                      className="p-1 rounded hover:bg-muted disabled:opacity-50"
                     >
                       <ChevronRight className="size-4" />
                     </button>
