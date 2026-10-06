@@ -21,7 +21,10 @@ import {
   Droplets,
   Languages,
   Lock,
+  Download,
 } from "lucide-react";
+import { FarmRiskLogo } from "@/components/ui/logo";
+import { generatePreSowingPDF } from "@/lib/pdf/presowingPdf";
 import { Button } from "@/components/ui/button";
 import {
   CANONICAL_CROPS,
@@ -150,10 +153,34 @@ export function PreSowing() {
   });
 
   const isGenerating = isLoading || isFetching;
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const hasAdvisoryData = Boolean(
+    sections &&
+      Object.values(sections).some(
+        (val) => typeof val === "string" && val.trim().length > 0,
+      ),
+  );
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     refetch();
+  };
+
+  const handleDownloadPdf = async () => {
+    if (isDownloadingPdf || !hasAdvisoryData) return;
+    setIsDownloadingPdf(true);
+    try {
+      await generatePreSowingPDF({
+        elementId: "presowing-printable-area",
+        cropName: selectedCrop?.name || crop,
+        stateName: state,
+      });
+    } catch (err) {
+      console.error("Failed to generate Pre-Sowing PDF", err);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   if (!authLoading && !user) {
@@ -305,8 +332,28 @@ export function PreSowing() {
             </div>
           </div>
 
-          {/* ACTION BUTTON */}
-          <div className="flex items-center justify-end gap-3 pt-1">
+          {/* ACTION BUTTONS */}
+          <div className="flex items-center justify-end gap-3 pt-1 flex-wrap">
+            <Button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isGenerating || isDownloadingPdf || !hasAdvisoryData}
+              variant="outline"
+              className="border-emerald-600/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-semibold text-xs sm:text-sm h-9 px-4 rounded-lg shadow-2xs flex items-center gap-2 cursor-pointer transition-all disabled:opacity-50"
+            >
+              {isDownloadingPdf ? (
+                <>
+                  <LoaderCircle className="size-4 animate-spin text-emerald-600" />
+                  <span>Preparing PDF...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="size-4 text-emerald-600" />
+                  <span>Download PDF</span>
+                </>
+              )}
+            </Button>
+
             <Button
               type="submit"
               disabled={isGenerating}
@@ -328,10 +375,100 @@ export function PreSowing() {
         </form>
       </div>
 
-      {/* 7 PRE-SOWING COMPONENTS GRID */}
+      {/* PRINTABLE REPORT WRAPPER FOR PDF EXPORT */}
+      <div id="presowing-printable-area" className="flex flex-col gap-4 w-full">
+        {/* PDF REPORT HEADER (Rendered in exported PDF document with brand mark and selections) */}
+        <div
+          id="presowing-pdf-header"
+          data-pdf-card="true"
+          style={{ display: "none" }}
+          className="w-full bg-white text-gray-900 border border-emerald-500/30 rounded-2xl p-6 shadow-xs"
+        >
+          {/* Header Row: Logo & Document Title */}
+          <div className="flex items-center justify-between border-b border-emerald-500/20 pb-4 mb-4">
+            <div className="flex items-center gap-3">
+              <FarmRiskLogo size={36} />
+              <div>
+                <h1 className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+                  FarmRisk
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300">
+                    Pre-Sowing Advisory
+                  </span>
+                </h1>
+                <p className="text-xs text-gray-600 font-medium">
+                  Agronomic Intelligence &amp; ICAR Package of Practices
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-xs font-bold text-emerald-800 block uppercase tracking-wider">
+                Official Advisory Document
+              </span>
+              <span className="text-xs text-gray-500">
+                Generated: {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+              </span>
+            </div>
+          </div>
+
+          {/* Selections / Parameters Summary Grid */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
+                Selected Crop
+              </span>
+              <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5">
+                <Sprout className="size-3.5 text-emerald-600" />
+                {selectedCrop?.name || crop}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
+                Region / State
+              </span>
+              <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5">
+                <MapPin className="size-3.5 text-gray-500" />
+                {state}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
+                Soil Profile
+              </span>
+              <span className="text-sm font-bold text-amber-800 flex items-center gap-1.5 mt-0.5 capitalize">
+                <Layers className="size-3.5 text-amber-600" />
+                {soilType}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
+                Season &amp; Irrigation
+              </span>
+              <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5 capitalize">
+                <Calendar className="size-3.5 text-emerald-600" />
+                {season} · {irrigationType}
+              </span>
+            </div>
+          </div>
+
+          {/* Grounding Info */}
+          {(data?.rag_sources_used ?? 0) > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-600">
+              <span className="flex items-center gap-1.5 font-semibold text-emerald-800">
+                <BookOpen className="size-3.5 text-emerald-600" />
+                Grounding: {data?.rag_sources_used} ICAR &amp; KVK scientific packages synthesized
+              </span>
+              <span className="text-gray-500">Language: {language.toUpperCase()}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 7 PRE-SOWING COMPONENTS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full items-stretch">
         {/* 1. Sowing Window / Timeline */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <SowingTimeline
             content={sections?.sowing_window}
             isLoading={isGenerating}
@@ -341,7 +478,7 @@ export function PreSowing() {
         </div>
 
         {/* 2. Seed Selection */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <SeedSelection
             content={sections?.seed_selection}
             isLoading={isGenerating}
@@ -351,7 +488,7 @@ export function PreSowing() {
         </div>
 
         {/* 3. Field Preparation */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <FieldPreparation
             content={sections?.field_preparation}
             isLoading={isGenerating}
@@ -361,7 +498,7 @@ export function PreSowing() {
         </div>
 
         {/* 4. Fertilizer Plan */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <FertilizerPlan
             content={sections?.fertilizer_plan}
             isLoading={isGenerating}
@@ -371,7 +508,7 @@ export function PreSowing() {
         </div>
 
         {/* 5. Irrigation Schedule */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <IrrigationSchedule
             content={sections?.irrigation}
             isLoading={isGenerating}
@@ -381,7 +518,7 @@ export function PreSowing() {
         </div>
 
         {/* 6. Weed Management */}
-        <div className="col-span-1 flex">
+        <div data-pdf-card="true" className="col-span-1 flex">
           <WeedManagement
             content={sections?.weed_management}
             isLoading={isGenerating}
@@ -391,7 +528,7 @@ export function PreSowing() {
         </div>
 
         {/* 7. Pest & Disease Calendar (Full width on large screens) */}
-        <div className="col-span-1 lg:col-span-2 flex">
+        <div data-pdf-card="true" className="col-span-1 lg:col-span-2 flex">
           <PestDiseaseCalendar
             content={sections?.pest_disease}
             isLoading={isGenerating}
@@ -402,7 +539,10 @@ export function PreSowing() {
       </div>
 
       {/* NEAREST KRISHI VIGYAN KENDRA (KVK) GUIDANCE FOOTER */}
-      <NearestKVKFooter />
+      <div data-pdf-card="true" className="w-full">
+        <NearestKVKFooter />
+      </div>
+      </div>
     </div>
   );
 }
