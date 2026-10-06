@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useLocationContext } from "@/providers/LocationProvider";
 
 import {
@@ -7,6 +8,7 @@ import {
   Clock,
   CloudOff,
   CloudRain,
+  Expand,
   Thermometer,
   Zap,
 } from "lucide-react";
@@ -15,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWeather } from "@/hooks/useWeather";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { HourlyWeatherModal } from "./HourlyWeatherModal";
 
 const formatHour = (dateInput: Date | string) => {
   const date = new Date(dateInput);
@@ -70,6 +73,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
   const { data, isLoading } = useWeather();
   const { location } = useLocationContext();
   const hourly = data?.hourly;
+  const [modalOpen, setModalOpen] = useState(false);
 
   const slots = hourly
     ? hourly.time.map((time, idx) => ({
@@ -79,6 +83,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
         windKph: Math.round(hourly.wind_speed_10m[idx]),
         icon: hourly.icon[idx] || "clear_day.svg",
         weatherCode: hourly.weather_code[idx] ?? 0,
+        rawDate: time,
         rainfall: hourly.rain[idx] ?? 0,
       }))
     : [];
@@ -133,6 +138,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
         label: db.hourlyRainChance,
         value: `${first?.rainChance ?? 0}%`,
         Icon: CloudRain,
+  Expand,
         trend: getTrend(first?.rainChance, last?.rainChance),
       },
       {
@@ -145,15 +151,32 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
     ];
 
     return (
-      <div className="w-full h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-4 select-none flex flex-col gap-3">
-        {/* HEADER */}
-        <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
-          <Clock className="size-4" />
-          {db.hourlyNextHours}
-          <span className="ml-auto text-[10px] font-semibold text-muted-foreground uppercase">
-            {db.hourlyNext6}
-          </span>
-        </div>
+      <>
+        <HourlyWeatherModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          locationName={location?.name}
+          hourly={hourly}
+        />
+        <div className="w-full h-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-4 select-none flex flex-col gap-3">
+          {/* HEADER */}
+          <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider">
+            <Clock className="size-4" />
+            {db.hourlyNextHours}
+            <span className="ml-auto text-[10px] font-semibold text-muted-foreground uppercase">
+              {db.hourlyNext6}
+            </span>
+            {slots.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="flex size-6 items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                aria-label="Expand hourly forecast"
+              >
+                <Expand className="size-3.5" />
+              </button>
+            )}
+          </div>
 
         {isLoading ? (
           <div className="grid grid-cols-3 min-[380px]:grid-cols-6 gap-2 items-stretch">
@@ -236,10 +259,18 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
           </>
         )}
       </div>
+    </>
     );
   }
 
   return (
+    <>
+      <HourlyWeatherModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        locationName={location?.name}
+        hourly={hourly}
+      />
     <div className="w-full min-w-0 bg-card border border-border text-foreground rounded-xl shadow-sm p-5 pb-0 select-none">
       {/* HEADER SECTION */}
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
@@ -248,6 +279,15 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
           <Badge variant={"secondary"} className="text-[10px] ml-auto rounded-sm">
             {db.hourlyNext24}
           </Badge>
+          {slots.length > 0 && (
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex size-6 items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              aria-label="Expand hourly forecast"
+            >
+              <Expand className="size-3.5" />
+            </button>
+          )}
         </div>
 
       <div className="flex gap-0 justify-start overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
@@ -329,6 +369,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
         )}
       </div>
     </div>
+    </>
   );
 };
 

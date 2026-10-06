@@ -343,6 +343,11 @@ const params = {
     "is_day",
     "rain",
     "wind_gusts_10m",
+    "relative_humidity_2m",
+    "apparent_temperature",
+    "uv_index",
+    "cloud_cover",
+    "et0_fao_evapotranspiration",
   ],
   current: [
     "temperature_2m",
@@ -526,6 +531,26 @@ export async function GET(request: NextRequest) {
       wind_gusts_10m: normalizeArray(
         hourly.variables(6)!.valuesArray(),
         0,
+      ).splice(-24),
+      is_day: normalizeArray(hourly.variables(4)!.valuesArray(), 0).splice(-24),
+      relative_humidity_2m: normalizeArray(
+        hourly.variables(7)!.valuesArray(),
+        0,
+      ).splice(-24),
+      apparent_temperature: normalizeArray(
+        hourly.variables(8)!.valuesArray(),
+        1,
+      ).splice(-24),
+      uv_index: normalizeArray(hourly.variables(9)!.valuesArray(), 1).splice(
+        -24,
+      ),
+      cloud_cover: normalizeArray(
+        hourly.variables(10)!.valuesArray(),
+        0,
+      ).splice(-24),
+      et0_fao_evapotranspiration: normalizeArray(
+        hourly.variables(11)!.valuesArray(),
+        2,
       ).splice(-24),
       icon: normalizeArray(hourly.variables(3)!.valuesArray(), 0)
         .map((code, i) => {
