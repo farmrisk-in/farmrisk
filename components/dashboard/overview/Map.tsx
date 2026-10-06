@@ -166,7 +166,7 @@ export default function Map({
   const { t } = useLanguage();
 
   const tileUrl = isDark
-    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    ? "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
     : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
   const newLocal =
@@ -198,7 +198,12 @@ export default function Map({
         }}
         key={`map-container-${initialLat}-${initialLng}-${dialog}`}
       >
-        <TileLayer key={isDark ? "dark" : "light"} url={tileUrl} />
+        <TileLayer
+          key={isDark ? "dark" : "light"}
+          url={tileUrl}
+          maxZoom={19}
+          maxNativeZoom={isDark ? 16 : 19}
+        />
         <Recenter lat={initialLat} lng={initialLng} zoom={zoom} />
         {onCenterChange && <MapEvents onCenterChange={onCenterChange} />}
         <InvalidateMapSize />
