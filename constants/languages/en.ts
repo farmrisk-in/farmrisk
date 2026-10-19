@@ -62,25 +62,35 @@ export const en = {
   tools: {
     title: "Tools",
     preSowing: "Pre-Sowing",
-    preSowingDesc: "Agronomic planning, sowing guidelines, and land preparation advisory before planting.",
+    preSowingDesc:
+      "Agronomic planning, sowing guidelines, and land preparation advisory before planting.",
     postHarvest: "Post-Harvest",
-    postHarvestDesc: "Post-harvest market intelligence, APMC mandi arrivals, and commodity pricing for your crop.",
+    postHarvestDesc:
+      "Post-harvest market intelligence, APMC mandi arrivals, and commodity pricing for your crop.",
     sowingTimeline: "Sowing Window / Timeline",
-    sowingTimelineDesc: "Optimal sowing dates, temperature window, and monsoon alignment.",
+    sowingTimelineDesc:
+      "Optimal sowing dates, temperature window, and monsoon alignment.",
     seedSelection: "Seed Selection",
-    seedSelectionDesc: "Recommended certified cultivars, seeding rate, and seed treatment protocol.",
+    seedSelectionDesc:
+      "Recommended certified cultivars, seeding rate, and seed treatment protocol.",
     fieldPreparation: "Field Preparation",
-    fieldPreparationDesc: "Ploughing depth, tilth preparation, levelling, and drainage alignment.",
+    fieldPreparationDesc:
+      "Ploughing depth, tilth preparation, levelling, and drainage alignment.",
     fertilizerPlan: "Fertilizer Plan",
-    fertilizerPlanDesc: "Basal doses, NPK nutrient ratio, organic manure incorporation, and micronutrients.",
+    fertilizerPlanDesc:
+      "Basal doses, NPK nutrient ratio, organic manure incorporation, and micronutrients.",
     irrigationSchedule: "Irrigation Schedule",
-    irrigationScheduleDesc: "Pre-sowing wetting (palevo), critical growth stage water requirements, and intervals.",
+    irrigationScheduleDesc:
+      "Pre-sowing wetting (palevo), critical growth stage water requirements, and intervals.",
     weedManagement: "Weed Management",
-    weedManagementDesc: "Pre-emergence herbicide applications, cultural methods, and critical weed-free period.",
+    weedManagementDesc:
+      "Pre-emergence herbicide applications, cultural methods, and critical weed-free period.",
     pestDiseaseCalendar: "Pest & Disease Calendar",
-    pestDiseaseCalendarDesc: "Early stage vulnerabilities, trap cropping, and preventive seed/soil bio-control calendar.",
+    pestDiseaseCalendarDesc:
+      "Early stage vulnerabilities, trap cropping, and preventive seed/soil bio-control calendar.",
     mandiPrice: "Mandi Price",
-    mandiPriceDesc: "Wholesale APMC market arrivals and modal trading rates for the selected crop.",
+    mandiPriceDesc:
+      "Wholesale APMC market arrivals and modal trading rates for the selected crop.",
     noDataYet: "No data available yet",
     noDataDesc: "Advisory details will appear here once generated.",
     loadingAdvisory: "Generating agronomic advisory...",
@@ -89,7 +99,8 @@ export const en = {
     errorMandi: "Failed to fetch mandi market rates",
     retry: "Try again",
     emptyMandiTitle: "No mandi price data loaded yet",
-    emptyMandiDesc: "Real-time APMC wholesale rates and market trends will appear here once connected to the price feed.",
+    emptyMandiDesc:
+      "Real-time APMC wholesale rates and market trends will appear here once connected to the price feed.",
     modalPrice: "Modal Price",
     minPrice: "Min Price",
     maxPrice: "Max Price",
@@ -102,7 +113,8 @@ export const en = {
     generateAdvisory: "Generate Advisory",
     generating: "Generating...",
     advisorySettings: "Pre-Sowing Parameters",
-    advisorySettingsDesc: "Configure crop, region, and soil characteristics to retrieve RAG-grounded ICAR guidelines.",
+    advisorySettingsDesc:
+      "Configure crop, region, and soil characteristics to retrieve RAG-grounded ICAR guidelines.",
     sourcesUsed: "sources used",
     runtime: "Runtime",
     kvkGuidanceTitle: "Need Local Agricultural Guidance?",
@@ -202,12 +214,18 @@ export const en = {
     pestFactorRainyDays: "{n} rainy days in the next 5 days",
     pestFactorFreshRain: "fresh rain expected",
     pestFactorWetSoil: "prolonged soil wetness",
-    pestInterpHigh: "Current conditions ({factors}) are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
-    pestInterpHighNoFact: "Current conditions are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
-    pestInterpModerate: "Current conditions ({factors}) may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
-    pestInterpModerateNoFact: "Current conditions may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
-    pestInterpLow: "Current conditions ({factors}) are less favourable for a significant pest and disease build-up. Continue routine crop monitoring.",
-    pestInterpLowNoFact: "Current conditions are less favourable for a significant pest and disease build-up. Continue routine crop monitoring.",
+    pestInterpHigh:
+      "Current conditions ({factors}) are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
+    pestInterpHighNoFact:
+      "Current conditions are favourable for pest and disease build-up. Closely monitor the crop for early signs of pest activity or disease.",
+    pestInterpModerate:
+      "Current conditions ({factors}) may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
+    pestInterpModerateNoFact:
+      "Current conditions may support some pest and disease activity. Keep monitoring the crop regularly for early signs of an outbreak.",
+    pestInterpLow:
+      "Current conditions ({factors}) are less favourable for a significant pest and disease build-up. Continue routine crop monitoring.",
+    pestInterpLowNoFact:
+      "Current conditions are less favourable for a significant pest and disease build-up. Continue routine crop monitoring.",
     pestSummary: "Summary",
     pestPotential: "Potential Pests & Diseases",
     pestActions: "Recommended Actions",
@@ -235,7 +253,8 @@ export const en = {
     sources: "Sources",
     noSources: "No sources",
     retrievedSources: "Retrieved Sources",
-    sourcesDescription: "Scientific and regional reference documents retrieved to construct this advisory.",
+    sourcesDescription:
+      "Scientific and regional reference documents retrieved to construct this advisory.",
     riskAssessment: "Risk assessment",
     intelligence: "Intelligence",
     comingNext: "Coming next",
@@ -287,7 +306,8 @@ export const en = {
     rainSpellSentenceLight: "Expect a Light spell of rainfall around {time}.",
     rainSpellSentenceModerate:
       "Expect a Moderate spell of rainfall around {time}.",
-    rainSpellSentenceIntense: "Expect an Intense spell of rainfall around {time}.",
+    rainSpellSentenceIntense:
+      "Expect an Intense spell of rainfall around {time}.",
     rainSpellSentenceVeryIntense:
       "Expect a Very Intense spell of rainfall around {time}.",
     rainSpellSentenceExtremelyIntense:
@@ -357,7 +377,8 @@ export const en = {
     icarGuideline: "ICAR Guideline",
     whatToDoToday: "What To Do Today",
     comingSoon: "Coming Soon",
-    personalisedDailyRecs: "Personalized daily recommendations will be available here.",
+    personalisedDailyRecs:
+      "Personalized daily recommendations will be available here.",
     hourlyForecastTitle: "HOURLY WEATHER FORECAST (24 HOURS)",
     hourlyNext24: "Next 24 Hours",
     hourlyNextHours: "Next Few Hours",
@@ -365,7 +386,8 @@ export const en = {
     hourlyTemperature: "Temperature",
     hourlyRainChance: "Rain Chance",
     hourlyLightning: "Lightning",
-    hourlyLoadError: "Something went wrong while fetching the data. Please try again later.",
+    hourlyLoadError:
+      "Something went wrong while fetching the data. Please try again later.",
     hourlyRising: "rising",
     hourlyFalling: "falling",
     conditionFoggy: "Foggy",
@@ -398,7 +420,8 @@ export const en = {
     smSelectLocation: "Select a location to view soil moisture.",
     smAnalyzing: "Analyzing soil hydrology...",
     smAnalysisFailed: "Analysis Failed",
-    smLoadErrorDesc: "Failed to retrieve soil moisture data. Please select another location or try again later.",
+    smLoadErrorDesc:
+      "Failed to retrieve soil moisture data. Please select another location or try again later.",
     smNoData: "No soil moisture data available.",
     smIrrigationDate: "Irrigation Date",
     smClearReset: "Clear / Reset Filter",
@@ -454,7 +477,8 @@ export const en = {
     riskBandLow: "Low",
     riskBandMinimal: "Minimal",
     footerCorporation: "FarmRisk Corporation",
-    footerVerification: "Data verified against satellite hydrology and bias corrections",
+    footerVerification:
+      "Data verified against satellite hydrology and bias corrections",
     footerDisclaimer: "Generated Locally \u00b7 Not for Regulatory Submission",
     download: "Download",
     generating: "Generating...",
@@ -503,7 +527,8 @@ export const en = {
     cropsIGrow: "Crops Currently Grown",
     currentBadge: "Current",
     noCropsHistory: "No crops recorded yet.",
-    cropsHint: "Shows the crops growing on any of your fields, plus crops grown for more than a week.",
+    cropsHint:
+      "Shows the crops growing on any of your fields, plus crops grown for more than a week.",
     cropsUnavailable: "Crops will be available after you choose your location",
 
     save: "Save",
@@ -554,9 +579,11 @@ export const en = {
     dangerZone: "Danger Zone",
     dangerZoneDesc: "Irreversible actions that affect your FarmRisk account.",
     deleteAccount: "Delete Account",
-    deleteAccountWarning: "Permanently delete your account and all associated farm data. This action cannot be undone.",
+    deleteAccountWarning:
+      "Permanently delete your account and all associated farm data. This action cannot be undone.",
     deleteAccountConfirmTitle: "Delete Account Permanently?",
-    deleteAccountConfirmMessage: "This will permanently remove your profile, phone login, saved farm fields, and crop data from FarmRisk servers.",
+    deleteAccountConfirmMessage:
+      "This will permanently remove your profile, phone login, saved farm fields, and crop data from FarmRisk servers.",
     deleteAccountTypeConfirmation: "Type delete to confirm:",
     deleteAccountKeyword: "delete",
     deleteAccountBtn: "Permanently Delete Account",
@@ -643,7 +670,8 @@ export const en = {
     noCrops: "No crops added",
     mapNoData: "No field data available at this location or zoom level.",
     fieldLoading: "Loading field boundaries…",
-    fieldErrorDesc: "Could not load field boundaries. Please check your connection and try again.",
+    fieldErrorDesc:
+      "Could not load field boundaries. Please check your connection and try again.",
     coverageAvailable: "Field data available",
     coverageNoData: "No field data",
     drawBtn: "Draw Field",
@@ -741,7 +769,7 @@ export const en = {
       },
     ],
     stats: [
-      { value: "99.2%", label: "Forecast Accuracy" },
+      { value: "24 Hr", label: "Hourly Weather" },
       { value: "10-Day", label: "Weather Outlook" },
       { value: "4+", label: "Languages Supported" },
       { value: "24/7", label: "Real-Time Updates" },
@@ -811,10 +839,14 @@ export const en = {
     currentLocation: "Current Location",
     selectedFromMap: "Selected from Map",
     mapLoading: "Loading Select Map...",
-    geoNotSupported: "Geolocation is not supported in this browser or context. Make sure you are using a secure connection (HTTPS).",
-    geoInsecure: "GPS failed: Insecure connection (HTTP). Geolocation requires a secure HTTPS connection on mobile devices.",
-    geoPermissionDenied: "Location permission denied. Please enable location access in your device/browser settings.",
-    geoUnavailable: "Unable to retrieve your location. Please check settings or search manually.",
+    geoNotSupported:
+      "Geolocation is not supported in this browser or context. Make sure you are using a secure connection (HTTPS).",
+    geoInsecure:
+      "GPS failed: Insecure connection (HTTP). Geolocation requires a secure HTTPS connection on mobile devices.",
+    geoPermissionDenied:
+      "Location permission denied. Please enable location access in your device/browser settings.",
+    geoUnavailable:
+      "Unable to retrieve your location. Please check settings or search manually.",
   },
   auth: {
     signInTitle: "Sign in to FarmRisk",
@@ -848,7 +880,8 @@ export const en = {
     otpSending: "Sending OTP...",
     otpSent: "OTP sent!",
     otpFailed: "OTP failed",
-    resetPhoneInvalidDigits: "Please enter a valid 10-digit Indian phone number",
+    resetPhoneInvalidDigits:
+      "Please enter a valid 10-digit Indian phone number",
     resetPasswordTooShort: "New password must be at least 6 characters long",
     resetFailed: "Failed to reset password",
     resetInstructionsSent: "Password reset instructions sent for this account!",
