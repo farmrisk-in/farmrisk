@@ -31,7 +31,7 @@ const SECTIONS: {
 }[] = [
   { key: "daily", names: ["Today"] },
   { key: "risks", names: ["Weather", "FarmRisk"] },
-  { key: "tools", names: ["Pre-Sowing", "Post-Harvest"] },
+  { key: "tools", names: ["Pre-Sowing", "Post-Harvest", "Disease Detection"] },
   { key: "advanced", names: ["Insights", "Profile"] },
 ];
 

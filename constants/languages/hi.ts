@@ -48,6 +48,7 @@ export const hi = {
     settings: "सेटिंग्स",
     preSowing: "बुवाई पूर्व",
     postHarvest: "फसल कटाई बाद",
+    diseaseDetection: "रोग पहचान",
     logout: "लॉग आउट",
     loggingOut: "लॉग आउट हो रहा है...",
   },
@@ -68,6 +69,35 @@ export const hi = {
     postHarvest: "फसल कटाई बाद",
     postHarvestDesc:
       "कटाई के बाद बाजार जानकारी, एपीएमसी मंडी आवक और फसल मूल्य।",
+    diseaseDetection: "रोग पहचान",
+    diseaseDetectionDesc:
+      "फसल रोगों के निदान और आईसीएआर उपचार दिशानिर्देशों के लिए एआई पत्ती स्कैन।",
+    diseaseUploadTitle: "फसल या पत्ती की तस्वीर अपलोड करें",
+    diseaseUploadDesc:
+      "प्रभावित पत्ती की तस्वीर यहाँ खींचकर लाएँ, या ब्राउज़ करने के लिए क्लिक करें। JPEG, PNG, WEBP समर्थित (15MB तक)।",
+    browseFiles: "फ़ाइलें चुनें",
+    takePhoto: "फोटो खींचें",
+    imageReady: "तस्वीर तैयार है",
+    readyForInference:
+      "DeiT न्यूरल विज़न वर्गीकरण और आईसीएआर कृषि ज्ञानकोष पुनर्प्राप्ति के लिए तैयार।",
+    changePhoto: "तस्वीर बदलें",
+    removePhoto: "हटाएं",
+    analyzeCrop: "फसल विश्लेषण करें",
+    analyzingCrop: "विश्लेषण हो रहा है...",
+    scanAnother: "अन्य स्कैन करें",
+    healthyCrop: "स्वस्थ फसल",
+    diseaseDetected: "रोग का पता चला",
+    lowConfidence: "कम विश्वसनीयता",
+    modelConfidence: "मॉडल विश्वसनीयता",
+    alternativePredictions: "वैकल्पिक वर्गीकरण",
+    managementAdvisory: "आईसीएआर कृषि प्रबंधन सलाह",
+    allSections: "सभी खंड",
+    healthyGuidanceTitle: "पौधा स्वस्थ प्रतीत होता है",
+    healthyGuidanceDesc:
+      "विज़न क्लासिफायरियर ने पत्ती पर झुलसा, रतुआ, फफूंद या पोषक तत्वों की कमी का कोई लक्षण नहीं पाया। अपने फसल चक्र के अनुसार सामान्य सिंचाई और पोषण जारी रखें।",
+    uploadPrompt: "कृपया पहले एक फसल तस्वीर चुनें या खींचें।",
+    analysisFailed: "विश्लेषण विफल",
+    supportedPathologies: "110+ फसल विकृतियाँ समर्थित",
     sowingTimeline: "बुवाई समय / समय-सारणी",
     sowingTimelineDesc:
       "मौसम और मिट्टी के तापमान के अनुसार सर्वोत्तम बुवाई का समय।",

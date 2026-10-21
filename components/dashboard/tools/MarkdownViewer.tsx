@@ -30,6 +30,9 @@ function preprocessMarkdown(text: string): string {
   // 1. Unescape literal \n sequences from JSON transport
   let formatted = text.replace(/\\n/g, "\n");
 
+  // 2. Normalize bold delimiters like `**BOLD **` or `** BOLD**` to `**BOLD**`
+  formatted = formatted.replace(/\*\*\s*([^*]+?)\s*\*\*/g, "**$1**");
+
   return formatted.trim();
 }
 
@@ -65,7 +68,7 @@ export function MarkdownViewer({
   return (
     <div
       className={cn(
-        "markdown-body text-xs sm:text-sm text-foreground/90 leading-relaxed overflow-hidden",
+        "markdown-body text-sm sm:text-base text-foreground/95 leading-relaxed overflow-hidden",
         className,
       )}
     >
@@ -74,49 +77,52 @@ export function MarkdownViewer({
         components={{
           h1: ({ ...props }) => (
             <h1
-              className="text-base sm:text-lg font-bold text-foreground mt-3 mb-2 pb-1 border-b border-border"
+              className="text-lg sm:text-xl font-bold text-foreground mt-3 mb-2 pb-1 border-b border-border"
               {...props}
             />
           ),
           h2: ({ ...props }) => (
             <h2
-              className="text-sm sm:text-base font-bold text-foreground mt-3 mb-1.5 flex items-center gap-1.5"
+              className="text-base sm:text-lg font-bold text-foreground mt-3 mb-1.5 flex items-center gap-1.5"
               {...props}
             />
           ),
           h3: ({ ...props }) => (
             <h3
-              className="text-xs sm:text-sm font-semibold text-foreground mt-2 mb-1"
+              className="text-sm sm:text-base font-bold text-foreground mt-2 mb-1"
               {...props}
             />
           ),
           h4: ({ ...props }) => (
             <h4
-              className="text-xs font-semibold text-foreground mt-2 mb-1"
+              className="text-sm sm:text-base font-bold text-foreground mt-2 mb-1"
               {...props}
             />
           ),
           p: ({ ...props }) => (
-            <p className="mb-2 leading-relaxed last:mb-0" {...props} />
+            <p className="mb-2.5 leading-relaxed last:mb-0 text-sm sm:text-base" {...props} />
           ),
           strong: ({ ...props }) => (
-            <strong className="font-semibold text-foreground" {...props} />
+            <strong className="font-extrabold text-foreground" {...props} />
+          ),
+          b: ({ ...props }) => (
+            <b className="font-extrabold text-foreground" {...props} />
           ),
           em: ({ ...props }) => <em className="italic" {...props} />,
           ul: ({ ...props }) => (
             <ul
-              className="list-disc pl-4 space-y-1 mb-2 text-foreground/90"
+              className="list-disc pl-5 space-y-1.5 mb-2.5 text-foreground/95"
               {...props}
             />
           ),
           ol: ({ ...props }) => (
             <ol
-              className="list-decimal pl-4 space-y-1 mb-2 text-foreground/90"
+              className="list-decimal pl-5 space-y-1.5 mb-2.5 text-foreground/95"
               {...props}
             />
           ),
           li: ({ ...props }) => (
-            <li className="leading-relaxed pl-0.5" {...props} />
+            <li className="leading-relaxed pl-0.5 text-sm sm:text-base" {...props} />
           ),
           blockquote: ({ ...props }) => (
             <blockquote

@@ -47,6 +47,7 @@ export const en = {
     settings: "Settings",
     preSowing: "Pre-Sowing",
     postHarvest: "Post-Harvest",
+    diseaseDetection: "Disease Detection",
     logout: "Log Out",
     loggingOut: "Logging out...",
   },
@@ -67,6 +68,35 @@ export const en = {
     postHarvest: "Post-Harvest",
     postHarvestDesc:
       "Post-harvest market intelligence, APMC mandi arrivals, and commodity pricing for your crop.",
+    diseaseDetection: "Disease Detection",
+    diseaseDetectionDesc:
+      "AI leaf scan to diagnose crop diseases and ICAR treatment guidelines.",
+    diseaseUploadTitle: "Upload Crop or Leaf Image",
+    diseaseUploadDesc:
+      "Drag & drop an affected leaf photo here, or click to browse. Supports JPEG, PNG, WEBP (up to 15MB).",
+    browseFiles: "Browse Files",
+    takePhoto: "Take Photo",
+    imageReady: "Image Ready",
+    readyForInference:
+      "Ready for DeiT neural vision classification and ICAR knowledge base retrieval.",
+    changePhoto: "Change Photo",
+    removePhoto: "Remove",
+    analyzeCrop: "Analyze Crop",
+    analyzingCrop: "Analyzing...",
+    scanAnother: "Scan Another",
+    healthyCrop: "Healthy Crop",
+    diseaseDetected: "Disease Detected",
+    lowConfidence: "Low Confidence",
+    modelConfidence: "Model Confidence",
+    alternativePredictions: "Alternative Classifications",
+    managementAdvisory: "ICAR Agronomic Management Advisory",
+    allSections: "All Sections",
+    healthyGuidanceTitle: "Plant Appears Healthy",
+    healthyGuidanceDesc:
+      "Our vision classifier did not detect signs of foliar blight, rust, mildew, or nutrient deficiency. Continue standard irrigation and scheduled nutrition according to your crop cycle.",
+    uploadPrompt: "Please select or capture a crop image first.",
+    analysisFailed: "Analysis Failed",
+    supportedPathologies: "110+ Crop Pathologies Supported",
     sowingTimeline: "Sowing Window / Timeline",
     sowingTimelineDesc:
       "Optimal sowing dates, temperature window, and monsoon alignment.",

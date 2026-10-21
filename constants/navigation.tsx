@@ -7,6 +7,7 @@ import {
   LandPlot,
   Sprout,
   Store,
+  ScanSearch,
   type LucideIcon,
 } from "lucide-react";
 import Overview from "@/components/dashboard/overview/Overview";
@@ -18,6 +19,7 @@ import FarmRisk from "@/components/dashboard/farmrisk/FarmRisk";
 import Insights from "@/components/dashboard/insights/Insights";
 import PreSowing from "@/components/dashboard/tools/PreSowing";
 import PostHarvest from "@/components/dashboard/tools/PostHarvest";
+import DiseaseDetection from "@/components/dashboard/tools/DiseaseDetection";
 import { ReactNode } from "react";
 
 export interface NavigationItem {
@@ -33,7 +35,8 @@ export interface NavigationItem {
     | "myFields"
     | "selectFields"
     | "preSowing"
-    | "postHarvest";
+    | "postHarvest"
+    | "diseaseDetection";
   icon: LucideIcon;
   component: ReactNode;
   isLocked: boolean;
@@ -87,6 +90,14 @@ export const navigationItems: NavigationItem[] = [
     labelKey: "postHarvest",
     icon: Store,
     component: <PostHarvest />,
+    isLocked: true,
+    inSidebar: true,
+  },
+  {
+    name: "Disease Detection",
+    labelKey: "diseaseDetection",
+    icon: ScanSearch,
+    component: <DiseaseDetection />,
     isLocked: true,
     inSidebar: true,
   },
