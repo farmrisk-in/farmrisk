@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const DEFAULT_BASE_URL = "http://127.0.0.1:7860";
+const DEFAULT_BASE_URL = "https://vegadurmin-farmrisk-disease-detection.hf.space";
 
 function getBaseUrl(): string {
   const url =
