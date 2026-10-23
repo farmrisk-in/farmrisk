@@ -45,7 +45,8 @@ const SENTENCE_FOR: Record<RainSpellLabel, RainSpellSentence> = {
 // Classify an hourly rainfall intensity (mm/hour) into a Rain Spell category.
 // Determination is based on the hourly precipitation amount/intensity only,
 // never on precipitation probability or daily accumulated rainfall.
-function getRainSpellLabel(rain: number): RainSpellLabel {
+function getRainSpellLabel(rain: number): RainSpellLabel | null {
+  if (rain < 1.0) return null; // No rain spell if trace or zero rain
   if (rain < 10) return "rainSpellLight";
   if (rain < 20) return "rainSpellModerate";
   if (rain < 30) return "rainSpellIntense";
@@ -75,21 +76,24 @@ export default function WeatherSummary() {
 
   // The Rain Spell category is derived from the highest hourly precipitation
   // intensity and its corresponding forecast time from the Open-Meteo data.
+  // It only applies when actual rain (>= 1.0 mm/hr) is forecasted.
   let spellLabel: RainSpellLabel | null = null;
   let spellTime = "";
   const rain = weather?.hourly?.rain;
   const times = weather?.hourly?.time;
   if (rain && rain.length > 0 && times) {
-    let maxRain = -1;
-    let maxIdx = 0;
+    let maxRain = 0;
+    let maxIdx = -1;
     rain.forEach((value, idx) => {
       if (value > maxRain) {
         maxRain = value;
         maxIdx = idx;
       }
     });
-    spellLabel = getRainSpellLabel(maxRain);
-    spellTime = formatHour(times[maxIdx]);
+    if (maxIdx >= 0 && maxRain >= 1.0) {
+      spellLabel = getRainSpellLabel(maxRain);
+      spellTime = formatHour(times[maxIdx]);
+    }
   }
 
   let displaySummary = summary || "";
