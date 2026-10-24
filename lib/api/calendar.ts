@@ -5,7 +5,7 @@ export async function getCalendar(
   lat: number,
   lng: number
 ): Promise<CalendarAPIResponse> {
-  const res = await fetch(`/api/calender?lat=${lat}&lng=${lng}&crop=${crop}`);
+  const res = await fetch(`/api/calendar?lat=${lat}&lng=${lng}&crop=${crop}`);
 
   if (!res.ok) {
     throw new Error(`Calendar request failed: ${res.statusText}`);
