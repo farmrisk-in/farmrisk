@@ -53,7 +53,9 @@ const EXTRAS = ["at", "rh", "uv", "wg", "cc", "et"];
 
 function formatHourLabel(dateInput: Date | string): string {
   const date = new Date(dateInput);
-  const h = date.getHours();
+  // /api/weather shifts times so the UTC fields hold local wall-clock time
+  // (same convention as HourlyWeather.tsx), so read them with getUTC*.
+  const h = date.getUTCHours();
   const ampm = h >= 12 ? "PM" : "AM";
   const h12 = h % 12 === 0 ? 12 : h % 12;
   return `${String(h12).padStart(2, "0")} ${ampm}`;
@@ -145,7 +147,7 @@ export function HourlyWeatherModal({
       H.push(formatHourLabel(rawDate));
       
       const dateObj = new Date(rawDate);
-      const hourVal = dateObj.getHours();
+      const hourVal = dateObj.getUTCHours();
       const isDay = hourly.is_day && hourly.is_day[i] !== undefined
         ? Boolean(hourly.is_day[i])
         : hourVal >= 6 && hourVal < 19;

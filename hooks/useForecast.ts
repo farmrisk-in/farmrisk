@@ -7,6 +7,13 @@ import { useLocationContext } from "@/providers/LocationProvider";
 import { ForecastResponse, ForecastRow } from "@/types/forecast";
 import { useWeather } from "./useWeather";
 
+// A partially covered last day comes back with null values (and nonsense
+// corrected temperatures); never show or feed such a day downstream.
+export const isCompleteDay = (row: ForecastRow) =>
+  Number.isFinite(row.tmax_corrected) &&
+  Number.isFinite(row.tmin_corrected) &&
+  Number.isFinite(row.pcp_corrected);
+
 export function useForecast() {
   const { location, isResolving } = useLocationContext();
   const { data: weatherData, isLoading: isWeatherLoading } = useWeather();
@@ -48,8 +55,8 @@ export function useForecast() {
         tmin_corrected: row.tmin !== undefined ? row.tmin : row.tmin_corrected,
         pcp_corrected: row.pcp !== undefined ? row.pcp : row.pcp_corrected,
         is_forecast: row.is_forecast !== undefined ? row.is_forecast : 1,
-      }))
-    : rawForecastRows;
+      })).filter(isCompleteDay)
+    : rawForecastRows.filter(isCompleteDay);
 
   // Forecast successfully loaded if we have data from either correction API or raw fallback
   const isSuccess = query.isSuccess || (!query.isLoading && query.isError && rawForecastRows.length > 0);

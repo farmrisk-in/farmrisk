@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useForecast } from "@/hooks/useForecast";
+import { isCompleteDay, useForecast } from "@/hooks/useForecast";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { Progress } from "@/components/ui/progress";
@@ -168,7 +168,7 @@ const Forcast = () => {
         pcp: daily.precipitation_sum[idx],
         pcp_corrected: daily.precipitation_sum[idx],
         is_forecast: 1 as const,
-      }))
+      })).filter(isCompleteDay)
     : [];
 
   const finalPredictions =
@@ -240,7 +240,7 @@ const Forcast = () => {
         {!isFallbackUsed && (
           <Badge variant={"default"} className="text-[10px] ml-auto rounded-sm">
             <CheckCheck size={15} className="mr-1" />
-            Bias Corrected
+            {t.dashboard.biasCorrected}
           </Badge>
         )}
       </div>
