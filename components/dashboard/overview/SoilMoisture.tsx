@@ -825,9 +825,10 @@ export default function SoilMoisture({
               <Button
                 variant={"outline"}
                 size={"icon"}
+                aria-label={t.a11y.settings}
                 className="h-7 w-7 rounded-md cursor-pointer hover:bg-muted"
               >
-                <Settings className="size-4" />
+                <Settings className="size-4" aria-hidden />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 z-9999" align="end">

@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/hooks/useLanguage";
 import {
   CATEGORIZED_CROPS,
   ALL_CATEGORIZED_CROPS,
@@ -59,6 +60,7 @@ export function OtherCropModal({
   onSelectCrop,
   currentSelectedCropId,
 }: OtherCropModalProps) {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -148,9 +150,10 @@ export function OtherCropModal({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
+                aria-label={t.a11y.clearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-full"
               >
-                <X className="size-4" />
+                <X className="size-4" aria-hidden />
               </button>
             )}
           </div>

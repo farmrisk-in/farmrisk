@@ -166,9 +166,10 @@ export const Lightning = () => {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label={t.a11y.expand}
                   className="pointer-events-auto text-white bg-black/10"
                 >
-                  <Expand className="size-4.5" />
+                  <Expand className="size-4.5" aria-hidden />
                 </Button>
               </DialogTrigger>
             }

@@ -396,8 +396,9 @@ export default function Profile() {
               onClick={() => fileInputRef.current?.click()}
               className="absolute -bottom-1 -right-1 size-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center justify-center transition-all hover:scale-105 cursor-pointer border border-background"
               title={t.profile.uploadCropAvatar}
+              aria-label={t.profile.uploadCropAvatar}
             >
-              <Camera className="size-3" />
+              <Camera className="size-3" aria-hidden />
             </button>
           </div>
 
@@ -509,8 +510,9 @@ export default function Profile() {
                   }}
                   className="h-8 w-8 text-destructive hover:bg-destructive/10 rounded-md cursor-pointer shrink-0"
                   title={t.profile.removePhoto}
+                  aria-label={t.profile.removePhoto}
                 >
-                  <Trash2 className="size-3.5" />
+                  <Trash2 className="size-3.5" aria-hidden />
                 </Button>
               )}
             </div>
@@ -928,6 +930,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => setZoom((z) => Math.max(1, z - 0.2))}
+                aria-label={t.a11y.zoomOut}
                 className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <ZoomOut className="size-4" />
@@ -944,6 +947,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => setZoom((z) => Math.min(3, z + 0.2))}
+                aria-label={t.a11y.zoomIn}
                 className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <ZoomIn className="size-4" />

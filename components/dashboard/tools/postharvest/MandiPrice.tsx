@@ -489,6 +489,7 @@ export function MandiPrice() {
                     <button 
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      aria-label={t.a11y.previousPage}
                       className="p-1 rounded hover:bg-muted disabled:opacity-50 cursor-pointer"
                     >
                       <ChevronLeft className="size-4" />
@@ -497,6 +498,7 @@ export function MandiPrice() {
                     <button 
                       onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      aria-label={t.a11y.nextPage}
                       className="p-1 rounded hover:bg-muted disabled:opacity-50 cursor-pointer"
                     >
                       <ChevronRight className="size-4" />

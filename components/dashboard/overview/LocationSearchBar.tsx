@@ -309,9 +309,10 @@ export function LocationSearchBar() {
                     size="icon"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setQuery("")}
+                    aria-label={t.a11y.clearSearch}
                     className="absolute right-1 top-1/2 size-8 -translate-y-1/2 rounded-full"
                   >
-                    <X className="size-4" />
+                    <X className="size-4" aria-hidden />
                   </Button>
                 )}
               </div>

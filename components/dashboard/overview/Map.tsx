@@ -108,31 +108,34 @@ function Recenter({
 
 function CustomZoomControl() {
   const map = useMap();
+  const { t } = useLanguage();
   return (
     <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-1000">
       <Button
         size="icon"
         variant="outline"
         type="button"
+        aria-label={t.a11y.zoomIn}
         className="size-10 rounded-md font-bold shadow-md bg-background/80 backdrop-blur-xs border-border text-foreground hover:bg-accent pointer-events-auto"
         onClick={(e) => {
           e.stopPropagation();
           map.zoomIn();
         }}
       >
-        +
+        <span aria-hidden>+</span>
       </Button>
       <Button
         size="icon"
         variant="outline"
         type="button"
+        aria-label={t.a11y.zoomOut}
         className="size-10 rounded-md font-bold shadow-md bg-background/80 backdrop-blur-xs border-border text-foreground hover:bg-accent pointer-events-auto"
         onClick={(e) => {
           e.stopPropagation();
           map.zoomOut();
         }}
       >
-        -
+        <span aria-hidden>-</span>
       </Button>
     </div>
   );
