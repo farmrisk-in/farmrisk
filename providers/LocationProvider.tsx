@@ -5,6 +5,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from "react";
 import { reverseGeocode } from "@/lib/utils";
@@ -26,11 +27,47 @@ type LocationContextValue = {
 
 const LocationContext = createContext<LocationContextValue | null>(null);
 
+const STORAGE_KEY = "farmrisk-location";
+
+function readStoredLocation(): SelectedLocation | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SelectedLocation;
+    return Number.isFinite(parsed?.lat) && Number.isFinite(parsed?.lng)
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useState<SelectedLocation | null>(null);
+  const [location, setLocationState] = useState<SelectedLocation | null>(
+    null,
+  );
   const [isResolving, setIsResolving] = useState(true);
 
+  // A place the user picked (search, map, saved field, GPS button) is
+  // remembered across reloads; GPS on load is only used when nothing is saved.
+  const setLocation = useCallback((next: SelectedLocation) => {
+    setLocationState(next);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Storage unavailable (private mode etc.) - keep the in-memory value.
+    }
+  }, []);
+
   useEffect(() => {
+    const stored = readStoredLocation();
+    if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLocationState(stored);
+      setIsResolving(false);
+      return;
+    }
+
     // Request GPS location on mount; if denied or unavailable, location stays null until user searches or picks on map
     if (typeof window !== "undefined" && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -38,7 +75,7 @@ export function LocationProvider({ children }: { children: ReactNode }) {
           try {
             const { latitude, longitude } = position.coords;
             const geoResult = await reverseGeocode(latitude, longitude);
-            setLocation({
+            setLocationState({
               lat: geoResult.lat,
               lng: geoResult.lng,
               name: geoResult.name,

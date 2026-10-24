@@ -69,6 +69,7 @@ function buildVillageLabelFromAddress(
 interface OlaAutocompletePrediction {
   place_id?: string;
   description?: string;
+  types?: string[];
   structured_formatting?: {
     main_text?: string;
     secondary_text?: string;
@@ -109,6 +110,52 @@ async function fetchOlaPlaceDetails(
   }
 }
 
+// Farmers search for villages, talukas and districts, not shops or stations.
+// Results are ranked so places come first; points of interest are dropped
+// only when at least one real place matched, so a search never goes empty.
+const PLACE_TYPES = new Set([
+  "locality",
+  "sublocality",
+  "sublocality_level_1",
+  "sublocality_level_2",
+  "administrative_area_level_1",
+  "administrative_area_level_2",
+  "administrative_area_level_3",
+  "administrative_area_level_4",
+  "postal_code",
+  "political",
+  "village",
+  "town",
+  "city",
+  "hamlet",
+  "suburb",
+  "neighbourhood",
+  "county",
+  "state_district",
+  "district",
+  "municipality",
+  "administrative",
+  "isolated_dwelling",
+  "region",
+]);
+const PLACE_CLASSES = new Set(["place", "boundary"]);
+
+function isPlace(types: string[] | undefined, cls?: string): boolean | null {
+  if (cls) return PLACE_CLASSES.has(cls);
+  if (!types || types.length === 0) return null; // unknown: keep, rank last-ish
+  return types.some((t) => PLACE_TYPES.has(t));
+}
+
+function preferPlaces<T>(
+  items: T[],
+  placeOf: (item: T) => boolean | null,
+): T[] {
+  const places = items.filter((i) => placeOf(i) === true);
+  if (places.length === 0) return items;
+  const unknown = items.filter((i) => placeOf(i) === null);
+  return [...places, ...unknown];
+}
+
 async function searchOlaMaps(
   query: string,
   apiKey: string,
@@ -130,51 +177,56 @@ async function searchOlaMaps(
   }
 
   const data = await response.json();
-  const predictions: OlaAutocompletePrediction[] = data.predictions || [];
+  const predictions: OlaAutocompletePrediction[] = preferPlaces(
+    data.predictions || [],
+    (p: OlaAutocompletePrediction) => isPlace(p.types),
+  ).slice(0, 8);
 
   if (!predictions.length) return [];
 
-  const results: UnifiedSearchResult[] = [];
+  // Resolve each prediction (including any details lookups) in parallel;
+  // doing them one by one made search take 10+ seconds.
+  const resolved = await Promise.all(
+    predictions.map(async (pred, i): Promise<UnifiedSearchResult | null> => {
+      const mainText =
+        pred.structured_formatting?.main_text || pred.description || query;
+      const secondaryText = pred.structured_formatting?.secondary_text || "";
+      const name = secondaryText ? `${mainText}, ${secondaryText}` : mainText;
+      const displayName = pred.description || name;
+      const placeId = pred.place_id || `ola-${i}`;
 
-  for (let i = 0; i < predictions.length; i++) {
-    const pred = predictions[i];
-    const mainText =
-      pred.structured_formatting?.main_text || pred.description || query;
-    const secondaryText = pred.structured_formatting?.secondary_text || "";
-    const name = secondaryText ? `${mainText}, ${secondaryText}` : mainText;
-    const displayName = pred.description || name;
-    const placeId = pred.place_id || `ola-${i}`;
+      let lat = pred.geometry?.location?.lat ?? pred.location?.lat;
+      let lng = pred.geometry?.location?.lng ?? pred.location?.lng;
 
-    let lat = pred.geometry?.location?.lat ?? pred.location?.lat;
-    let lng = pred.geometry?.location?.lng ?? pred.location?.lng;
-
-    // If geometry missing from prediction, attempt details lookup
-    if ((lat === undefined || lng === undefined) && pred.place_id) {
-      const details = await fetchOlaPlaceDetails(pred.place_id, apiKey);
-      if (details) {
-        lat = details.lat;
-        lng = details.lng;
+      // If geometry missing from prediction, attempt details lookup
+      if ((lat === undefined || lng === undefined) && pred.place_id) {
+        const details = await fetchOlaPlaceDetails(pred.place_id, apiKey);
+        if (details) {
+          lat = details.lat;
+          lng = details.lng;
+        }
       }
-    }
 
-    if (
-      typeof lat === "number" &&
-      typeof lng === "number" &&
-      !isNaN(lat) &&
-      !isNaN(lng)
-    ) {
-      results.push({
-        id: placeId,
-        name,
-        displayName,
-        lat,
-        lng,
-        provider: "ola",
-      });
-    }
-  }
+      if (
+        typeof lat === "number" &&
+        typeof lng === "number" &&
+        !isNaN(lat) &&
+        !isNaN(lng)
+      ) {
+        return {
+          id: placeId,
+          name,
+          displayName,
+          lat,
+          lng,
+          provider: "ola",
+        };
+      }
+      return null;
+    }),
+  );
 
-  return results;
+  return resolved.filter((r): r is UnifiedSearchResult => r !== null);
 }
 
 async function reverseGeocodeOlaMaps(
@@ -244,6 +296,8 @@ async function reverseGeocodeOlaMaps(
 interface LocationIQItem {
   place_id: string | number;
   display_name: string;
+  class?: string;
+  type?: string;
   lat: string;
   lon: string;
   address?: {
@@ -280,14 +334,16 @@ async function searchLocationIQ(
   const data = (await response.json()) as LocationIQItem[];
   if (!Array.isArray(data)) return [];
 
-  return data.map((item) => ({
-    id: String(item.place_id),
-    name: buildVillageLabelFromAddress(item.address, item.display_name),
-    displayName: item.display_name,
-    lat: Number(item.lat),
-    lng: Number(item.lon),
-    provider: "locationiq",
-  }));
+  return preferPlaces(data, (item) => isPlace(undefined, item.class)).map(
+    (item) => ({
+      id: String(item.place_id),
+      name: buildVillageLabelFromAddress(item.address, item.display_name),
+      displayName: item.display_name,
+      lat: Number(item.lat),
+      lng: Number(item.lon),
+      provider: "locationiq",
+    }),
+  );
 }
 
 async function reverseGeocodeLocationIQ(
@@ -331,6 +387,8 @@ async function reverseGeocodeLocationIQ(
 interface NominatimSearchItem {
   place_id: number;
   display_name: string;
+  category?: string;
+  type?: string;
   lat: string;
   lon: string;
   address?: {
@@ -367,14 +425,16 @@ async function searchNominatim(query: string): Promise<UnifiedSearchResult[]> {
   const data = (await response.json()) as NominatimSearchItem[];
   if (!Array.isArray(data)) return [];
 
-  return data.map((item) => ({
-    id: String(item.place_id),
-    name: buildVillageLabelFromAddress(item.address, item.display_name),
-    displayName: item.display_name,
-    lat: Number(item.lat),
-    lng: Number(item.lon),
-    provider: "nominatim",
-  }));
+  return preferPlaces(data, (item) => isPlace(undefined, item.category)).map(
+    (item) => ({
+      id: String(item.place_id),
+      name: buildVillageLabelFromAddress(item.address, item.display_name),
+      displayName: item.display_name,
+      lat: Number(item.lat),
+      lng: Number(item.lon),
+      provider: "nominatim",
+    }),
+  );
 }
 
 async function reverseGeocodeNominatim(
