@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { upstreamHeaders } from "@/lib/upstream";
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,9 +19,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: upstreamHeaders(),
     });
 
     if (!response.ok) {

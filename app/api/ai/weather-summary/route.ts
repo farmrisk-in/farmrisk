@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { upstreamHeaders } from "@/lib/upstream";
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,9 +21,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(targetUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: upstreamHeaders(),
       body: JSON.stringify(body),
     });
 

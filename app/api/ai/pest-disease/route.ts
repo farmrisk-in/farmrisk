@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { upstreamHeaders } from "@/lib/upstream";
 
 /**
  * POST /api/ai/pest-disease
@@ -32,9 +33,7 @@ export async function POST(request: NextRequest) {
       `${modelUrl.replace(/\/$/, "")}/api/advisory/pest-card`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: upstreamHeaders(),
         body: JSON.stringify(body),
       },
     );
