@@ -43,6 +43,12 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  // Keep <html lang> in sync so screen readers and search engines see the
+  // active language instead of the hard-coded "en".
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   const t = (content[language] || content.en) as TranslationType;
 
   if (!mounted) {
