@@ -225,7 +225,7 @@ export function PreSowing() {
               </h2>
               <p className="text-[11px] text-muted-foreground">
                 {t.tools?.advisorySettingsDesc ||
-                  "Configure soil, season, and irrigation properties to generate RAG-grounded ICAR guidelines."}
+                  "Configure soil, season, and irrigation properties to get guidance based on ICAR publications."}
               </p>
             </div>
           </div>

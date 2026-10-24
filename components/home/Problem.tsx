@@ -187,6 +187,16 @@ export function Problem() {
               {t.problem.impactDesc}
             </p>
 
+            <a
+              href="https://www.germanwatch.org/en/cri"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary/80 transition-colors hover:text-primary"
+            >
+              <span>{t.problem.goToSource} (Germanwatch CRI 2025)</span>
+              <span aria-hidden>→</span>
+            </a>
+
             <div className="flex flex-wrap gap-3 pt-4">
               <Link href="#solution" className="w-full md:w-auto">
                 <Button
@@ -194,11 +204,6 @@ export function Problem() {
                   className="rounded-full shadow-lg shadow-primary/20"
                 >
                   {t.problem.impactBtnSolution}
-                </Button>
-              </Link>
-              <Link href="#learn-more" className="w-full md:w-auto">
-                <Button size="lg" variant="outline" className="rounded-full">
-                  {t.problem.impactBtnLearnMore}
                 </Button>
               </Link>
             </div>

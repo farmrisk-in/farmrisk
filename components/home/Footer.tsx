@@ -16,6 +16,8 @@ interface FooterSection {
   links: FooterLink[];
 }
 
+const OPEN_METEO = "Open-Meteo.com";
+
 export function Footer() {
   const { t } = useLanguage();
 
@@ -23,35 +25,13 @@ export function Footer() {
     {
       label: t.footer.product,
       links: [
-        { title: t.footer.features, href: "#" },
-        { title: t.footer.pricing, href: "#" },
-        { title: t.footer.testimonials, href: "#" },
-        { title: t.footer.integration, href: "#" },
+        { title: t.footer.features, href: "#solution" },
+        { title: t.footer.dashboard, href: "/dashboard" },
       ],
-    },
-    {
-      label: t.footer.company,
-      links: [
-        { title: t.footer.faqs, href: "#" },
-        { title: t.footer.aboutUs, href: "#" },
-        { title: t.footer.privacyPolicy, href: "#" },
-        { title: t.footer.terms, href: "#" },
-      ],
-    },
-    {
-      label: t.footer.resources,
-      links: [
-        { title: t.footer.blog, href: "#" },
-        { title: t.footer.changelog, href: "#" },
-        { title: t.footer.brand, href: "#" },
-        { title: t.footer.help, href: "#" },
-      ],
-    },
-    {
-      label: t.footer.socialLinks,
-      links: [],
     },
   ];
+
+  const attributionParts = t.landing.weatherAttribution.split(OPEN_METEO);
 
   const [mounted, setMounted] = useState(false);
 
@@ -78,7 +58,22 @@ export function Footer() {
             <span className="text-xl font-bold logoFace">{t.title}</span>
           </div>
           <p className="text-muted-foreground mt-8 text-sm md:mt-0">
-            {t.landing.footerRights}
+            {t.landing.footerRights.replace(
+              "{year}",
+              String(new Date().getFullYear()),
+            )}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {attributionParts[0]}
+            <a
+              href="https://open-meteo.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-foreground"
+            >
+              {OPEN_METEO}
+            </a>
+            {attributionParts.slice(1).join(OPEN_METEO)}
           </p>
         </AnimatedContainer>
 

@@ -6,7 +6,6 @@ import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "../ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
-import { UserBaseCounter } from "@/components/ui/UserCount";
 import Image from "next/image";
 import { NavBar } from "@/components/home/Navbar";
 import { Highlight } from "@/components/ui/hero-highlight";
@@ -38,12 +37,7 @@ const transitionVariants = {
   },
 };
 
-interface HeroProps {
-  userCount?: number;
-  suffix?: string;
-}
-
-export function Hero({ userCount, suffix }: HeroProps) {
+export function Hero() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const parts = t.heroHeading.split(/\{([^}]*)\}/);
@@ -102,9 +96,6 @@ export function Hero({ userCount, suffix }: HeroProps) {
                       </span>
                     </span>
                   </p>
-                  <div className="mt-8 w-full flex justify-start">
-                    <UserBaseCounter totalUsers={userCount} append={suffix} />
-                  </div>
                 </AnimatedGroup>
 
                 <AnimatedGroup
@@ -119,7 +110,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                     },
                     item: transitionVariants.item,
                   }}
-                  className="mt-8 flex flex-row items-stretch sm:items-center justify-start gap-4 w-full sm:w-auto"
+                  className="mt-8 flex flex-row flex-wrap items-stretch sm:items-center justify-start gap-4 w-full sm:w-auto"
                 >
                   <AuthButtons
                     className="w-40 h-13"
@@ -136,6 +127,18 @@ export function Hero({ userCount, suffix }: HeroProps) {
                       className="w-full flex items-center justify-center"
                     >
                       {t.nav.learnMore}
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="bg-background h-12"
+                  >
+                    <Link
+                      href="/dashboard"
+                      className="w-full flex items-center justify-center"
+                    >
+                      {t.landing.tryFreeDashboard}
                     </Link>
                   </Button>
                 </AnimatedGroup>
@@ -161,7 +164,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
                     <div className="rounded-2xl rounded-b-none lg:rounded-b-2xl border-border bg-background p-2 shadow-2xl ring-1">
                       <Image
                         src="/dashlight.webp"
-                        alt={t.nav.dashboard}
+                        alt={t.landing.dashboardPreviewAlt}
                         width={2200}
                         height={1200}
                         priority
@@ -170,7 +173,7 @@ export function Hero({ userCount, suffix }: HeroProps) {
 
                       <Image
                         src="/dashdark.webp"
-                        alt={t.nav.dashboard}
+                        alt={t.landing.dashboardPreviewAlt}
                         width={2200}
                         height={1200}
                         priority

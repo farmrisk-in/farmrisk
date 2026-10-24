@@ -1,13 +1,14 @@
 export const en = {
   title: "FarmRisk",
+  seoTagline: "Weather, soil moisture and crop risk advisories for Indian farmers",
   description:
-    "An advanced agricultural intelligence platform integrating high-resolution remote sensing, satellite field mapping, and real-time climate data. Empowering farmers with localized risk mitigation analytics and predictive AI insights to optimize crop yield and operational sustainability.",
-  heroEyebrow: "Satellite intelligence",
-  heroHeading: `Farmers face climate {Uncertainty} almost every day`,
+    "FarmRisk gives Indian farmers a 16-day weather forecast bias-corrected against IMD observations, root-zone soil moisture from a calibrated water-balance model, and crop risk advisories for their location, in five languages.",
+  heroEyebrow: "Climate risk intelligence",
+  heroHeading: "Farmers face climate {uncertainty} almost every day",
   heroSubheadingPart1:
-    "India experienced extreme weather events on 99% days in 2025",
+    "India saw extreme weather on 331 of 334 days (Jan–Nov 2025)",
   heroSubheadingPart2: ", directly threatening the ",
-  heroSubheadingPart3: "50% of India's crop area that is entirely rainfed.",
+  heroSubheadingPart3: "50% of India's crop area that depends on rainfall.",
   heroCta: "Open Dashboard",
   version: "1.0.0",
   locale: "en-US",
@@ -144,7 +145,7 @@ export const en = {
     generating: "Generating...",
     advisorySettings: "Pre-Sowing Parameters",
     advisorySettingsDesc:
-      "Configure crop, region, and soil characteristics to retrieve RAG-grounded ICAR guidelines.",
+      "Configure crop, region, and soil characteristics to get guidance based on ICAR publications.",
     sourcesUsed: "sources used",
     runtime: "Runtime",
     kvkGuidanceTitle: "Need Local Agricultural Guidance?",
@@ -179,10 +180,10 @@ export const en = {
       "We ingest weather predictions from IMD, satellite vegetation records from NASA & ESA, and geography datasets from ISRO.",
     step2Title: "AI Advisory Generation",
     step2Desc:
-      "Our RAG-LLM mapping engine checks weather trends against crop stages, farming guidelines, and current humidity to formulate targeted recommendations.",
+      "Our AI advisory engine checks weather trends against crop stages, farming guidelines, and current humidity to formulate targeted recommendations.",
     step3Title: "Multilingual Distribution",
     step3Desc:
-      "Advisories are translated through our localization pipeline into English, Hindi, Marathi, and Tamil. Dispatched via web, app, and future SMS/WhatsApp integrations.",
+      "Advisories are translated through our localization pipeline into English, Hindi, Marathi, Tamil and Gujarati. Dispatched via web, app, and future SMS/WhatsApp integrations.",
 
     ctaEyebrow: "Platform Access",
     ctaHeading: "Start monitoring your farmland risk today.",
@@ -199,14 +200,17 @@ export const en = {
 
     footerDesc:
       "Agro-meteorological decision support platform. Translating complex weather intelligence and remote sensing data into actionable recommendations for farmers and agri-tech companies.",
-    footerRights: "© 2026 FarmRisk Platform. All rights reserved.",
+    footerRights: "© {year} FarmRisk. All rights reserved.",
+    tryFreeDashboard: "Try the free dashboard — no sign-up",
+    dashboardPreviewAlt: "Preview of the FarmRisk dashboard with forecast, soil moisture and crop risk",
+    weatherAttribution: "Weather data: Open-Meteo.com (CC BY 4.0). Observations: India Meteorological Department.",
     activeUsers: "Active Users",
     joinThousands: "Join thousands of satisfied users",
   },
 
   dashboard: {
     title: "Good morning, Rakesh.",
-    subtitle: "Village-level weather and field risk signals for today.",
+    subtitle: "Location-based weather and field risk signals for today.",
     snapshot: "local snapshot",
     livePreview: "Live dashboard preview",
     weatherToday: "Weather Today",
@@ -222,6 +226,8 @@ export const en = {
     agricultureRisk: "Weather Risk",
     agricultureRiskUnavailable: "Weather risk scores currently unavailable.",
     overall: "Overall",
+    overallExplain:
+      "Overall {score} = highest single risk ({base}) + {extra} because other risks are also elevated.",
     hazardHeavyRain: "Heavy Rain",
     hazardHeatStress: "Heat Stress",
     hazardPest: "Pest & Disease",
@@ -474,14 +480,15 @@ export const en = {
     reportTitle: "FARMRISK ADVISORY",
     reportSubtitle: "Climate Intelligence & Risk Report",
     cropLabel: "Crop:",
-    officialBadge: "Official Diagnostic PDF",
+    officialBadge: "FarmRisk Advisory Report",
     targetLocation: "Target Location",
     unspecifiedLocation: "Unspecified Location",
     notAvailable: "N/A",
     compilationTimestamp: "Compilation Timestamp",
     localTime: "Local Time",
     advisoryTitle: "AI Agronomist Advisory Overview",
-    advisoryFallback: "Agricultural RAG overview generated successfully.",
+    advisoryFallback:
+      "AI advisory was not available when this report was generated.",
     forecastTitle: "16-Day Weather Forecast Timeline",
     soilTitle: "Soil Hydrology & Hydrometry (30-Day Trend)",
     calendarTitle: "Crop Seasonal Calendar Cycles",
@@ -506,9 +513,9 @@ export const en = {
     riskBandModerate: "Moderate",
     riskBandLow: "Low",
     riskBandMinimal: "Minimal",
-    footerCorporation: "FarmRisk Corporation",
+    footerCorporation: "FarmRisk",
     footerVerification:
-      "Data verified against satellite hydrology and bias corrections",
+      "Forecasts bias-corrected against IMD gridded observations",
     footerDisclaimer: "Generated Locally \u00b7 Not for Regulatory Submission",
     download: "Download",
     generating: "Generating...",
@@ -722,9 +729,9 @@ export const en = {
   },
   problem: {
     badge: "The Challenge",
-    headingPart1: "Farmers face ",
-    headingHighlight: "climate uncertainty",
-    headingPart2: " every day",
+    headingPart1: "What ",
+    headingHighlight: "extreme weather",
+    headingPart2: " costs Indian farms",
     description:
       "Without reliable, localized weather information and actionable insights, farmers struggle to make critical decisions that directly impact their livelihood.",
     metrics: [
@@ -733,7 +740,7 @@ export const en = {
         value: "69 Mn ha",
         impact: "damaged in 6 years",
         description:
-          "Between 2015 and 2021, India lost 33.9 million hectares of crops to floods/excess rain and 35 million hectares to drought — a combined 69 million hectares of cropland destroyed.",
+          "Between 2015 and 2021, India lost 33.9 million hectares of crops to floods/excess rain and 35 million hectares to drought — a combined 69 million hectares of cropland damaged.",
         link: "https://www.weforum.org/stories/2024/08/income-insurance-india-climate-resilience/",
       },
       {
@@ -754,9 +761,9 @@ export const en = {
       },
     ],
     impactEyebrow: "The Cost of Uncertainty",
-    impactTitle: "₹13 trillion+ losses over 30 Years",
+    impactTitle: "₹15 lakh crore ($180 billion) in losses, 1993–2022",
     impactDesc:
-      "Between 1993 and 2022, India suffered $180 billion (~₹15 lakh crore) in economic losses from over 400 extreme weather events. In just six years (2015–2021), floods destroyed 33.9 million hectares and drought destroyed 35 million hectares of cropland. In 2025 alone, extreme weather damaged 17.4 million hectares of crops and claimed 4,419 lives. With 50% of India's cropped area dependent on rain and 80% of farmers being smallholders with less than 2 hectares, unpredictable weather patterns don't just reduce yields — they threaten survival.",
+      "Between 1993 and 2022, India suffered $180 billion (~₹15 lakh crore) in economic losses from over 400 extreme weather events. In just six years (2015–2021), floods damaged 33.9 million hectares and drought damaged 35 million hectares of cropland. From January to November 2025, extreme weather damaged 17.4 million hectares of crops and claimed 4,419 lives. With 50% of India's cropped area dependent on rain and 80% of farmers being smallholders with less than 2 hectares, unpredictable weather patterns don't just reduce yields — they threaten survival.",
     impactBtnSolution: "Discover the Solution",
     impactBtnLearnMore: "Learn More",
     goToSource: "Go to source",
@@ -767,13 +774,13 @@ export const en = {
     headingHighlight: "climate intelligence",
     headingPart2: "",
     description:
-      "FarmRisk bridges the gap between complex atmospheric science and daily farming decisions, translating real-time satellite telemetry and weather models into localized, high-yield actions.",
+      "FarmRisk bridges the gap between complex atmospheric science and daily farming decisions, translating weather forecasts, IMD observations and soil-water modelling into localized actions.",
     pillars: [
       {
         id: "precision",
         title: "Hyper-Local Precision",
         description:
-          "GPS-targeted, village-level weather forecasts customized for your specific coordinates.",
+          "Location-specific weather forecasts for the point you choose, bias-corrected against IMD observations.",
         icon: "Locate",
       },
       {
@@ -787,7 +794,7 @@ export const en = {
         id: "alerts",
         title: "Real-Time Hazard Alerts",
         description:
-          "Instant, real-time alerts for lightning strikes, extreme storms, and frost risks.",
+          "Lightning, storm and frost risk shown on your dashboard for the next 24 hours.",
         icon: "Zap",
       },
       {
@@ -800,9 +807,9 @@ export const en = {
     ],
     stats: [
       { value: "24 Hr", label: "Hourly Weather" },
-      { value: "10-Day", label: "Weather Outlook" },
-      { value: "4+", label: "Languages Supported" },
-      { value: "24/7", label: "Real-Time Updates" },
+      { value: "16-Day", label: "Weather Outlook" },
+      { value: "5", label: "Languages Supported" },
+      { value: "Hourly", label: "Forecast updates" },
     ],
   },
   choice: {
@@ -812,7 +819,7 @@ export const en = {
       description:
         "Access hyper-local weather snapshots and regional forecasts directly.",
       points: [
-        "Real-time weather telemetry data",
+        "Live weather data",
         "16-day general weather outlook",
       ],
       buttonText: "Go to Free Dashboard",
@@ -925,7 +932,18 @@ export const en = {
     close: "Close",
   },
 
+  a11y: {
+    expand: "Expand",
+    zoomIn: "Zoom in",
+    zoomOut: "Zoom out",
+    settings: "Settings",
+    clearSearch: "Clear search",
+    previousPage: "Previous page",
+    nextPage: "Next page",
+  },
+
   footer: {
+    dashboard: "Dashboard",
     product: "Product",
     company: "Company",
     resources: "Resources",
