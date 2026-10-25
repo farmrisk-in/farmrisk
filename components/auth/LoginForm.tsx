@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoaderCircle, KeyRound, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export function LoginForm({
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [consent, setConsent] = useState(false);
 
   // Forgot Password Modal States
   const [isForgotOpen, setIsForgotOpen] = useState(false);
@@ -80,6 +82,10 @@ export function LoginForm({
         setError(t.auth.errorPasswordMatch);
         return;
       }
+      if (!consent) {
+        setError(t.auth.errorConsent);
+        return;
+      }
     } else {
       if (!password) {
         setError(t.auth.errorPasswordRequired);
@@ -107,6 +113,8 @@ export function LoginForm({
               first_name: name,
               last_name: surname,
               phone: normalizedPhone,
+              // Record of consent to the privacy notice (DPDP Act).
+              privacy_consent_at: new Date().toISOString(),
             },
           },
         });
@@ -305,6 +313,34 @@ export function LoginForm({
               required
             />
           </div>
+        )}
+
+        {mode === "register" && (
+          <label className="flex items-start gap-2 text-sm text-foreground">
+            <input
+              type="checkbox"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              disabled={isLoading}
+              required
+              className="mt-0.5 size-4 accent-emerald-600"
+            />
+            <span>
+              {t.auth.consent.split(/(\{privacy\}|\{terms\})/).map((part, i) =>
+                part === "{privacy}" ? (
+                  <Link key={i} href="/privacy" target="_blank" className="text-emerald-700 underline">
+                    {t.footer.privacyPolicy}
+                  </Link>
+                ) : part === "{terms}" ? (
+                  <Link key={i} href="/terms" target="_blank" className="text-emerald-700 underline">
+                    {t.footer.terms}
+                  </Link>
+                ) : (
+                  part
+                ),
+              )}
+            </span>
+          </label>
         )}
 
         {error && (
