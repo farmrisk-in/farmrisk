@@ -364,7 +364,7 @@ const params = {
     "cloud_cover",
   ],
   timezone: "auto",
-  forecast_days: 16,
+  forecast_days: 15,
   forecast_hours: 25,
   past_hours: 0,
   past_days: 0,
@@ -453,11 +453,16 @@ export async function GET(request: NextRequest) {
       { status: 400 },
     );
   }
-  const url = "https://api.open-meteo.com/v1/forecast";
+  // Use the commercial customer API when a key is configured.
+  const apiKey = process.env.OPEN_METEO_API_KEY;
+  const url = apiKey
+    ? "https://customer-api.open-meteo.com/v1/forecast"
+    : "https://api.open-meteo.com/v1/forecast";
   const responses = await fetchWeatherApi(url, {
     ...params,
     latitude: latNum,
     longitude: lngNum,
+    ...(apiKey ? { apikey: apiKey } : {}),
   });
 
   // Process first location. Add a for-loop for multiple locations or weather models
