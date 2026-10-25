@@ -881,6 +881,8 @@ export const en = {
       "Unable to retrieve your location. Please check settings or search manually.",
   },
   auth: {
+    consent: "I agree to the {privacy} and {terms}.",
+    errorConsent: "Please accept the Privacy Policy and Terms to create an account.",
     signInTitle: "Sign in to FarmRisk",
     registerTitle: "Create your account",
     nameLabel: "Name",
@@ -938,6 +940,8 @@ export const en = {
   },
 
   footer: {
+    contact: "Contact",
+    legal: "Legal",
     dashboard: "Dashboard",
     product: "Product",
     company: "Company",
@@ -950,7 +954,7 @@ export const en = {
     faqs: "FAQs",
     aboutUs: "About Us",
     privacyPolicy: "Privacy Policy",
-    terms: "Terms of Services",
+    terms: "Terms of Use",
     blog: "Blog",
     changelog: "Changelog",
     brand: "Brand",

@@ -877,6 +877,8 @@ export const gu = {
       "તમારું સ્થાન મેળવવામાં અસમર્થ. કૃપા કરીને સેટિંગ્સ તપાસો અથવા મેન્યુઅલી શોધો.",
   },
   auth: {
+    consent: "હું {privacy} અને {terms} સાથે સંમત છું.",
+    errorConsent: "ખાતું બનાવવા માટે કૃપા કરીને ગોપનીયતા નીતિ અને શરતો સ્વીકારો.",
     signInTitle: "FarmRisk માં સાઇન ઇન કરો",
     registerTitle: "તમારું ખાતું બનાવો",
     nameLabel: "નામ",
@@ -935,6 +937,8 @@ export const gu = {
   },
 
   footer: {
+    contact: "સંપર્ક",
+    legal: "કાનૂની",
     dashboard: "ડેશબોર્ડ",
     product: "ઉત્પાદન",
     company: "કંપની",

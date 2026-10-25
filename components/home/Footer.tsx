@@ -27,6 +27,21 @@ export function Footer() {
         { title: t.footer.dashboard, href: "/dashboard" },
       ],
     },
+    {
+      label: t.footer.company,
+      links: [
+        { title: t.footer.aboutUs, href: "/about" },
+        { title: t.footer.faqs, href: "/faq" },
+        { title: t.footer.contact, href: "/contact" },
+      ],
+    },
+    {
+      label: t.footer.legal,
+      links: [
+        { title: t.footer.privacyPolicy, href: "/privacy" },
+        { title: t.footer.terms, href: "/terms" },
+      ],
+    },
   ];
 
   const [mounted, setMounted] = useState(false);

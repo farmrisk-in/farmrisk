@@ -879,6 +879,8 @@ export const hi = {
       "आपका स्थान प्राप्त करने में असमर्थ। कृपया सेटिंग्स जांचें या मैन्युअल रूप से खोजें।",
   },
   auth: {
+    consent: "मैं {privacy} और {terms} से सहमत हूँ।",
+    errorConsent: "खाता बनाने के लिए कृपया गोपनीयता नीति और शर्तें स्वीकार करें।",
     signInTitle: "FarmRisk में साइन इन करें",
     registerTitle: "अपना खाता बनाएं",
     nameLabel: "नाम",
@@ -936,6 +938,8 @@ export const hi = {
   },
 
   footer: {
+    contact: "संपर्क",
+    legal: "कानूनी",
     dashboard: "डैशबोर्ड",
     product: "उत्पाद",
     company: "कंपनी",

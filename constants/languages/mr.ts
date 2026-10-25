@@ -874,6 +874,8 @@ export const mr = {
       "तुमचे स्थान मिळवण्यात अक्षम. कृपया सेटिंग्ज तपासा किंवा मॅन्युअली शोधा.",
   },
   auth: {
+    consent: "मी {privacy} आणि {terms} यांना सहमती देतो/देते.",
+    errorConsent: "खाते तयार करण्यासाठी कृपया गोपनीयता धोरण आणि अटी स्वीकारा.",
     signInTitle: "FarmRisk मध्ये लॉग इन करा",
     registerTitle: "नवीन खाते तयार करा",
     nameLabel: "नाव",
@@ -931,6 +933,8 @@ export const mr = {
   },
 
   footer: {
+    contact: "संपर्क",
+    legal: "कायदेशीर",
     dashboard: "डॅशबोर्ड",
     product: "उत्पादन",
     company: "कंपनी",
