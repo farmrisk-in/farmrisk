@@ -6,6 +6,7 @@ import { AnimatedGroup } from "@/components/ui/animated-group";
 import { Button } from "../ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { UserBaseCounter } from "@/components/ui/UserCount";
 import Image from "next/image";
 import { NavBar } from "@/components/home/Navbar";
 import { Highlight } from "@/components/ui/hero-highlight";
@@ -37,7 +38,12 @@ const transitionVariants = {
   },
 };
 
-export function Hero() {
+interface HeroProps {
+  userCount?: number;
+  suffix?: string;
+}
+
+export function Hero({ userCount, suffix }: HeroProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
   const parts = t.heroHeading.split(/\{([^}]*)\}/);
@@ -96,6 +102,9 @@ export function Hero() {
                       </span>
                     </span>
                   </p>
+                  <div className="mt-8 w-full flex justify-start">
+                    <UserBaseCounter totalUsers={userCount} append={suffix} />
+                  </div>
                 </AnimatedGroup>
 
                 <AnimatedGroup

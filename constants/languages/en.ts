@@ -1,14 +1,15 @@
 export const en = {
   title: "FarmRisk",
-  seoTagline: "Weather, soil moisture and crop risk advisories for Indian farmers",
+  seoTagline:
+    "Weather, soil moisture and crop risk advisories for Indian farmers",
   description:
-    "FarmRisk gives Indian farmers a 16-day weather forecast bias-corrected against IMD observations, root-zone soil moisture from a calibrated water-balance model, and crop risk advisories for their location, in five languages.",
+    "FarmRisk gives Indian farmers a 15-day weather forecast bias-corrected against IMD observations, root-zone soil moisture from a calibrated water-balance model, and crop risk advisories for their location, in five languages.",
   heroEyebrow: "Climate risk intelligence",
   heroHeading: "Farmers face climate {uncertainty} almost every day",
   heroSubheadingPart1:
     "India saw extreme weather on 331 of 334 days (Jan–Nov 2025)",
   heroSubheadingPart2: ", directly threatening the ",
-  heroSubheadingPart3: "50% of India's crop area that depends on rainfall.",
+  heroSubheadingPart3: "50% of India's crop area that is rainfed.",
   heroCta: "Open Dashboard",
   version: "1.0.0",
   locale: "en-US",
@@ -201,16 +202,15 @@ export const en = {
     footerDesc:
       "Agro-meteorological decision support platform. Translating complex weather intelligence and remote sensing data into actionable recommendations for farmers and agri-tech companies.",
     footerRights: "© {year} FarmRisk. All rights reserved.",
-    tryFreeDashboard: "Try the free dashboard — no sign-up",
-    dashboardPreviewAlt: "Preview of the FarmRisk dashboard with forecast, soil moisture and crop risk",
-    weatherAttribution: "Weather data: Open-Meteo.com (CC BY 4.0). Observations: India Meteorological Department.",
+    tryFreeDashboard: "Get started with the free dashboard",
+    dashboardPreviewAlt:
+      "Preview of the FarmRisk dashboard with forecast, soil moisture and crop risk",
     activeUsers: "Active Users",
-    joinThousands: "Join thousands of satisfied users",
   },
 
   dashboard: {
     title: "Good morning, Rakesh.",
-    subtitle: "Location-based weather and field risk signals for today.",
+    subtitle: "Village-level weather and field risk signals for today.",
     snapshot: "local snapshot",
     livePreview: "Live dashboard preview",
     weatherToday: "Weather Today",
@@ -226,8 +226,6 @@ export const en = {
     agricultureRisk: "Weather Risk",
     agricultureRiskUnavailable: "Weather risk scores currently unavailable.",
     overall: "Overall",
-    overallExplain:
-      "Overall {score} = highest single risk ({base}) + {extra} because other risks are also elevated.",
     hazardHeavyRain: "Heavy Rain",
     hazardHeatStress: "Heat Stress",
     hazardPest: "Pest & Disease",
@@ -265,7 +263,7 @@ export const en = {
     pestSummary: "Summary",
     pestPotential: "Potential Pests & Diseases",
     pestActions: "Recommended Actions",
-    forecast16Day: "16 Day Forecast",
+    forecast16Day: "15 Day Forecast",
     modelSummary: "Model Summary",
     metric: "Metric",
     value: "Value",
@@ -489,7 +487,7 @@ export const en = {
     advisoryTitle: "AI Agronomist Advisory Overview",
     advisoryFallback:
       "AI advisory was not available when this report was generated.",
-    forecastTitle: "16-Day Weather Forecast Timeline",
+    forecastTitle: "15-Day Weather Forecast Timeline",
     soilTitle: "Soil Hydrology & Hydrometry (30-Day Trend)",
     calendarTitle: "Crop Seasonal Calendar Cycles",
     seasonLifecycle: "Season Lifecycle",
@@ -780,7 +778,7 @@ export const en = {
         id: "precision",
         title: "Hyper-Local Precision",
         description:
-          "Location-specific weather forecasts for the point you choose, bias-corrected against IMD observations.",
+          "GPS-targeted, village-level weather forecasts customized for your specific coordinates.",
         icon: "Locate",
       },
       {
@@ -807,7 +805,7 @@ export const en = {
     ],
     stats: [
       { value: "24 Hr", label: "Hourly Weather" },
-      { value: "16-Day", label: "Weather Outlook" },
+      { value: "15-Day", label: "Weather Outlook" },
       { value: "5", label: "Languages Supported" },
       { value: "Hourly", label: "Forecast updates" },
     ],
@@ -818,10 +816,7 @@ export const en = {
       title: "Standard Dashboard",
       description:
         "Access hyper-local weather snapshots and regional forecasts directly.",
-      points: [
-        "Live weather data",
-        "16-day general weather outlook",
-      ],
+      points: ["Live weather data", "15-day general weather outlook"],
       buttonText: "Go to Free Dashboard",
     },
     personalized: {

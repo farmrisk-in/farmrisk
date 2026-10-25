@@ -16,8 +16,6 @@ interface FooterSection {
   links: FooterLink[];
 }
 
-const OPEN_METEO = "Open-Meteo.com";
-
 export function Footer() {
   const { t } = useLanguage();
 
@@ -30,8 +28,6 @@ export function Footer() {
       ],
     },
   ];
-
-  const attributionParts = t.landing.weatherAttribution.split(OPEN_METEO);
 
   const [mounted, setMounted] = useState(false);
 
@@ -62,18 +58,6 @@ export function Footer() {
               "{year}",
               String(new Date().getFullYear()),
             )}
-          </p>
-          <p className="text-muted-foreground text-xs">
-            {attributionParts[0]}
-            <a
-              href="https://open-meteo.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:text-foreground"
-            >
-              {OPEN_METEO}
-            </a>
-            {attributionParts.slice(1).join(OPEN_METEO)}
           </p>
         </AnimatedContainer>
 

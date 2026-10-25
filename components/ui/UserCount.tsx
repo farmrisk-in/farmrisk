@@ -115,8 +115,6 @@ export const UserBaseCounter: React.FC<UserBaseCounterProps> = ({
           </div>
         </div>
       </div>
-
-      <p className="text-sm text-white">{t.landing.joinThousands}</p>
     </motion.div>
   );
 };
