@@ -172,16 +172,6 @@ export default function Risk() {
         })}
       </div>
 
-      {/* Explain why the overall score can exceed every single hazard */}
-      {overall && overall.escalation > 0 && (
-        <p className="mt-2 text-[10px] sm:text-xs text-muted-foreground leading-relaxed border-t border-border/50 pt-2">
-          {t.dashboard.overallExplain
-            .replace("{score}", String(overall.score))
-            .replace("{base}", String(overall.base_score))
-            .replace("{extra}", String(overall.escalation))}
-        </p>
-      )}
-
       {/* Overall summary sentence at bottom */}
       {/*{overall?.summary && (
         <p className="mt-3 text-[10px] sm:text-xs text-muted-foreground leading-relaxed border-t border-border/50 pt-2.5">

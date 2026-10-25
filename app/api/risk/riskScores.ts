@@ -30,10 +30,6 @@ export interface HazardScore {
 export interface OverallScore {
   score: number;
   band: string;
-  /** Score of the single worst hazard, before escalation. */
-  base_score: number;
-  /** Points added because other hazards are also elevated (score >= 40). */
-  escalation: number;
   summary: string;
   major_contributors: Array<{
     hazard: string;
@@ -754,13 +750,9 @@ export function computeOverall(
     summary = "All individual hazards are minimal.";
   }
 
-  // Band from the rounded score so the label always matches the number shown.
-  const score = pythonRound(overall_score);
   return {
-    score,
-    band: band(score),
-    base_score: worst_score,
-    escalation: score - worst_score,
+    score: pythonRound(overall_score),
+    band: band(overall_score),
     summary,
     major_contributors: contributors,
   };
