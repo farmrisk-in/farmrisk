@@ -5,7 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: siteUrl, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/dashboard`, changeFrequency: "daily", priority: 0.8 },
-    ...["/about", "/faq", "/contact", "/privacy", "/terms"].map((path) => ({
+    ...["/about", "/faq", "/contact", "/privacy", "/terms", "/delete-account"].map((path) => ({
       url: `${siteUrl}${path}`,
       changeFrequency: "monthly" as const,
       priority: 0.5,
