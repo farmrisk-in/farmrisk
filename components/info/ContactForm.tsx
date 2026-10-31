@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { createClient, isSupabaseConfigured } from "@/supabase/client";
 
-export const SUPPORT_EMAIL = "support@farmrisk.in";
+export const SUPPORT_EMAIL = "farmrisk.in@gmail.com";
 
 // Same topics and table as the mobile app's feedback section.
 const TOPICS = ["General", "Bug Report", "Feature Request", "Data Accuracy", "Other"];
