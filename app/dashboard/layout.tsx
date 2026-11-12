@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { LocationProvider } from "@/providers/LocationProvider";
@@ -39,12 +40,8 @@ export default function DashboardLayout({
                   color="blue"
                   className="lg:flex hidden"
                 >
-                  {new Date().toLocaleDateString(t.locale, {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatDate(new Date(), t.dates, "weekdayDayMonth")}{" "}
+                  {new Date().getFullYear()}
                 </Badge>
                 <Download />
                 <LanguageSwitcher isScrolled={true} rounded={false} />

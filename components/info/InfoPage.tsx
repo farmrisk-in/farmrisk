@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { NavBar } from "@/components/home/Navbar";
 import { Footer } from "@/components/home/Footer";
+import { useLanguage } from "@/hooks/useLanguage";
 
 // Shared layout for the static footer pages (privacy, terms, about, ...).
 export function InfoPage({
@@ -14,6 +15,7 @@ export function InfoPage({
   updated?: string;
   children: ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="pt-(--standalone)">
       <NavBar type="small" />
@@ -23,7 +25,7 @@ export function InfoPage({
         </h1>
         {updated && (
           <p className="text-muted-foreground mt-2 text-sm">
-            Last updated: {updated}
+            {t.info.lastUpdated.replace("{{date}}", updated)}
           </p>
         )}
         <div className="mt-8 space-y-6 leading-relaxed [&_a]:underline [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1">
@@ -39,6 +41,7 @@ export function InfoPage({
 export function Todo({ children }: { children: ReactNode }) {
   return (
     <span className="rounded bg-amber-100 px-1 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+      {/* i18n-ignore */}
       [TODO: {children}]
     </span>
   );

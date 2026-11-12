@@ -1,0 +1,9 @@
+{
+  "values": ["FarmRisk", "ID"],
+  "keys": [
+    "solution\\.pillars\\[\\d+\\]\\.(id|icon)",
+    "riskText\\.(dateFormat|contributor)",
+    "dates\\.(am|pm|patterns\\..*)",
+    "profile\\.deleteAccountKeyword"
+  ]
+}

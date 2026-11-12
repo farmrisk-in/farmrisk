@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import React, {
   useState,
   useEffect,
@@ -194,7 +195,7 @@ export default function Profile() {
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("Please select an image smaller than 10MB");
+      toast.error(t.profile.imageTooLarge);
       return;
     }
 
@@ -352,10 +353,7 @@ export default function Profile() {
     "F";
 
   const createdDate = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString(
-        language === "hi" ? "hi-IN" : "en-US",
-        { year: "numeric", month: "short", day: "numeric" },
-      )
+    ? formatDate(user.created_at, t.dates, "dayMonthYear")
     : t.profile.notAvailable;
 
   return (

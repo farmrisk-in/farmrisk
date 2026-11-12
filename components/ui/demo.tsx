@@ -8,6 +8,7 @@ export default function DemoOne() {
     <div className="flex items-center justify-center">
       <GlowingShadow loading={false}> 
         <span className="pointer-events-none z-10 m-8 text-center text-9xl leading-none font-semibold tracking-tighter text-white">
+          {/* i18n-ignore */}
           Glowing Shadow
         </span>
       </GlowingShadow>

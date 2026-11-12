@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeRiskScores, type ComputeRiskInput } from "./riskScores";
+import { content, loaders, type LanguageCode } from "@/constants/content";
 
 /**
  * POST /api/risk
@@ -11,7 +12,7 @@ import { computeRiskScores, type ComputeRiskInput } from "./riskScores";
  * {
  *   // From /api/weather  → daily
  *   rain_next5:        number[]   // daily.precipitation_sum (next 5 days)
- *   rain_dates:        string[]   // daily.time as ISO strings  (next 5 days)
+ *   rain_dates:        string[]   // "YYYY-MM-DD" local dates  (next 5 days)
  *   max_temp:          number     // daily.temperature_2m_max[0]  (today)
  *   min_temp:          number     // daily.temperature_2m_min[0]  (today)
  *   avg_max_temp:      number     // mean of daily.temperature_2m_max over window
@@ -26,7 +27,7 @@ import { computeRiskScores, type ComputeRiskInput } from "./riskScores";
  *
  *   // From /api/weather → hourly
  *   gusts_hourly:      number[]   // hourly wind gusts (km/h) — not in weather API yet (see docs)
- *   times_hourly:      string[]   // matching ISO timestamps  — not in weather API yet
+ *   times_hourly:      string[]   // matching local-offset ISO timestamps, e.g. "2026-11-09T14:00:00+05:30"
  *
  *   // From /api/soil-moisture
  *   soil_moisture_available: boolean
@@ -35,6 +36,11 @@ import { computeRiskScores, type ComputeRiskInput } from "./riskScores";
  *   // Optional overrides
  *   station_type:      "plains" | "hilly" | "coastal"  (default: "plains")
  *   crop_heat_threshold: number
+ *
+ *   // Optional: language code (e.g. "hi"). Controls the language of the
+ *   // user-visible text (major_factor, reasons, summary). Unknown or missing
+ *   // values fall back to English.
+ *   language:          string
  * }
  */
 export async function POST(request: NextRequest) {
@@ -66,7 +72,18 @@ export async function POST(request: NextRequest) {
       crop_heat_threshold: body.crop_heat_threshold ?? null,
     };
 
-    const scores = computeRiskScores(input);
+    let dict: { riskText: typeof content.en.riskText; dates: { monthsShort: string[] } } =
+      content.en;
+    const lang = typeof body.language === "string" ? body.language : "";
+    if (lang && lang !== "en" && Object.hasOwn(loaders, lang)) {
+      try {
+        dict = await loaders[lang as LanguageCode]();
+      } catch (e) {
+        console.error(`Failed to load language "${lang}" for /api/risk`, e);
+      }
+    }
+
+    const scores = computeRiskScores(input, dict.riskText, dict.dates.monthsShort);
     return NextResponse.json({ success: true, ...scores });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";

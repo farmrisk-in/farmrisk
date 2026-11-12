@@ -195,7 +195,9 @@ function Sidebar({
           side={side}
         >
           <SheetHeader className="sr-only">
+            {/* i18n-ignore */}
             <SheetTitle>Sidebar</SheetTitle>
+            {/* i18n-ignore */}
             <SheetDescription>Displays the mobile sidebar.</SheetDescription>
           </SheetHeader>
           <div className="flex h-full w-full flex-col">{children}</div>
@@ -271,6 +273,7 @@ function SidebarTrigger({
       {...props}
     >
       <RiSideBarLine />
+      {/* i18n-ignore */}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );
@@ -283,9 +286,11 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     <button
       data-sidebar="rail"
       data-slot="sidebar-rail"
+      // i18n-ignore
       aria-label="Toggle Sidebar"
       tabIndex={-1}
       onClick={toggleSidebar}
+      // i18n-ignore
       title="Toggle Sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:inset-s-1/2 after:w-0.5 hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",

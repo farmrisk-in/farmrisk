@@ -27,7 +27,7 @@ export function NearestKVKFooter() {
       <div className="w-full bg-card border border-border rounded-xl p-5 shadow-sm flex items-center justify-center gap-2.5 text-muted-foreground py-8">
         <LoaderCircle className="size-5 animate-spin text-emerald-500" />
         <span className="text-xs sm:text-sm font-medium">
-          Locating your nearest Krishi Vigyan Kendra (KVK)...
+          {t.tools.kvkLocating}
         </span>
       </div>
     );
@@ -121,7 +121,7 @@ export function NearestKVKFooter() {
         {query_district && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/80 text-foreground border border-border text-xs font-semibold shrink-0 self-start">
             <MapPin className="size-3.5 text-emerald-500" />
-            <span>{query_district} District</span>
+            <span>{t.tools.districtSuffix.replace("{{name}}", query_district)}</span>
           </div>
         )}
       </div>

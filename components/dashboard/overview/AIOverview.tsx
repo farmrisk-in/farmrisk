@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cleanAdvisoryText } from "@/lib/advisoryText";
+import SpeakButton from "./SpeakButton";
 
 interface AIOverviewProps {
   selectedCrop: CropOption;
@@ -37,7 +39,7 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
 
   const advisoryText = aiError
     ? t.dashboard.advisoryError
-    : advisoryDataText || "";
+    : cleanAdvisoryText(advisoryDataText);
 
   const isGeneralCrop = selectedCrop.id.toLowerCase() === "general";
   const heightClasses = isGeneralCrop
@@ -69,6 +71,17 @@ const AIOverview = ({ selectedCrop }: AIOverviewProps) => {
         <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase tracking-wider justify-between">
           <Bot className="size-6" />
           {t.dashboard.aiOverview}
+          <SpeakButton
+            text={
+              aiError ||
+              isGenerating ||
+              isWeatherLoading ||
+              isAiLoading ||
+              isForecastLoading
+                ? ""
+                : advisoryText
+            }
+          />
         </div>
         {!isGenerating &&
           !isWeatherLoading &&

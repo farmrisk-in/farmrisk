@@ -1,7 +1,20 @@
 "use client";
 
-import React, { createContext, useState, useEffect, ReactNode } from "react";
-import { content, LanguageCode, TranslationType } from "@/constants/content";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  ReactNode,
+} from "react";
+import {
+  content,
+  loaders,
+  LanguageCode,
+  TranslationType,
+} from "@/constants/content";
+import { isAvailableLanguage } from "@/constants/languages/registry";
 
 interface LanguageContextProps {
   language: LanguageCode;
@@ -13,43 +26,71 @@ export const LanguageContext = createContext<LanguageContextProps | undefined>(
   undefined,
 );
 
+const STORAGE_KEY = "farmrisk-language";
+
+// Loaded dictionaries survive re-renders and provider remounts.
+const cache: Partial<Record<LanguageCode, TranslationType>> = { en: content.en };
+
+async function loadLanguage(lang: LanguageCode): Promise<TranslationType> {
+  const hit = cache[lang];
+  if (hit) return hit;
+  const dict = await loaders[lang]();
+  cache[lang] = dict;
+  return dict;
+}
+
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [language, setLanguageState] = useState<LanguageCode>("en");
+  const [t, setT] = useState<TranslationType>(content.en);
   const [mounted, setMounted] = useState(false);
+  // Guards against an older, slower load overwriting a newer selection.
+  const requested = useRef<LanguageCode>("en");
+
+  const apply = useCallback(async (lang: LanguageCode) => {
+    requested.current = lang;
+    try {
+      const dict = await loadLanguage(lang);
+      if (requested.current !== lang) return;
+      setT(dict);
+      setLanguageState(lang);
+    } catch (e) {
+      console.error(`Failed to load language "${lang}"`, e);
+    }
+  }, []);
 
   useEffect(() => {
+    let stored: string | null = null;
     try {
-      const stored = localStorage.getItem("farmrisk-language") as LanguageCode;
-      if (stored && content[stored]) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setLanguageState(stored);
-      }
+      stored = localStorage.getItem(STORAGE_KEY);
     } catch (e) {
       console.error("Failed to read localStorage language", e);
     }
-    setMounted(true);
-  }, []);
+    const initial = isAvailableLanguage(stored) ? stored : "en";
+    // State updates happen after an await inside apply(), not synchronously.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void apply(initial).finally(() => setMounted(true));
+  }, [apply]);
 
-  const setLanguage = (lang: LanguageCode) => {
-    if (content[lang]) {
-      setLanguageState(lang);
+  const setLanguage = useCallback(
+    (lang: LanguageCode) => {
+      if (!isAvailableLanguage(lang)) return;
       try {
-        localStorage.setItem("farmrisk-language", lang);
+        localStorage.setItem(STORAGE_KEY, lang);
       } catch (e) {
         console.error("Failed to write localStorage language", e);
       }
-    }
-  };
+      void apply(lang);
+    },
+    [apply],
+  );
 
   // Keep <html lang> in sync so screen readers and search engines see the
   // active language instead of the hard-coded "en".
   useEffect(() => {
     document.documentElement.lang = language;
   }, [language]);
-
-  const t = (content[language] || content.en) as TranslationType;
 
   if (!mounted) {
     return (

@@ -38,8 +38,7 @@ export function PostHarvest() {
         </div>
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
-          Post-Harvest commodity market intelligence and APMC mandi rates are
-          exclusive to registered accounts. Please sign in to access.
+          {t.tools.postHarvestLoginRequired}
         </p>
         <Button
           onClick={() => router.push("/auth/login")}

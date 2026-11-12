@@ -1,14 +1,16 @@
 "use client";
 
+import { useLanguage } from "@/hooks/useLanguage";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Clock, X, ChevronDown } from "lucide-react";
+import { formatWeatherHour, weatherLocalHour } from "@/lib/weatherTime";
 
 interface HourlyWeatherModalProps {
   open: boolean;
   onClose: () => void;
   locationName?: string;
   hourly?: {
-    time: (Date | string)[];
+    time: string[];
     temperature_2m: number[];
     precipitation_probability: number[];
     wind_speed_10m: number[];
@@ -25,59 +27,57 @@ interface HourlyWeatherModalProps {
   };
 }
 
+type HourlyDetailKey = keyof ReturnType<typeof useLanguage>["t"]["hourlyDetail"];
+
+function fill(tpl: string, vars: Record<string, string | number>): string {
+  return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k) => String(vars[k] ?? ""));
+}
+
 interface ParamConfig {
-  name: string;
+  name: HourlyDetailKey;
   unit: string;
   kind: "line" | "bar";
   color: string;
   dec: number;
   fixed?: [number, number];
-  zero?: string;
+  zero?: HourlyDetailKey;
   compare?: string;
 }
 
 const PARAMS: Record<string, ParamConfig> = {
-  temp: { name: "Temperature", unit: "°C", kind: "line", color: "#D9480F", dec: 1 },
-  pp: { name: "Rain chance", unit: "%", kind: "bar", color: "#2563EB", dec: 0, fixed: [0, 100], zero: "No rain expected in the next 24 hours" },
-  pr: { name: "Rainfall", unit: "mm", kind: "bar", color: "#1E40AF", dec: 1, zero: "No rainfall expected in the next 24 hours" },
-  ws: { name: "Wind speed", unit: "kph", kind: "line", color: "#0F766E", dec: 1 },
-  at: { name: "Feels like", unit: "°C", kind: "line", color: "#C2410C", dec: 1, compare: "temp" },
-  rh: { name: "Humidity", unit: "%", kind: "line", color: "#0E7490", dec: 0, fixed: [0, 100] },
-  uv: { name: "UV index", unit: "", kind: "bar", color: "uv", dec: 1 },
-  wg: { name: "Wind gusts", unit: "kph", kind: "line", color: "#1D4ED8", dec: 1, compare: "ws" },
-  cc: { name: "Cloud cover", unit: "%", kind: "bar", color: "#64748B", dec: 0, fixed: [0, 100], zero: "Clear skies: 0% cloud cover all day" },
-  et: { name: "Evapotranspiration (ET₀)", unit: "mm", kind: "bar", color: "#15803D", dec: 2 },
+  temp: { name: "paramTemperature", unit: "°C", kind: "line", color: "#D9480F", dec: 1 },
+  pp: { name: "paramRainChance", unit: "%", kind: "bar", color: "#2563EB", dec: 0, fixed: [0, 100], zero: "zeroRainChance" },
+  pr: { name: "paramRainfall", unit: "mm", kind: "bar", color: "#1E40AF", dec: 1, zero: "zeroRainfall" },
+  ws: { name: "paramWindSpeed", unit: "kph", kind: "line", color: "#0F766E", dec: 1 },
+  at: { name: "paramFeelsLike", unit: "°C", kind: "line", color: "#C2410C", dec: 1, compare: "temp" },
+  rh: { name: "paramHumidity", unit: "%", kind: "line", color: "#0E7490", dec: 0, fixed: [0, 100] },
+  uv: { name: "paramUv", unit: "", kind: "bar", color: "uv", dec: 1 },
+  wg: { name: "paramWindGusts", unit: "kph", kind: "line", color: "#1D4ED8", dec: 1, compare: "ws" },
+  cc: { name: "paramCloudCover", unit: "%", kind: "bar", color: "#64748B", dec: 0, fixed: [0, 100], zero: "zeroCloud" },
+  et: { name: "paramEvapo", unit: "mm", kind: "bar", color: "#15803D", dec: 2 },
 };
 
 const EXTRAS = ["at", "rh", "uv", "wg", "cc", "et"];
 
-function formatHourLabel(dateInput: Date | string): string {
-  const date = new Date(dateInput);
-  // /api/weather shifts times so the UTC fields hold local wall-clock time
-  // (same convention as HourlyWeather.tsx), so read them with getUTC*.
-  const h = date.getUTCHours();
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${String(h12).padStart(2, "0")} ${ampm}`;
-}
+const formatHourLabel = formatWeatherHour;
 
 function fmt(v: number, d: number): string {
   return String(Number(v.toFixed(d)));
 }
 
-function withUnit(v: string, p: ParamConfig): string {
-  const u = p.unit;
+function withUnit(v: string, p: ParamConfig, unitLabel: (u: string) => string): string {
+  const u = unitLabel(p.unit);
   if (!u) return v;
   return u === "%" || u === "°C" ? v + u : v + " " + u;
 }
 
 function uvCat(v: number) {
   const r = Math.round(v);
-  if (r < 3) return { name: "Low", bg: "#DCFCE7", fg: "#166534", bar: "#22C55E" };
-  if (r < 6) return { name: "Moderate", bg: "#FEF3C7", fg: "#854D0E", bar: "#EAB308" };
-  if (r < 8) return { name: "High", bg: "#FFEDD5", fg: "#9A3412", bar: "#F97316" };
-  if (r < 11) return { name: "Very high", bg: "#FEE2E2", fg: "#991B1B", bar: "#DC2626" };
-  return { name: "Extreme", bg: "#F3E8FF", fg: "#6B21A8", bar: "#9333EA" };
+  if (r < 3) return { name: "uvLow" as HourlyDetailKey, bg: "#DCFCE7", fg: "#166534", bar: "#22C55E" };
+  if (r < 6) return { name: "uvModerate" as HourlyDetailKey, bg: "#FEF3C7", fg: "#854D0E", bar: "#EAB308" };
+  if (r < 8) return { name: "uvHigh" as HourlyDetailKey, bg: "#FFEDD5", fg: "#9A3412", bar: "#F97316" };
+  if (r < 11) return { name: "uvVeryHigh" as HourlyDetailKey, bg: "#FEE2E2", fg: "#991B1B", bar: "#DC2626" };
+  return { name: "uvExtreme" as HourlyDetailKey, bg: "#F3E8FF", fg: "#6B21A8", bar: "#9333EA" };
 }
 
 function niceCeil(x: number): number {
@@ -95,6 +95,11 @@ export function HourlyWeatherModal({
   locationName,
   hourly,
 }: HourlyWeatherModalProps) {
+  const { t } = useLanguage();
+  const hd = t.hourlyDetail;
+  const dateWords = t.dates;
+  const unitLabel = (u: string) =>
+    u === "mm" ? t.dashboard.unitMm : u === "kph" ? t.dashboard.unitKmh : u;
   const [expanded, setExpanded] = useState(true);
   const [selected, setSelected] = useState<string | null>("temp");
   const modalCardRef = useRef<HTMLDivElement>(null);
@@ -144,10 +149,9 @@ export function HourlyWeatherModal({
 
     for (let i = 0; i < n; i++) {
       const rawDate = hourly.time[i];
-      H.push(formatHourLabel(rawDate));
+      H.push(formatHourLabel(rawDate, dateWords));
       
-      const dateObj = new Date(rawDate);
-      const hourVal = dateObj.getUTCHours();
+      const hourVal = weatherLocalHour(rawDate);
       const isDay = hourly.is_day && hourly.is_day[i] !== undefined
         ? Boolean(hourly.is_day[i])
         : hourVal >= 6 && hourVal < 19;
@@ -196,12 +200,12 @@ export function HourlyWeatherModal({
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
         <div className="bg-card text-foreground p-6 rounded-2xl border border-border shadow-xl max-w-md w-full text-center">
-          <p className="text-sm text-muted-foreground mb-4">No hourly weather data available.</p>
+          <p className="text-sm text-muted-foreground mb-4">{hd.noData}</p>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold"
           >
-            Close
+            {hd.close}
           </button>
         </div>
       </div>
@@ -270,15 +274,15 @@ export function HourlyWeatherModal({
         }
       });
       if (best > 0) {
-        note = `Feels up to ${fmt(best, 1)}°C warmer than air temperature (${H[bi]})`;
+        note = fill(hd.noteFeelsWarmer, { value: fmt(best, 1), time: H[bi] });
       } else {
-        note = `Feels similar to air temperature`;
+        note = hd.noteFeelsSimilar;
       }
     } else if (key === "uv") {
       const cat = uvCat(vmax);
-      note = `Peak category: ${cat.name} (${fmt(vmax, 1)}) at ${H[imax]}`;
+      note = fill(hd.noteUvPeak, { category: hd[cat.name], value: fmt(vmax, 1), time: H[imax] });
     } else if (key === "wg") {
-      note = `Peak gust ${fmt(vmax, 0)} kph vs ${fmt(D.ws[imax], 0)} kph sustained wind`;
+      note = fill(hd.noteGustPeak, { gust: fmt(vmax, 0), wind: fmt(D.ws[imax], 0), unit: t.dashboard.unitKmh });
     }
 
     let line = "";
@@ -325,11 +329,11 @@ export function HourlyWeatherModal({
       });
       labels.push({ x: X(imax), y: Y(vmax) - 7, text: fmt(vmax, p.dec) });
     } else {
-      empty = p.zero || "No values above zero in the next 24 hours";
+      empty = hd[p.zero ?? "zeroDefault"];
     }
 
     return {
-      name: p.name,
+      name: hd[p.name],
       color,
       grid,
       line,
@@ -340,9 +344,9 @@ export function HourlyWeatherModal({
       labels,
       empty,
       hasCompare: Boolean(cmp),
-      compareName: cmp ? PARAMS[p.compare!].name : "",
-      maxText: withUnit(fmt(vmax, p.dec), p) + " at " + H[imax],
-      minText: withUnit(fmt(vmin, p.dec), p) + " at " + H[imin],
+      compareName: cmp ? hd[PARAMS[p.compare!].name] : "",
+      maxText: fill(hd.valueAtTime, { value: withUnit(fmt(vmax, p.dec), p, unitLabel), time: H[imax] }),
+      minText: fill(hd.valueAtTime, { value: withUnit(fmt(vmin, p.dec), p, unitLabel), time: H[imin] }),
       note,
       hasNote: Boolean(note),
     };
@@ -367,7 +371,7 @@ export function HourlyWeatherModal({
           <div className="flex items-center gap-2.5">
             <Clock className="w-5 h-5 text-gray-900 dark:text-gray-100" />
             <h2 className="text-[15px] font-bold tracking-wide uppercase m-0">
-              HOURLY WEATHER FORECAST (24 HOURS)
+              {t.dashboard.hourlyForecastTitle}
             </h2>
             {locationName && (
               <span className="text-xs text-muted-foreground font-normal ml-1">
@@ -376,14 +380,14 @@ export function HourlyWeatherModal({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[11px] font-medium tracking-wider bg-gray-100 dark:bg-muted text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full">
-              NEXT 24 HOURS
+            <span className="text-[11px] font-medium tracking-wider uppercase bg-gray-100 dark:bg-muted text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full">
+              {t.dashboard.hourlyNext24}
             </span>
             <button
               type="button"
               onClick={onClose}
               className="flex size-8 items-center justify-center rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-card text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-              aria-label="Close modal"
+              aria-label={hd.closeModal}
             >
               <X className="size-4" />
             </button>
@@ -418,7 +422,7 @@ export function HourlyWeatherModal({
             >
               {expanded && (
                 <div className="sticky left-0 z-10 bg-white dark:bg-card border-r border-gray-200 dark:border-border flex items-center px-3 text-[12px] text-gray-500 dark:text-gray-400 font-medium">
-                  Sky
+                  {hd.sky}
                 </div>
               )}
               {H.map((_, i) => (
@@ -431,7 +435,7 @@ export function HourlyWeatherModal({
                       width="26"
                       height="26"
                       viewBox="0 0 28 28"
-                      aria-label="Day"
+                      aria-label={hd.day}
                     >
                       <circle cx="14" cy="14" r="9" fill="#F5B400" />
                       <circle
@@ -448,7 +452,7 @@ export function HourlyWeatherModal({
                       width="26"
                       height="26"
                       viewBox="0 0 28 28"
-                      aria-label="Night"
+                      aria-label={hd.night}
                     >
                       <path
                         d="M18.5 4.5a10 10 0 1 0 5 15.2A8 8 0 0 1 18.5 4.5z"
@@ -476,7 +480,7 @@ export function HourlyWeatherModal({
                         : "text-gray-800 dark:text-gray-200 font-normal hover:bg-gray-50 dark:hover:bg-muted/40"
                     }`}
                   >
-                    Temperature{" "}
+                    {hd.paramTemperature}{" "}
                     <span className="text-[11px] opacity-75">°C</span>
                   </button>
                 </div>
@@ -507,7 +511,7 @@ export function HourlyWeatherModal({
                         : "text-gray-800 dark:text-gray-200 font-normal hover:bg-gray-50 dark:hover:bg-muted/40"
                     }`}
                   >
-                    Rain chance{" "}
+                    {hd.paramRainChance}{" "}
                     <span className="text-[11px] opacity-75">%</span>
                   </button>
                 </div>
@@ -538,8 +542,8 @@ export function HourlyWeatherModal({
                         : "text-gray-800 dark:text-gray-200 font-normal hover:bg-gray-50 dark:hover:bg-muted/40"
                     }`}
                   >
-                    Rainfall{" "}
-                    <span className="text-[11px] opacity-75">mm</span>
+                    {hd.paramRainfall}{" "}
+                    <span className="text-[11px] opacity-75">{t.dashboard.unitMm}</span>
                   </button>
                 </div>
               )}
@@ -548,7 +552,7 @@ export function HourlyWeatherModal({
                   key={i}
                   className="flex items-center justify-center text-[13px] text-gray-600 dark:text-gray-400 border-l border-gray-100 dark:border-gray-800"
                 >
-                  {fmt(v, 1)}mm
+                  {fmt(v, 1)}{t.dashboard.unitMm}
                 </div>
               ))}
             </div>
@@ -569,8 +573,8 @@ export function HourlyWeatherModal({
                         : "text-gray-800 dark:text-gray-200 font-normal hover:bg-gray-50 dark:hover:bg-muted/40"
                     }`}
                   >
-                    Wind speed{" "}
-                    <span className="text-[11px] opacity-75">kph</span>
+                    {hd.paramWindSpeed}{" "}
+                    <span className="text-[11px] opacity-75">{t.dashboard.unitKmh}</span>
                   </button>
                 </div>
               )}
@@ -579,7 +583,7 @@ export function HourlyWeatherModal({
                   key={i}
                   className="flex items-center justify-center text-[13px] text-gray-600 dark:text-gray-400 border-l border-gray-100 dark:border-gray-800"
                 >
-                  {Math.round(v)}kph
+                  {Math.round(v)}{t.dashboard.unitKmh}
                 </div>
               ))}
             </div>
@@ -606,9 +610,10 @@ export function HourlyWeatherModal({
                               : "text-gray-800 dark:text-gray-200 font-normal hover:bg-gray-50 dark:hover:bg-muted/40"
                           }`}
                         >
-                          {k === "et" ? "ET₀" : p.name}{" "}
+                          {/* i18n-ignore */}
+                          {k === "et" ? "ET₀" : hd[p.name]}{" "}
                           <span className="text-[11px] opacity-75">
-                            {p.unit || "index"}
+                            {unitLabel(p.unit) || hd.unitIndex}
                           </span>
                         </button>
                       </div>
@@ -629,7 +634,7 @@ export function HourlyWeatherModal({
                         } else if (k === "wg") {
                           cellContent = (
                             <span className="text-[13px] text-gray-600 dark:text-gray-400">
-                              {Math.round(v)}kph
+                              {Math.round(v)}{t.dashboard.unitKmh}
                             </span>
                           );
                         } else if (k === "et") {
@@ -681,7 +686,7 @@ export function HourlyWeatherModal({
                       type="button"
                       onClick={() => setSelected(null)}
                       className="size-7 rounded-lg border border-gray-200 dark:border-border bg-white dark:bg-muted flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer shrink-0"
-                      aria-label="Close chart"
+                      aria-label={hd.closeChart}
                     >
                       <X className="size-3.5" />
                     </button>
@@ -690,13 +695,13 @@ export function HourlyWeatherModal({
                   <div className="text-[12px] text-gray-700 dark:text-gray-300 leading-relaxed">
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">
-                        Max
+                        {hd.max}
                       </span>{" "}
                       {chart.maxText}
                     </div>
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">
-                        Min
+                        {hd.min}
                       </span>{" "}
                       {chart.minText}
                     </div>
@@ -906,7 +911,7 @@ export function HourlyWeatherModal({
             }}
             className="flex items-center justify-center gap-2 px-5 py-2 min-h-[38px] border border-gray-300 dark:border-border rounded-full bg-white dark:bg-muted text-gray-900 dark:text-gray-100 font-medium text-[13px] hover:bg-gray-50 dark:hover:bg-muted/80 transition-all cursor-pointer shadow-2xs"
           >
-            <span>{expanded ? "Show less" : "More parameters & charts"}</span>
+            <span>{expanded ? hd.showLess : hd.moreParams}</span>
             <ChevronDown
               className={`size-3.5 transition-transform duration-200 ${
                 expanded ? "rotate-180" : ""
@@ -915,8 +920,8 @@ export function HourlyWeatherModal({
           </button>
           <span className="text-[11px] text-gray-500 dark:text-gray-400">
             {expanded
-              ? "Tap any parameter name to plot it · shaded bands = night hours"
-              : "Expand to see more parameters and charts"}
+              ? hd.hintExpanded
+              : hd.hintCollapsed}
           </span>
         </div>
       </div>

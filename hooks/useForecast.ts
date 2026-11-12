@@ -6,6 +6,7 @@ import { getForecast } from "@/lib/api/forecast";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { ForecastResponse, ForecastRow } from "@/types/forecast";
 import { useWeather } from "./useWeather";
+import { weatherLocalDate } from "@/lib/weatherTime";
 
 // A partially covered last day comes back with null values (and nonsense
 // corrected temperatures); never show or feed such a day downstream.
@@ -22,7 +23,7 @@ export function useForecast() {
   // Pre-mapped fallback raw forecast data in the format of ForecastRow[]
   const rawForecastRows: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
-        date: new Date(time).toISOString().split("T")[0],
+        date: weatherLocalDate(String(time)),
         tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
         tmin: daily.temperature_2m_min[idx],

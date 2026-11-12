@@ -255,17 +255,20 @@ const PestAndDisease = ({ selectedCrop }: PestAndDiseaseProps) => {
     data: card,
     isLoading,
     isFetching,
+    isPlaceholderData,
     error,
   } = usePestDisease(selectedCrop.id, language);
 
   const title = t.dashboard.hazardPest;
 
-  // While fetching for a different crop (crop switch) the previous crop's card
-  // would otherwise linger via keepPreviousData — show the loader instead,
-  // mirroring the AI Overview advisory.
-  const isStaleCrop = isFetching && card?.crop_id !== selectedCrop.id;
+  // While fetching for a different crop, language or location the previous
+  // card would otherwise linger via keepPreviousData (e.g. still in English
+  // after switching to Hindi) — show the loader instead, mirroring the AI
+  // Overview advisory.
+  const isStaleCard =
+    isFetching && (isPlaceholderData || card?.crop_id !== selectedCrop.id);
 
-  if (isLoading || isStaleCrop) {
+  if (isLoading || isStaleCard) {
     return (
       <div className="w-full bg-card border border-border text-foreground rounded-xl shadow-sm p-5 select-none flex flex-col">
         {/* Full card header */}

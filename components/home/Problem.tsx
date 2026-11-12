@@ -193,6 +193,7 @@ export function Problem() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary/80 transition-colors hover:text-primary"
             >
+              {/* i18n-ignore */}
               <span>{t.problem.goToSource} (Germanwatch CRI 2025)</span>
               <span aria-hidden>→</span>
             </a>

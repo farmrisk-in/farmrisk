@@ -12,29 +12,12 @@ import {
 } from "lucide-react";
 import { useLocationContext } from "@/providers/LocationProvider";
 import { useLanguage } from "@/hooks/useLanguage";
+import { localized } from "@/lib/i18n";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { useWeather } from "@/hooks/useWeather";
 // Convert degrees to cardinal directions
-function getWindDirection(deg: number): string {
-  const directions = [
-    "N",
-    "NNE",
-    "NE",
-    "ENE",
-    "E",
-    "ESE",
-    "SE",
-    "SSE",
-    "S",
-    "SSW",
-    "SW",
-    "WSW",
-    "W",
-    "WNW",
-    "NW",
-    "NNW",
-  ];
+function getWindDirection(deg: number, directions: string[]): string {
   const val = Math.floor(deg / 22.5 + 0.5);
   return directions[val % 16];
 }
@@ -150,8 +133,8 @@ const Weather = () => {
               <Cloud className="size-10 text-muted-foreground" />
             )}
             <span className="text-muted-foreground text-xs font-medium">
-              {current.condition?.[language as keyof typeof current.condition] ||
-                current.condition?.en}
+              {t.wmo[String(current.code) as keyof typeof t.wmo] ??
+                localized(current.condition, language)}
             </span>
           </div>
         </div>
@@ -162,10 +145,10 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <CloudRain className="size-3.5 shrink-0 text-blue-400" />
-              <span className="truncate">{t.dashboard.rainfall}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.rainfall}</span>
             </div>
             <span className="font-semibold text-right shrink-0">
-              {current.precipitation} mm
+              {current.precipitation} {t.dashboard.unitMm}
             </span>
           </div>
 
@@ -173,10 +156,10 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Wind className="size-3.5 shrink-0 text-sky-500" />
-              <span className="truncate">{t.dashboard.wind}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.wind}</span>
             </div>
-            <span className="font-semibold text-right shrink-0 truncate max-w-20">
-              {current.wind_speed_10m} km/h
+            <span className="font-semibold text-right shrink-0">
+              {current.wind_speed_10m} {t.dashboard.unitKmh}
             </span>
           </div>
 
@@ -184,7 +167,7 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Cloud className="size-3.5 shrink-0 text-slate-400" />
-              <span className="truncate">{t.dashboard.clouds}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.clouds}</span>
             </div>
             <span className="font-semibold text-right shrink-0">
               {current.cloud_cover}%
@@ -195,7 +178,7 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Droplets className="size-3.5 shrink-0 text-blue-500" />
-              <span className="truncate">{t.dashboard.humidity}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.humidity}</span>
             </div>
             <span className="font-semibold text-right shrink-0">
               {current.relative_humidity_2m}%
@@ -206,10 +189,10 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Wind className="size-3.5 shrink-0 opacity-40 text-sky-400" />
-              <span className="truncate">{t.dashboard.gusts}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.gusts}</span>
             </div>
-            <span className="font-medium text-right shrink-0 truncate max-w-20">
-              {current.wind_gusts_10m} km/h
+            <span className="font-medium text-right shrink-0">
+              {current.wind_gusts_10m} {t.dashboard.unitKmh}
             </span>
           </div>
 
@@ -217,11 +200,11 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Compass className="size-3.5 shrink-0 text-amber-500" />
-              <span className="truncate">{t.dashboard.direction}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.direction}</span>
             </div>
             <span className="font-semibold text-right shrink-0 font-mono">
               {current.wind_direction_10m}°{" "}
-              {getWindDirection(current.wind_direction_10m)}
+              {getWindDirection(current.wind_direction_10m, t.dashboard.windDirections)}
             </span>
           </div>
 
@@ -229,10 +212,10 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Gauge className="size-3.5 shrink-0 text-purple-500" />
-              <span className="truncate">{t.dashboard.pressureMsl}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.pressureMsl}</span>
             </div>
-            <span className="font-semibold text-right shrink-0 font-mono">
-              {current.pressure_msl} hPa
+            <span className="font-semibold text-right font-mono shrink-0 max-w-[60%]">
+              {current.pressure_msl} {t.dashboard.unitHpa}
             </span>
           </div>
 
@@ -240,10 +223,10 @@ const Weather = () => {
           <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex items-center gap-1.5 text-muted-foreground min-w-0">
               <Gauge className="size-3.5 shrink-0 opacity-40 text-purple-400" />
-              <span className="truncate">{t.dashboard.pressureSurf}</span>
+              <span className="min-w-0 break-normal leading-tight">{t.dashboard.pressureSurf}</span>
             </div>
-            <span className="font-semibold text-right shrink-0 font-mono">
-              {current.surface_pressure} hPa
+            <span className="font-semibold text-right font-mono shrink-0 max-w-[60%]">
+              {current.surface_pressure} {t.dashboard.unitHpa}
             </span>
           </div>
         </div>

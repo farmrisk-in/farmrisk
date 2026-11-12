@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useEffect, useState } from "react";
 import { createClient, isSupabaseConfigured } from "@/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { User, Session } from "@supabase/supabase-js";
+import { resetIrrigationSelection } from "@/lib/irrigation";
 
 export interface AuthContextType {
   user: User | null;
@@ -40,12 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("awpl-auth");
       localStorage.removeItem("supabase.auth.token");
 
-      // Clear irrigation session storage items
-      sessionStorage.removeItem("irrigation_days_before");
-      sessionStorage.removeItem("irrigation_questions_answered");
-      window.dispatchEvent(
-        new CustomEvent("farmrisk-irrigation-updated", { detail: undefined }),
-      );
+      // Clear the irrigation date selection
+      resetIrrigationSelection();
     }
   }, [queryClient]);
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import React, { useState } from "react";
 import { useFields } from "@/hooks/useFields";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -69,11 +70,7 @@ export default function MyFields() {
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return "—";
-    return d.toLocaleDateString(language === "hi" ? "hi-IN" : "en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    return formatDate(d, t.dates, "dayMonthYear");
   };
 
   const handleExport = () => {

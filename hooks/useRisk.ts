@@ -6,6 +6,8 @@ import { useWeather } from "@/hooks/useWeather";
 import { useForecast } from "@/hooks/useForecast";
 import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useLocationContext } from "@/providers/LocationProvider";
+import { weatherLocalDate } from "@/lib/weatherTime";
+import { useLanguage } from "@/hooks/useLanguage";
 
 /**
  * useRisk
@@ -22,6 +24,7 @@ import { useLocationContext } from "@/providers/LocationProvider";
  */
 export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains") {
   const { location, isResolving } = useLocationContext();
+  const { language } = useLanguage();
   const { data: weatherData, isLoading: isWeatherLoading } = useWeather();
   const { forecastRows, isLoading: isForecastLoading } = useForecast();
   const { data: soilData, isLoading: isSoilLoading } = useSoilMoisture();
@@ -48,7 +51,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
       ? next5Rows.map((r) => r.date)
       : weatherData?.daily?.time
           ?.slice(0, 5)
-          .map((t) => new Date(t).toISOString().slice(0, 10)) ?? null;
+          .map((t) => weatherLocalDate(t)) ?? null;
 
   const max_temp =
     next5Rows.length > 0
@@ -105,8 +108,9 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
 
   // Hourly wind gusts from the 24-hour forecast window
   const gusts_hourly = hourly?.wind_gusts_10m ?? null;
-  const times_hourly =
-    hourly?.time?.map((t) => new Date(t).toISOString()) ?? null;
+  // Pass the local-offset strings through untouched; converting via
+  // toISOString() would turn them into UTC and shift the hours.
+  const times_hourly = hourly?.time ?? null;
 
   // ---- stable cache key fingerprint ----
   const rainHash = rain_next5?.map((v) => v?.toFixed(1)).join(",") ?? "none";
@@ -132,6 +136,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
     soil_moisture_available,
     soil_percentile,
     station_type,
+    language,
   };
 
   const query = useQuery<RiskAPIResponse, Error>({
@@ -143,6 +148,7 @@ export function useRisk(station_type: "plains" | "hilly" | "coastal" = "plains")
       tempHash,
       soil_percentile,
       station_type,
+      language,
       lightning_score,
       lightning_category,
     ],

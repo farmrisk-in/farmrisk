@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, formatTime } from "@/lib/formatDate";
 import { useEffect, useState, useMemo } from "react";
 import {
   Calendar,
@@ -30,6 +31,8 @@ import { useRisk } from "@/hooks/useRisk";
 import { riskColor } from "@/components/ui/riskChart";
 import { calculateTimelineSegments } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { weatherLocalDate } from "@/lib/weatherTime";
+import { cleanAdvisoryText } from "@/lib/advisoryText";
 
 interface DownloadTemplateProps {
   location: SelectedLocation | null;
@@ -65,17 +68,17 @@ const getWeatherIcon = (pcp: number) => {
 
 // Maps strictly to the "Expert View" table, utilizing hex/standard values
 const getCategoryAndColor = (pct: number) => {
-  if (pct > 98) return { label: "Exceptional Wet", color: "#0284c7" };
-  if (pct > 95) return { label: "Extreme Wet", color: "#0ea5e9" };
-  if (pct > 90) return { label: "Severe Wet", color: "#7dd3fc" };
-  if (pct > 80) return { label: "Moderate Wet", color: "#bae6fd" };
-  if (pct > 70) return { label: "Abnormally Wet", color: "#e0f2fe" };
-  if (pct > 30) return { label: "Normal", color: "#64748b" };
-  if (pct > 20) return { label: "Abnormally Dry", color: "#fed7aa" };
-  if (pct > 10) return { label: "Moderate Dry", color: "#fdba74" };
-  if (pct > 5) return { label: "Extreme Dry", color: "#f97316" };
-  if (pct > 2) return { label: "Severe Dry", color: "#ea580c" };
-  return { label: "Exceptional Dry", color: "#9a3412" };
+  if (pct > 98) return { labelKey: "smExceptionalWet", color: "#0284c7" };
+  if (pct > 95) return { labelKey: "smExtremeWet", color: "#0ea5e9" };
+  if (pct > 90) return { labelKey: "smSevereWet", color: "#7dd3fc" };
+  if (pct > 80) return { labelKey: "smModerateWet", color: "#bae6fd" };
+  if (pct > 70) return { labelKey: "smAbnormallyWet", color: "#e0f2fe" };
+  if (pct > 30) return { labelKey: "smNormal", color: "#64748b" };
+  if (pct > 20) return { labelKey: "smAbnormallyDry", color: "#fed7aa" };
+  if (pct > 10) return { labelKey: "smModerateDry", color: "#fdba74" };
+  if (pct > 5) return { labelKey: "smExtremeDry", color: "#f97316" };
+  if (pct > 2) return { labelKey: "smSevereDry", color: "#ea580c" };
+  return { labelKey: "smExceptionalDry", color: "#9a3412" };
 };
 
 export default function DownloadTemplate({
@@ -200,7 +203,7 @@ export default function DownloadTemplate({
   const daily = weatherReport?.daily;
   const fallbackPredictions: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
-        date: new Date(time).toISOString().split("T")[0],
+        date: weatherLocalDate(String(time)),
         tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
         tmin: daily.temperature_2m_min[idx],
@@ -235,18 +238,12 @@ export default function DownloadTemplate({
     );
   }
 
-  const dateLocale = t.locale || (language === "hi" ? "hi-IN" : "en-US");
-  const dateStr = new Date().toLocaleDateString(
-    dateLocale,
-    { weekday: "long", year: "numeric", month: "long", day: "numeric" },
-  );
-  const timeStr = new Date().toLocaleTimeString(
-    dateLocale,
-    { hour: "2-digit", minute: "2-digit" },
-  );
+  const now = new Date();
+  const dateStr = `${formatDate(now, t.dates, "weekday", { long: true })}, ${formatDate(now, t.dates, "dayMonthYear", { long: true })}`;
+  const timeStr = formatTime(now, t.dates);
 
   const advisoryText =
-    aiOverviewText || t.export.advisoryFallback;
+    cleanAdvisoryText(aiOverviewText) || t.export.advisoryFallback;
   const formattedText = advisoryText
     .split(/(\*[^*]+\*)/g)
     .map((part, index) => {
@@ -426,10 +423,7 @@ export default function DownloadTemplate({
           })}
 
           {xTicks.map((tick, idx) => {
-            const label = new Date(tick.date).toLocaleDateString(dateLocale, {
-              day: "numeric",
-              month: "short",
-            });
+            const label = formatDate(tick.date, t.dates, "dayMonth");
             return (
               <text
                 key={idx}
@@ -492,13 +486,9 @@ export default function DownloadTemplate({
             const minTemp = Math.round(day.tmin_corrected);
             const rain = day.pcp_corrected;
             const date = new Date(day.date);
-            const dayName = date.toLocaleDateString(dateLocale, {
-              weekday: "short",
-            });
+            const dayName = formatDate(day.date, t.dates, "weekday");
             const dayNum = date.getDate();
-            const monthShort = date.toLocaleDateString(dateLocale, {
-              month: "short",
-            });
+            const monthShort = formatDate(day.date, t.dates, "month");
 
             // Vertical range bar: top of track = overall hottest, bottom = overall coldest.
             // The filled segment marks where this day's own min-max sits within that scale.

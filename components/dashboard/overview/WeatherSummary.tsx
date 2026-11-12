@@ -8,15 +8,12 @@ import { useLocationContext } from "@/providers/LocationProvider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Loader2, Summary } from "lucide-react";
+import { formatWeatherHour } from "@/lib/weatherTime";
+import { cleanAdvisoryText } from "@/lib/advisoryText";
+import SpeakButton from "./SpeakButton";
 
 // Matches the hourly forecast time formatting used elsewhere in the dashboard.
-const formatHour = (dateInput: Date | string) => {
-  const date = new Date(dateInput);
-  const h = date.getUTCHours();
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${String(h12).padStart(2, "0")} ${ampm}`;
-};
+const formatHour = formatWeatherHour;
 
 // Rain spell classification keys. The >100 mm/hour case is intentionally
 // included under "Extremely Intense spell" (never shown as "Cloud Burst").
@@ -92,11 +89,11 @@ export default function WeatherSummary() {
     });
     if (maxIdx >= 0 && maxRain >= 1.0) {
       spellLabel = getRainSpellLabel(maxRain);
-      spellTime = formatHour(times[maxIdx]);
+      spellTime = formatHour(times[maxIdx], t.dates);
     }
   }
 
-  let displaySummary = summary || "";
+  let displaySummary = cleanAdvisoryText(summary);
   if (spellLabel && spellTime) {
     const category = t.dashboard[spellLabel];
     // Replace any legacy rainfall-intensity wording with the Rain Spell
@@ -195,6 +192,7 @@ export default function WeatherSummary() {
       <div className="flex items-center gap-2 text-foreground text-xs font-bold uppercase border-b border-border tracking-wider mb-2 pb-2">
         <Summary className="size-4.5" />
         {title}
+        <SpeakButton text={displaySummary} className="-my-2" />
       </div>
 
       <div className="flex-1 min-w-0">

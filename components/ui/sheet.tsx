@@ -77,6 +77,7 @@ function SheetContent({
             >
               <RiCloseLine
               />
+              {/* i18n-ignore */}
               <span className="sr-only">Close</span>
             </Button>
           </SheetPrimitive.Close>

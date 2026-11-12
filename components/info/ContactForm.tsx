@@ -4,13 +4,22 @@ import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { getInfoContent, type TopicKey } from "@/constants/infoPages";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { createClient, isSupabaseConfigured } from "@/supabase/client";
 
 export const SUPPORT_EMAIL = "farmrisk.in@gmail.com";
 
-// Same topics and table as the mobile app's feedback section.
-const TOPICS = ["General", "Bug Report", "Feature Request", "Data Accuracy", "Other"];
+// Same topics and table as the mobile app's feedback section. The English
+// value is what gets stored; the label is translated for display.
+const TOPICS: { key: TopicKey; value: string }[] = [
+  { key: "general", value: "General" },
+  { key: "bugReport", value: "Bug Report" },
+  { key: "featureRequest", value: "Feature Request" },
+  { key: "dataAccuracy", value: "Data Accuracy" },
+  { key: "other", value: "Other" },
+];
 
 function mailtoLink(topic: string, message: string) {
   const subject = encodeURIComponent(`[FarmRisk Feedback] ${topic}`);
@@ -19,7 +28,9 @@ function mailtoLink(topic: string, message: string) {
 
 export function ContactForm() {
   const { user } = useAuth();
-  const [topic, setTopic] = useState(TOPICS[0]);
+  const { language } = useLanguage();
+  const { form } = getInfoContent(language).contact;
+  const [topic, setTopic] = useState(TOPICS[0].value);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "failed">("idle");
 
@@ -55,7 +66,7 @@ export function ContactForm() {
   if (status === "sent") {
     return (
       <p role="status" className="rounded-lg border p-4">
-        Thank you. Your message has been sent.
+        {form.sent}
       </p>
     );
   }
@@ -64,7 +75,7 @@ export function ContactForm() {
     <form onSubmit={handleSubmit} className="grid gap-4">
       <div className="grid gap-2">
         <label htmlFor="topic" className="text-sm font-medium">
-          Topic
+          {form.topicLabel}
         </label>
         <select
           id="topic"
@@ -73,13 +84,15 @@ export function ContactForm() {
           className="border-input bg-background h-9 rounded-md border px-3 text-sm"
         >
           {TOPICS.map((t) => (
-            <option key={t}>{t}</option>
+            <option key={t.key} value={t.value}>
+              {form.topics[t.key]}
+            </option>
           ))}
         </select>
       </div>
       <div className="grid gap-2">
         <label htmlFor="message" className="text-sm font-medium">
-          Message
+          {form.messageLabel}
         </label>
         <Textarea
           id="message"
@@ -91,15 +104,16 @@ export function ContactForm() {
       </div>
       {status === "failed" && (
         <p role="alert" className="text-sm text-red-600">
-          We could not send your message.{" "}
-          <a href={mailtoLink(topic, message)}>Send it by email instead</a>.
+          {form.failed.before}{" "}
+          <a href={mailtoLink(topic, message)}>{form.failed.link}</a>
+          {form.failed.after}
         </p>
       )}
       <Button type="submit" disabled={status === "sending"} className="w-fit">
         {status === "sending" && (
           <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
         )}
-        Send
+        {form.send}
       </Button>
     </form>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, type DateWords } from "@/lib/formatDate";
 import React, { useState, useEffect, useMemo } from "react";
 import { Store, IndianRupee, Scale, AlertTriangle, ChevronLeft, ChevronRight, Download } from "lucide-react";
 import { ToolCard } from "@/components/dashboard/tools/ToolCard";
@@ -30,10 +31,9 @@ function median(a: number[]) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-function human(iso: string) {
+function human(iso: string, words: DateWords) {
   if (!iso) return "—";
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  return formatDate(iso, words, "dayMonthYear");
 }
 
 function daysOld(iso: string) {
@@ -70,6 +70,7 @@ function getResolvedData(rows: MandiRow[], dist: string, crop: string, day: stri
 }
 
 function RangeChart({ list }: { list: MandiRow[] }) {
+  const { t } = useLanguage();
   const top = [...list].sort((a, b) => (b.p || 0) - (a.p || 0)).slice(0, 12);
   if (top.length < 2) return null;
   const lo = Math.min(...top.map(r => r.a || r.p));
@@ -82,13 +83,13 @@ function RangeChart({ list }: { list: MandiRow[] }) {
 
   return (
     <div className="mt-6 border-t border-border pt-4">
-      <h3 className="text-sm font-semibold text-foreground">Where the crop is fetching most</h3>
-      <div className="text-[13px] text-muted-foreground mb-3">Bar is the day's bid range in each market. Dot is the modal rate.</div>
+      <h3 className="text-sm font-semibold text-foreground">{t.mandi.fetchingMost}</h3>
+      <div className="text-[13px] text-muted-foreground mb-3">{t.mandi.rangeChartDesc}</div>
       <div className="flex gap-4 text-xs text-muted-foreground mb-2 flex-wrap">
-        <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-1.5 rounded-full bg-emerald-300 dark:bg-emerald-800"></span>Low to high bid</span>
-        <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>Modal rate</span>
+        <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-1.5 rounded-full bg-emerald-300 dark:bg-emerald-800"></span>{t.mandi.lowToHighBid}</span>
+        <span className="flex items-center gap-1.5"><span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-600 dark:bg-emerald-400"></span>{t.mandi.modalRate}</span>
       </div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto text-[12.5px]" role="img" aria-label="Price range by market">
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto text-[12.5px]" role="img" aria-label={t.mandi.priceRangeByMarket}>
         {top.map((r, i) => {
           const y = i * rowH + 12;
           const x1 = x(r.a ?? r.p);
@@ -112,6 +113,7 @@ function RangeChart({ list }: { list: MandiRow[] }) {
 }
 
 function TrendChart({ rows, crop, dist, relaxed }: { rows: MandiRow[], crop: string, dist: string, relaxed: any }) {
+  const { t } = useLanguage();
   if (!crop) return null;
   const pool = rows.filter(r => r.c === crop && (!dist || relaxed ? true : r.d === dist));
   const days = Array.from(new Set(pool.map(r => r.t))).sort();
@@ -147,21 +149,21 @@ function TrendChart({ rows, crop, dist, relaxed }: { rows: MandiRow[], crop: str
 
   const labels = [0, pts.length - 1].map(i => (
     <text key={i} x={X(i).toFixed(1)} y={h - 10} textAnchor={i ? "end" : "start"} className="fill-muted-foreground text-[11.5px]">
-      {human(pts[i].t)}
+      {human(pts[i].t, t.dates)}
     </text>
   ));
 
   return (
     <div className="mt-6 border-t border-border pt-4">
-      <h3 className="text-sm font-semibold text-foreground">{crop} over the last {pts.length} reporting days</h3>
-      <div className="text-[13px] text-muted-foreground mb-3">Median modal rate, built from the rolling snapshot.</div>
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto text-xs" role="img" aria-label="Price trend">
+      <h3 className="text-sm font-semibold text-foreground">{t.mandi.trendTitle.replace("{{crop}}", crop).replace("{{count}}", String(pts.length))}</h3>
+      <div className="text-[13px] text-muted-foreground mb-3">{t.mandi.trendDesc}</div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-auto text-xs" role="img" aria-label={t.mandi.priceTrend}>
         {grid}
         <path d={area} className="fill-emerald-500/10 dark:fill-emerald-900/20" />
         <path d={line} fill="none" className="stroke-emerald-600 dark:stroke-emerald-400" strokeWidth="2" strokeLinejoin="round" />
         {pts.map((p, i) => (
           <circle key={i} cx={X(i).toFixed(1)} cy={Y(p.v).toFixed(1)} r="3" className="fill-emerald-600 dark:fill-emerald-400">
-            <title>{human(p.t)} — {rupee(p.v)}</title>
+            <title>{human(p.t, t.dates)} — {rupee(p.v)}</title>
           </circle>
         ))}
         {labels}
@@ -310,7 +312,7 @@ export function MandiPrice() {
       icon={Store}
       badge={
         <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-          {selectedCommodity || selectedCrop.name || "Mandi"}
+          {selectedCommodity || selectedCrop.name || t.mandi.mandi}
         </span>
       }
       action={
@@ -327,49 +329,49 @@ export function MandiPrice() {
         {/* Controls */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">State</label>
+            <label className="text-xs text-muted-foreground">{t.tools.selectState}</label>
             <select
               className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-50"
               value={selectedState}
               onChange={handleStateChange}
             >
-              <option value="">Select State</option>
+              <option value="">{t.mandi.selectState}</option>
               {STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">District</label>
+            <label className="text-xs text-muted-foreground">{t.mandi.district}</label>
             <select
               className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-50"
               value={selectedDistrict}
               onChange={e => setSelectedDistrict(e.target.value)}
               disabled={!selectedState || isLoading}
             >
-              <option value="">All districts</option>
+              <option value="">{t.mandi.allDistricts}</option>
               {districts.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">Commodity</label>
+            <label className="text-xs text-muted-foreground">{t.mandi.commodity}</label>
             <select
               className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-50"
               value={selectedCommodity}
               onChange={e => setSelectedCommodity(e.target.value)}
               disabled={!selectedState || isLoading}
             >
-              <option value="">All commodities</option>
+              <option value="">{t.mandi.allCommodities}</option>
               {commodities.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-muted-foreground">Reporting day</label>
+            <label className="text-xs text-muted-foreground">{t.mandi.reportingDay}</label>
             <select
               className="bg-card border border-border rounded-lg px-2.5 py-1.5 text-sm disabled:opacity-50"
               value={resolvedDay || selectedDay}
               onChange={e => setSelectedDay(e.target.value)}
               disabled={!selectedState || isLoading}
             >
-              {days.map(d => <option key={d} value={d}>{human(d)}</option>)}
+              {days.map(d => <option key={d} value={d}>{human(d, t.dates)}</option>)}
             </select>
           </div>
         </div>
@@ -380,9 +382,9 @@ export function MandiPrice() {
             <AlertTriangle className="size-4 mt-0.5 shrink-0" />
             <div>
               {relaxed.kind === "day" ? (
-                <><b>No returns filed for {human(relaxed.from)}.</b> Showing {human(relaxed.to)}, the most recent day these markets reported.</>
+                <><b>{t.mandi.relaxedDayTitle.replace("{{date}}", human(relaxed.from, t.dates))}</b> {t.mandi.relaxedDayBody.replace("{{date}}", human(relaxed.to, t.dates))}</>
               ) : (
-                <><b>{relaxed.from} filed nothing in this window.</b> Showing the nearest reporting markets across {selectedState} for {human(relaxed.to)}.</>
+                <><b>{t.mandi.relaxedDistrictTitle.replace("{{district}}", relaxed.from)}</b> {t.mandi.relaxedDistrictBody.replace("{{state}}", selectedState).replace("{{date}}", human(relaxed.to, t.dates))}</>
               )}
             </div>
           </div>
@@ -390,8 +392,8 @@ export function MandiPrice() {
 
         {!selectedState ? (
           <div className="p-8 text-center border border-dashed border-border rounded-xl bg-muted/20">
-            <p className="text-sm font-medium text-muted-foreground mb-1">Select a State</p>
-            <p className="text-xs text-muted-foreground/70">Please select a state to view APMC mandi prices.</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{t.mandi.pickStateTitle}</p>
+            <p className="text-xs text-muted-foreground/70">{t.mandi.pickStateDesc}</p>
           </div>
         ) : isLoading ? (
           <div className="space-y-4">
@@ -402,15 +404,15 @@ export function MandiPrice() {
           </div>
         ) : !view.length ? (
           <div className="p-8 text-center border border-dashed border-border rounded-xl bg-muted/20 text-muted-foreground">
-            <p className="font-semibold text-sm mb-1 text-foreground">No market filed this crop in the stored window</p>
-            <p className="text-[13px]">Kharif crops only appear once harvest arrivals start. Widen the district or pick another crop.</p>
+            <p className="font-semibold text-sm mb-1 text-foreground">{t.mandi.noMarketTitle}</p>
+            <p className="text-[13px]">{t.mandi.noMarketDesc}</p>
           </div>
         ) : (
           <>
             {/* Stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 flex flex-col gap-1">
-                <span className="text-[11.5px] font-medium text-muted-foreground">Modal price</span>
+                <span className="text-[11.5px] font-medium text-muted-foreground">{t.mandi.modalPrice}</span>
                 <span className="text-xl font-bold text-emerald-700 dark:text-emerald-400 flex items-center">
                   {rupee(modal)}
                   {deltaStr && (
@@ -419,22 +421,22 @@ export function MandiPrice() {
                     </span>
                   )}
                 </span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">Median of {view.length} listings</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5">{t.mandi.medianOf.replace("{{count}}", String(view.length))}</span>
               </div>
               <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col gap-1">
-                <span className="text-[11.5px] font-medium text-muted-foreground">Lowest bid</span>
+                <span className="text-[11.5px] font-medium text-muted-foreground">{t.mandi.lowestBid}</span>
                 <span className="text-xl font-bold text-foreground">{rupee(minVal)}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5 truncate" title={loRow?.m || "Per quintal"}>{loRow?.m || "Per quintal"}</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 truncate" title={loRow?.m || t.mandi.perQuintal}>{loRow?.m || t.mandi.perQuintal}</span>
               </div>
               <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col gap-1">
-                <span className="text-[11.5px] font-medium text-muted-foreground">Highest bid</span>
+                <span className="text-[11.5px] font-medium text-muted-foreground">{t.mandi.highestBid}</span>
                 <span className="text-xl font-bold text-foreground">{rupee(maxVal)}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5 truncate" title={hiRow?.m || "Per quintal"}>{hiRow?.m || "Per quintal"}</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 truncate" title={hiRow?.m || t.mandi.perQuintal}>{hiRow?.m || t.mandi.perQuintal}</span>
               </div>
               <div className="p-3.5 rounded-xl border border-border bg-card flex flex-col gap-1">
-                <span className="text-[11.5px] font-medium text-muted-foreground">Markets reporting</span>
+                <span className="text-[11.5px] font-medium text-muted-foreground">{t.mandi.marketsReporting}</span>
                 <span className="text-xl font-bold text-foreground">{mktCount}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">{cCount} commodities listed</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5">{t.mandi.commoditiesListed.replace("{{count}}", String(cCount))}</span>
               </div>
             </div>
 
@@ -443,16 +445,16 @@ export function MandiPrice() {
 
             {/* Table */}
             <div className="mt-6 border-t border-border pt-4">
-              <h3 className="text-sm font-semibold text-foreground">Every market that filed</h3>
-              <div className="text-[13px] text-muted-foreground mb-3">Highest modal rate is highlighted. Click a heading to sort.</div>
+              <h3 className="text-sm font-semibold text-foreground">{t.mandi.everyMarket}</h3>
+              <div className="text-[13px] text-muted-foreground mb-3">{t.mandi.tableHint}</div>
               
               <div className="overflow-x-auto border border-border rounded-lg">
                 <table className="w-full text-left border-collapse text-[13.5px] whitespace-nowrap min-w-[720px]">
                   <thead>
                     <tr className="bg-muted/50 text-muted-foreground border-b border-border">
                       {[
-                        {k: 'm', l: 'Market'}, {k: 'd', l: 'District'}, {k: 'c', l: 'Commodity'},
-                        {k: 'v', l: 'Variety'}, {k: 'a', l: 'Min ₹'}, {k: 'b', l: 'Max ₹'}, {k: 'p', l: 'Modal ₹'}
+                        {k: 'm', l: t.mandi.colMarket}, {k: 'd', l: t.mandi.district}, {k: 'c', l: t.mandi.commodity},
+                        {k: 'v', l: t.mandi.colVariety}, {k: 'a', l: t.mandi.colMin}, {k: 'b', l: t.mandi.colMax}, {k: 'p', l: t.mandi.colModal}
                       ].map(col => (
                         <th 
                           key={col.k} 
@@ -484,7 +486,7 @@ export function MandiPrice() {
               {/* Pagination controls */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-3 text-sm text-muted-foreground">
-                  <div>Showing {(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, sortedView.length)} of {sortedView.length} entries</div>
+                  <div>{t.mandi.showingEntries.replace("{{from}}", String((currentPage - 1) * rowsPerPage + 1)).replace("{{to}}", String(Math.min(currentPage * rowsPerPage, sortedView.length))).replace("{{total}}", String(sortedView.length))}</div>
                   <div className="flex items-center gap-1">
                     <button 
                       onClick={() => setCurrentPage(p => Math.max(1, p - 1))}

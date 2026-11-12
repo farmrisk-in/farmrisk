@@ -1,11 +1,11 @@
+import type { LanguageCode } from "@/constants/languages/registry";
+
+export type LocalizedText = { en: string } & Partial<
+  Record<Exclude<LanguageCode, "en">, string>
+>;
+
 export type WmoEntry = {
-  condition: {
-    en: string;
-    hi: string;
-    mr: string;
-    ta: string;
-    gu: string;
-  };
+  condition: LocalizedText;
   icon: {
     day: string;
     night?: string;
@@ -13,7 +13,8 @@ export type WmoEntry = {
 };
 
 export type CurrentWeather = {
-  time: Date;
+  /** Local wall-clock time with offset, e.g. "2026-11-09T14:00:00+05:30". Read via lib/weatherTime.ts. */
+  time: string;
   temperature_2m: number;
   relative_humidity_2m: number;
   apparent_temperature: number;
@@ -26,17 +27,14 @@ export type CurrentWeather = {
   precipitation: number;
   cloud_cover: number;
   icon: string;
-  condition: {
-    en: string;
-    hi: string;
-    mr: string;
-    ta: string;
-    gu: string;
-  };
+  condition: LocalizedText;
+  /** Numeric WMO code; keys `t.wmo` in the language files. Absent from older API responses. */
+  code?: number;
 };
 
 export type HourlyWeather = {
-  time: Date[];
+  /** Local wall-clock times with offset, e.g. "2026-11-09T14:00:00+05:30". Read via lib/weatherTime.ts. */
+  time: string[];
   temperature_2m: number[];
   precipitation_probability: number[];
   wind_speed_10m: number[];
@@ -53,7 +51,8 @@ export type HourlyWeather = {
 };
 
 export type DailyWeather = {
-  time: Date[];
+  /** Local wall-clock times with offset, e.g. "2026-11-09T14:00:00+05:30". Read via lib/weatherTime.ts. */
+  time: string[];
   temperature_2m_max: number[];
   temperature_2m_min: number[];
   precipitation_sum: number[];

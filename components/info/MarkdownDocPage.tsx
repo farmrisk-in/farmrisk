@@ -22,8 +22,20 @@ export function MarkdownDocPage({ title, file }: { title: string; file: string }
   const { updated, content } = loadDoc(file);
   return (
     <InfoPage title={title} updated={updated}>
-      <div className="space-y-4 [&_h3]:mt-6 [&_h3]:font-semibold [&_hr]:my-8 [&_ol]:space-y-1 [&_ol>li]:ml-5 [&_ol>li]:list-decimal">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      <div className="space-y-4 [&_h3]:mt-6 [&_h3]:font-semibold [&_hr]:my-8 [&_ol]:space-y-1 [&_ol>li]:ml-5 [&_ol>li]:list-decimal [&_th]:border-b [&_th]:border-border [&_th]:px-3 [&_th]:py-2 [&_th]:text-left [&_th]:font-semibold [&_td]:border-b [&_td]:border-border/60 [&_td]:px-3 [&_td]:py-1.5 [&_p>code:only-child]:block [&_p>code:only-child]:overflow-x-auto [&_p>code:only-child]:rounded-lg [&_p>code:only-child]:bg-muted [&_p>code:only-child]:px-4 [&_p>code:only-child]:py-3 [&_p>code:only-child]:text-center [&_p>code:only-child]:font-mono [&_p>code:only-child]:text-sm">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Wide tables scroll inside their own box on phones.
+            table: (props) => (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm" {...props} />
+              </div>
+            ),
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
     </InfoPage>
   );

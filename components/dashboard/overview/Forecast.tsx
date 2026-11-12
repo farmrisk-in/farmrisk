@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, type DateWords } from "@/lib/formatDate";
 import { useEffect, useMemo, useState } from "react";
 import { isCompleteDay, useForecast } from "@/hooks/useForecast";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { weatherLocalDate } from "@/lib/weatherTime";
 
 // Helper to determine the right weather icon based on rain volume thresholds
 const getWeatherIcon = (pcp: number) => {
@@ -27,16 +29,12 @@ const getWeatherIcon = (pcp: number) => {
 };
 
 // Simple day name formatting helper
-const formatDayName = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { weekday: "short" });
-};
+const formatDayName = (dateStr: string, words: DateWords) =>
+  formatDate(dateStr, words, "weekday");
 
 // Simple date text formatting helper
-const formatDateText = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
-};
+const formatDateText = (dateStr: string, words: DateWords) =>
+  formatDate(dateStr, words, "dayMonth");
 
 type RainCategoryKey =
   | "very_light"
@@ -97,16 +95,13 @@ const RAIN_HIGHLIGHT: Record<
   },
 };
 
-const CATEGORY_LABEL: Record<
-  Exclude<RainCategoryKey, "very_light">,
-  string
-> = {
-  light: "Light rain",
-  moderate: "Moderate rain",
-  heavy: "Heavy rain",
-  very_heavy: "Very heavy rain",
-  extremely_heavy: "Extremely heavy rain",
-};
+const CATEGORY_LABEL_KEY = {
+  light: "alertCatLight",
+  moderate: "alertCatModerate",
+  heavy: "alertCatHeavy",
+  very_heavy: "alertCatVeryHeavy",
+  extremely_heavy: "alertCatExtremelyHeavy",
+} as const;
 
 const findHighlightBlock = (days: ForecastRow[]): HighlightBlock | null => {
   let maxIdx = -1;
@@ -160,7 +155,7 @@ const Forcast = () => {
   // Map uncorrected forecast data as fallback
   const fallbackPredictions: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
-        date: new Date(time).toISOString().split("T")[0],
+        date: weatherLocalDate(String(time)),
         tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
         tmin: daily.temperature_2m_min[idx],
@@ -187,8 +182,8 @@ const Forcast = () => {
 
   const alertRange = highlight
     ? highlight.start === highlight.end
-      ? `${formatDayName(finalPredictions[highlight.start].date)} ${formatDateText(finalPredictions[highlight.start].date)}`
-      : `${formatDayName(finalPredictions[highlight.start].date)} ${formatDateText(finalPredictions[highlight.start].date)} – ${formatDayName(finalPredictions[highlight.end].date)} ${formatDateText(finalPredictions[highlight.end].date)}`
+      ? `${formatDayName(finalPredictions[highlight.start].date, t.dates)} ${formatDateText(finalPredictions[highlight.start].date, t.dates)}`
+      : `${formatDayName(finalPredictions[highlight.start].date, t.dates)} ${formatDateText(finalPredictions[highlight.start].date, t.dates)} – ${formatDayName(finalPredictions[highlight.end].date, t.dates)} ${formatDateText(finalPredictions[highlight.end].date, t.dates)}`
     : "";
 
   useEffect(() => {
@@ -249,8 +244,7 @@ const Forcast = () => {
         <div className="w-full h-25 flex items-center justify-center gap-2 text-muted-foreground select-none">
           <CloudOff className="size-6" />
           <span className="text-sm font-medium">
-            Something went wrong while fetching the forecast. Please try again
-            later.
+            {t.dashboard.forecastError}
           </span>
         </div>
       ) : null}
@@ -265,8 +259,8 @@ const Forcast = () => {
               >
                 <LoaderCircle className="w-4 h-4 animate-spin text-emerald-500" />
                 {progressVal >= 100
-                  ? "Analytics ready!"
-                  : "Compiling bias-corrected analytics..."}
+                  ? t.dashboard.analyticsReady
+                  : t.dashboard.analyticsCompiling}
               </Label>
               <span className="text-muted-foreground font-mono text-sm tracking-tighter">
                 {Math.round(progressVal)}%
@@ -305,12 +299,12 @@ const Forcast = () => {
               >
                 {/* Numeric Calendar Label */}
                 <span className="text-xs text-muted-foreground font-medium mb-1">
-                  {formatDateText(day.date)}
+                  {formatDateText(day.date, t.dates)}
                 </span>
 
                 {/* Day Word Label */}
                 <span className="text-md font-bold text-foreground mb-3">
-                  {formatDayName(day.date)}
+                  {formatDayName(day.date, t.dates)}
                 </span>
 
                 {/* Status Graphic Icon */}
@@ -337,7 +331,7 @@ const Forcast = () => {
 
                 {/* Total Precipitation Metrics Label */}
                 <span className="text-[12px] font-semibold text-muted-foreground font-mono mt-2">
-                  {rainVolume > 0 ? `${rainVolume.toFixed(1)}mm` : "—"}
+                  {rainVolume > 0 ? `${rainVolume.toFixed(1)}${t.dashboard.unitMm}` : "—"}
                 </span>
               </div>
             );
@@ -353,9 +347,12 @@ const Forcast = () => {
                 <span
                   className={`font-semibold ${alertCategory.text}`}
                 >
-                  {CATEGORY_LABEL[highlight.category]}
+                  {t.hourlyDetail[CATEGORY_LABEL_KEY[highlight.category]]}
                 </span>
-                {` alert: ${highlight.totalRain.toFixed(1)} mm expected ${alertRange}`}
+                {` ${t.hourlyDetail.rainAlert
+                  .replace("{{amount}}", highlight.totalRain.toFixed(1))
+                  .replace("{{unit}}", t.dashboard.unitMm)
+                  .replace("{{range}}", alertRange)}`}
               </span>
             </p>
           </div>

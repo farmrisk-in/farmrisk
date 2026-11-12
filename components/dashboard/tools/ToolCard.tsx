@@ -3,6 +3,7 @@
 import React, { ReactNode } from "react";
 import { type LucideIcon, AlertCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export interface ToolCardProps {
@@ -48,6 +49,7 @@ export function ToolCard({
   children,
   className,
 }: ToolCardProps) {
+  const { t } = useLanguage();
   return (
     <div
       className={cn(
@@ -104,7 +106,7 @@ export function ToolCard({
           <div className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-destructive dark:text-red-400">
             <AlertCircle className="size-4 shrink-0 mt-0.5" />
             <div className="flex-1 text-xs">
-              <p className="font-semibold">Unable to load information</p>
+              <p className="font-semibold">{t.tools.errorLoading}</p>
               <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
                 {error}
               </p>
@@ -115,7 +117,7 @@ export function ToolCard({
                   className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                 >
                   <RefreshCw className="size-3" />
-                  Try again
+                  {t.tools.retry}
                 </button>
               )}
             </div>
@@ -129,11 +131,11 @@ export function ToolCard({
               <Icon className="size-4.5" />
             </div>
             <p className="text-xs font-semibold text-foreground/80">
-              {emptyMessage || "No data available yet"}
+              {emptyMessage || t.tools.noDataYet}
             </p>
             <p className="text-[11px] text-muted-foreground mt-0.5 max-w-sm">
               {emptySubtext ||
-                "Advisory information will appear here once generated."}
+                t.tools.advisoryWillAppear}
             </p>
           </div>
         )}

@@ -103,7 +103,7 @@ export function DiseaseResults({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="Analyzed sample"
+                alt={t.tools.analyzedSampleAlt}
                 className="w-full h-full object-cover"
               />
             </div>
@@ -148,7 +148,7 @@ export function DiseaseResults({
               ) : isHealthy ? (
                 tools?.healthyGuidanceDesc || "No active pathogen infection detected on leaf tissue."
               ) : (
-                "Visual symptoms match pathogen profile in the ICAR agronomic database."
+                t.tools.pathogenMatch
               )}
             </div>
           </div>
@@ -234,7 +234,7 @@ export function DiseaseResults({
                     </div>
                     {item.crop && (
                       <span className="text-[10px] text-muted-foreground">
-                        Crop: {item.crop}
+                        {t.export.cropLabel} {item.crop}
                       </span>
                     )}
                   </div>

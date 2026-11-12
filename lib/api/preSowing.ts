@@ -52,32 +52,38 @@ export interface PresowingResponse {
   sections: PresowingSections;
 }
 
-export const SOIL_TYPE_OPTIONS: { value: SoilType; label: string }[] = [
-  { value: "black cotton soil", label: "Black Cotton Soil (Regur)" },
-  { value: "alluvial", label: "Alluvial Soil" },
-  { value: "red soil", label: "Red Soil" },
-  { value: "loam", label: "Loam Soil" },
-  { value: "sandy loam", label: "Sandy Loam" },
-  { value: "clay", label: "Clay Soil" },
-  { value: "laterite", label: "Laterite Soil" },
-  { value: "saline", label: "Saline Soil" },
-  { value: "alkaline", label: "Alkaline Soil" },
+export const SOIL_TYPE_OPTIONS: {
+  value: SoilType;
+  labelKey: "blackCotton" | "alluvial" | "red" | "loam" | "sandyLoam" | "clay" | "laterite" | "saline" | "alkaline";
+}[] = [
+  { value: "black cotton soil", labelKey: "blackCotton" },
+  { value: "alluvial", labelKey: "alluvial" },
+  { value: "red soil", labelKey: "red" },
+  { value: "loam", labelKey: "loam" },
+  { value: "sandy loam", labelKey: "sandyLoam" },
+  { value: "clay", labelKey: "clay" },
+  { value: "laterite", labelKey: "laterite" },
+  { value: "saline", labelKey: "saline" },
+  { value: "alkaline", labelKey: "alkaline" },
 ];
 
-export const SEASON_OPTIONS: { value: Season; label: string }[] = [
-  { value: "Kharif", label: "Kharif (Monsoon / Summer)" },
-  { value: "Rabi", label: "Rabi (Winter)" },
-  { value: "Zaid", label: "Zaid (Summer)" },
+export const SEASON_OPTIONS: {
+  value: Season;
+  labelKey: "kharif" | "rabi" | "zaid";
+}[] = [
+  { value: "Kharif", labelKey: "kharif" },
+  { value: "Rabi", labelKey: "rabi" },
+  { value: "Zaid", labelKey: "zaid" },
 ];
 
 export const IRRIGATION_TYPE_OPTIONS: {
   value: IrrigationType;
-  label: string;
+  labelKey: "flood" | "drip" | "sprinkler" | "rainfed";
 }[] = [
-  { value: "flood", label: "Flood / Furrow" },
-  { value: "drip", label: "Drip Irrigation" },
-  { value: "sprinkler", label: "Sprinkler" },
-  { value: "rainfed", label: "Rainfed (No Irrigation)" },
+  { value: "flood", labelKey: "flood" },
+  { value: "drip", labelKey: "drip" },
+  { value: "sprinkler", labelKey: "sprinkler" },
+  { value: "rainfed", labelKey: "rainfed" },
 ];
 
 export const INDIAN_STATES: string[] = [

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CropSelector } from "@/components/dashboard/farmrisk/CropSelector";
@@ -105,6 +106,14 @@ export function PreSowing() {
   const [season, setSeason] = useState<Season>("Kharif");
   const [irrigationType, setIrrigationType] = useState<IrrigationType>("flood");
 
+  // Display labels for the selected options (values themselves go to the API untouched)
+  const soilOpt = SOIL_TYPE_OPTIONS.find((opt) => opt.value === soilType);
+  const seasonOpt = SEASON_OPTIONS.find((opt) => opt.value === season);
+  const irrigationOpt = IRRIGATION_TYPE_OPTIONS.find((opt) => opt.value === irrigationType);
+  const soilLabel = soilOpt ? t.tools.soilTypes[soilOpt.labelKey] : soilType;
+  const seasonLabel = seasonOpt ? t.tools.seasons[seasonOpt.labelKey] : season;
+  const irrigationLabel = irrigationOpt ? t.tools.irrigationTypes[irrigationOpt.labelKey] : irrigationType;
+
   // Auto-detect soil type based on GPS coords
   const { data: detectedSoil, isLoading: isDetectingSoil } = useQuery({
     queryKey: ['soil-detect', location?.lat, location?.lng],
@@ -193,7 +202,7 @@ export function PreSowing() {
           {t.tools?.preSowing || "Pre-Sowing Advisory"}
         </h2>
         <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
-          Pre-Sowing agronomic decision support and ICAR guidelines are exclusive to registered accounts. Please sign in to access.
+          {t.tools.preSowingLoginRequired}
         </p>
         <Button
           onClick={() => router.push("/auth/login")}
@@ -250,7 +259,7 @@ export function PreSowing() {
               {isDetectingSoil ? (
                 <LoaderCircle className="size-3 animate-spin" />
               ) : (
-                <span>{SOIL_TYPE_OPTIONS.find((opt) => opt.value === soilType)?.label || soilType}</span>
+                <span>{soilLabel}</span>
               )}
             </div>
 
@@ -294,7 +303,7 @@ export function PreSowing() {
                 >
                   {SEASON_OPTIONS.map((s) => (
                     <option key={s.value} value={s.value}>
-                      {s.label}
+                      {t.tools.seasons[s.labelKey]}
                     </option>
                   ))}
                 </select>
@@ -323,7 +332,7 @@ export function PreSowing() {
                 >
                   {IRRIGATION_TYPE_OPTIONS.map((irr) => (
                     <option key={irr.value} value={irr.value}>
-                      {irr.label}
+                      {t.tools.irrigationTypes[irr.labelKey]}
                     </option>
                   ))}
                 </select>
@@ -344,12 +353,12 @@ export function PreSowing() {
               {isDownloadingPdf ? (
                 <>
                   <LoaderCircle className="size-4 animate-spin text-emerald-600" />
-                  <span>Preparing PDF...</span>
+                  <span>{t.tools.preparingPdf}</span>
                 </>
               ) : (
                 <>
                   <Download className="size-4 text-emerald-600" />
-                  <span>Download PDF</span>
+                  <span>{t.tools.downloadPdf}</span>
                 </>
               )}
             </Button>
@@ -392,20 +401,20 @@ export function PreSowing() {
                 <h1 className="text-xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
                   FarmRisk
                   <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300">
-                    Pre-Sowing Advisory
+                    {t.tools.docTitle}
                   </span>
                 </h1>
                 <p className="text-xs text-gray-600 font-medium">
-                  Agronomic Intelligence &amp; ICAR Package of Practices
+                  {t.tools.docSubtitle}
                 </p>
               </div>
             </div>
             <div className="text-right">
               <span className="text-xs font-bold text-emerald-800 block uppercase tracking-wider">
-                Official Advisory Document
+                {t.tools.docOfficial}
               </span>
               <span className="text-xs text-gray-500">
-                Generated: {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                {t.tools.docGenerated.replace("{{date}}", formatDate(new Date(), t.dates, "dayMonthYear"))}
               </span>
             </div>
           </div>
@@ -414,7 +423,7 @@ export function PreSowing() {
           <div className="grid grid-cols-4 gap-3">
             <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
-                Selected Crop
+                {t.tools.docSelectedCrop}
               </span>
               <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5">
                 <Sprout className="size-3.5 text-emerald-600" />
@@ -424,7 +433,7 @@ export function PreSowing() {
 
             <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
-                Region / State
+                {t.tools.docRegion}
               </span>
               <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5">
                 <MapPin className="size-3.5 text-gray-500" />
@@ -434,21 +443,21 @@ export function PreSowing() {
 
             <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
-                Soil Profile
+                {t.tools.docSoil}
               </span>
               <span className="text-sm font-bold text-amber-800 flex items-center gap-1.5 mt-0.5 capitalize">
                 <Layers className="size-3.5 text-amber-600" />
-                {soilType}
+                {soilLabel}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-gray-50 border border-gray-200">
               <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wide block">
-                Season &amp; Irrigation
+                {t.tools.docSeasonIrrigation}
               </span>
               <span className="text-sm font-bold text-gray-900 flex items-center gap-1.5 mt-0.5 capitalize">
                 <Calendar className="size-3.5 text-emerald-600" />
-                {season} · {irrigationType}
+                {seasonLabel} · {irrigationLabel}
               </span>
             </div>
           </div>
@@ -458,9 +467,9 @@ export function PreSowing() {
             <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between text-xs text-gray-600">
               <span className="flex items-center gap-1.5 font-semibold text-emerald-800">
                 <BookOpen className="size-3.5 text-emerald-600" />
-                Grounding: {data?.rag_sources_used} ICAR &amp; KVK scientific packages synthesized
+                {t.tools.docGrounding.replace("{{count}}", String(data?.rag_sources_used))}
               </span>
-              <span className="text-gray-500">Language: {language.toUpperCase()}</span>
+              <span className="text-gray-500">{t.tools.docLanguage.replace("{{code}}", language.toUpperCase())}</span>
             </div>
           )}
         </div>

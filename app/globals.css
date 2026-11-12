@@ -54,7 +54,12 @@
     "Helvetica Neue", Arial, "Noto Sans", "Nirmala UI",
     "Noto Sans Gujarati", "Gujarati Sangam MN", "Lohit Gujarati",
     "Noto Sans Devanagari", "Devanagari Sangam MN", "Lohit Devanagari",
-    "Noto Sans Tamil", "Tamil Sangam MN", "Lohit Tamil", sans-serif;
+    "Noto Sans Tamil", "Tamil Sangam MN", "Lohit Tamil",
+    "Noto Sans Bengali", "Bangla Sangam MN", "Lohit Bengali", "Lohit Assamese",
+    "Noto Sans Gurmukhi", "Gurmukhi Sangam MN", "Lohit Gurmukhi",
+    "Noto Sans Kannada", "Kannada Sangam MN", "Lohit Kannada",
+    "Noto Sans Malayalam", "Malayalam Sangam MN", "Lohit Malayalam",
+    "Noto Sans Telugu", "Telugu Sangam MN", "Lohit Telugu", sans-serif;
   --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   color-scheme: light;
   --background: oklch(1 0 0);

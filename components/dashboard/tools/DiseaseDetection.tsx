@@ -51,8 +51,7 @@ export function DiseaseDetection() {
         </div>
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         <p className="text-xs text-muted-foreground mt-1.5 max-w-md leading-relaxed">
-          AI-powered crop pathology diagnosis and ICAR treatment advisories are
-          exclusive to registered accounts. Please sign in to access.
+          {t.tools.diseaseLoginRequired}
         </p>
         <Button
           onClick={() => router.push("/auth/login")}

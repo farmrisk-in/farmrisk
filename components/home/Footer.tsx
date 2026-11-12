@@ -24,6 +24,7 @@ export function Footer() {
       label: t.footer.product,
       links: [
         { title: t.footer.features, href: "#solution" },
+        { title: t.footer.methods, href: "/methods" },
         { title: t.footer.dashboard, href: "/dashboard" },
       ],
     },

@@ -160,7 +160,7 @@ export function DiseaseUploader({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt="Selected crop"
+              alt={t.tools.selectedCropAlt}
               className="w-full h-full object-cover"
             />
           </div>
@@ -180,7 +180,7 @@ export function DiseaseUploader({
             </div>
 
             <h4 className="text-sm font-bold text-foreground truncate max-w-sm">
-              {file?.name || "Uploaded crop photograph"}
+              {file?.name || t.tools.uploadedPhotoName}
             </h4>
 
             <p className="text-xs text-muted-foreground">
@@ -242,7 +242,7 @@ export function DiseaseUploader({
       {isAnalyzing && (
         <div className="flex items-center gap-2.5 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-medium animate-pulse">
           <LoaderCircle className="size-4 animate-spin shrink-0 text-emerald-600" />
-          <span>{progressStage || tools?.analyzingCrop || "Processing vision diagnostics..."}</span>
+          <span>{progressStage || tools?.analyzingCrop || t.tools.processingDiagnostics}</span>
         </div>
       )}
 

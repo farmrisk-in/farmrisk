@@ -29,6 +29,9 @@ export interface RiskRequestPayload {
   // Optional overrides
   station_type?: "plains" | "hilly" | "coastal";
   crop_heat_threshold?: number | null;
+
+  // Language code for user-visible text (defaults to English server-side)
+  language?: string;
 }
 
 export interface RiskAPIResponse {

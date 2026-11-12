@@ -61,6 +61,9 @@ export function OtherCropModal({
   currentSelectedCropId,
 }: OtherCropModalProps) {
   const { t } = useLanguage();
+  const categories = t.cropCatalog.categories as Record<string, { name: string; description: string }>;
+  const catName = (id: string, fallback: string) => categories[id]?.name ?? fallback;
+  const catDesc = (id: string, fallback: string) => categories[id]?.description ?? fallback;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
@@ -121,17 +124,17 @@ export function OtherCropModal({
               </div>
               <div>
                 <DialogTitle className="text-base sm:text-xl font-bold text-foreground">
-                  Browse All Crops Catalog
+                  {t.cropCatalog.browseTitle}
                 </DialogTitle>
                 <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  Select any crop from our comprehensive database of {ALL_CATEGORIZED_CROPS.length}+ categorized crops.
+                  {t.cropCatalog.browseDesc.replace("{{count}}", String(ALL_CATEGORIZED_CROPS.length))}
                 </DialogDescription>
               </div>
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-center">
               <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                {totalResultsCount} crops available
+                {t.cropCatalog.cropsAvailable.replace("{{count}}", String(totalResultsCount))}
               </span>
             </div>
           </div>
@@ -141,7 +144,7 @@ export function OtherCropModal({
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
               type="text"
-              placeholder="Search across all crops by English or Hindi name (e.g. Tomato, Haldi, Mango, Chilli, Ragi)..."
+              placeholder={t.cropCatalog.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-9 h-10 text-xs sm:text-sm bg-background border-border rounded-xl focus-visible:ring-emerald-500"
@@ -170,7 +173,7 @@ export function OtherCropModal({
               }`}
             >
               <Grid className="size-3.5" />
-              <span>All ({ALL_CATEGORIZED_CROPS.length})</span>
+              <span>{t.cropCatalog.allTab.replace("{{count}}", String(ALL_CATEGORIZED_CROPS.length))}</span>
             </button>
 
             {CATEGORIZED_CROPS.map((cat) => {
@@ -190,7 +193,7 @@ export function OtherCropModal({
                 >
                   <Icon className="size-3.5" />
                   <span>
-                    {cat.name} ({cat.crops.length})
+                    {catName(cat.id, cat.name)} ({cat.crops.length})
                   </span>
                 </button>
               );
@@ -206,10 +209,10 @@ export function OtherCropModal({
                 <Search className="size-7" />
               </div>
               <p className="text-base font-semibold text-foreground">
-                No crops found matching &ldquo;{searchQuery}&rdquo;
+                {t.cropCatalog.noMatch.replace("{{query}}", searchQuery)}
               </p>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                Try searching with an alternative English or Hindi name, or select &ldquo;All&rdquo; to browse all categories.
+                {t.cropCatalog.noMatchHint}
               </p>
             </div>
           ) : (
@@ -226,14 +229,14 @@ export function OtherCropModal({
                         <Icon className="size-3.5" />
                       </div>
                       <h3 className="text-sm sm:text-base font-bold text-foreground">
-                        {cat.name}
+                        {catName(cat.id, cat.name)}
                       </h3>
                       <span className="text-xs text-muted-foreground font-medium">
                         ({cat.crops.length})
                       </span>
                     </div>
                     <span className="text-xs text-muted-foreground hidden sm:inline">
-                      {cat.description}
+                      {catDesc(cat.id, cat.description)}
                     </span>
                   </div>
 

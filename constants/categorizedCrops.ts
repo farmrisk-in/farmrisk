@@ -19,6 +19,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "cereals",
     name: "Cereals & Millets",
     iconName: "Wheat",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Staple grains, millets, and cereal crops",
     crops: [
       { id: "rice", name: "Rice (Paddy)", hindiName: "चावल / धान", category: "Cereals & Millets", popular: true },
@@ -42,6 +43,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "pulses",
     name: "Pulses & Legumes",
     iconName: "Layers",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Protein-rich lentils, beans, and pulse crops",
     crops: [
       { id: "chickpea", name: "Chickpea (Gram / Chana)", hindiName: "चना", category: "Pulses & Legumes", popular: true },
@@ -61,6 +63,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "oilseeds",
     name: "Oilseeds",
     iconName: "Droplets",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Edible and industrial oil producing crops",
     crops: [
       { id: "mustard", name: "Mustard & Rapeseed (Sarson)", hindiName: "सरसों / राई", category: "Oilseeds", popular: true },
@@ -79,6 +82,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "cash_crops",
     name: "Cash & Fiber Crops",
     iconName: "Sparkles",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "High-value industrial, fiber, and commercial crops",
     crops: [
       { id: "cotton", name: "Cotton (Kapas)", hindiName: "कपास", category: "Cash & Fiber Crops", popular: true },
@@ -94,6 +98,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "vegetables",
     name: "Vegetables",
     iconName: "Carrot",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Solanaceous, gourds, root crops, and green vegetables",
     crops: [
       { id: "tomato", name: "Tomato", hindiName: "टमाटर", category: "Vegetables", popular: true },
@@ -135,6 +140,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "fruits",
     name: "Fruits & Orchards",
     iconName: "Apple",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Tropical, subtropical, temperate, and arid fruit crops",
     crops: [
       { id: "mango", name: "Mango (Aam)", hindiName: "आम", category: "Fruits & Orchards", popular: true },
@@ -168,6 +174,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "spices",
     name: "Spices & Condiments",
     iconName: "Flame",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Aromatic seed spices, rhizomes, and culinary condiments",
     crops: [
       { id: "turmeric", name: "Turmeric (Haldi)", hindiName: "हल्दी", category: "Spices & Condiments", popular: true },
@@ -191,6 +198,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "plantation",
     name: "Plantation & Beverages",
     iconName: "Coffee",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Perennial plantation, nut, and beverage crops",
     crops: [
       { id: "tea", name: "Tea (Chai)", hindiName: "चाय", category: "Plantation & Beverages", popular: true },
@@ -206,6 +214,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "medicinal_flowers",
     name: "Medicinal, Aromatic & Flowers",
     iconName: "Flower2",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Herbal medicines, essential oils, and commercial floriculture",
     crops: [
       { id: "ashwagandha", name: "Ashwagandha", hindiName: "अश्वगंधा", category: "Medicinal, Aromatic & Flowers", popular: true },
@@ -226,6 +235,7 @@ export const CATEGORIZED_CROPS: CropCategory[] = [
     id: "fodder",
     name: "Fodder & Forage",
     iconName: "Tractor",
+    // i18n-ignore (English fallback; displayed text comes from t.cropCatalog.categories[id])
     description: "Nutritious animal feed, green fodder, and pasture grasses",
     crops: [
       { id: "berseem", name: "Berseem (Egyptian Clover)", hindiName: "बरसीम", category: "Fodder & Forage", popular: true },

@@ -6,9 +6,11 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
   type ReactNode,
 } from "react";
 import { reverseGeocode } from "@/lib/utils";
+import { resetIrrigationSelection } from "@/lib/irrigation";
 
 export type SelectedLocation = {
   lat: number;
@@ -47,10 +49,19 @@ export function LocationProvider({ children }: { children: ReactNode }) {
     null,
   );
   const [isResolving, setIsResolving] = useState(true);
+  const locationRef = useRef<SelectedLocation | null>(null);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
 
   // A place the user picked (search, map, saved field, GPS button) is
   // remembered across reloads; GPS on load is only used when nothing is saved.
   const setLocation = useCallback((next: SelectedLocation) => {
+    const prev = locationRef.current;
+    // The irrigation date applies to the previous place only — reset it.
+    if (!prev || prev.lat !== next.lat || prev.lng !== next.lng) {
+      resetIrrigationSelection();
+    }
     setLocationState(next);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));

@@ -5,25 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useWeather } from "@/hooks/useWeather";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const getWindDirection = (deg: number): string => {
-  const directions = [
-    "N",
-    "NNE",
-    "NE",
-    "ENE",
-    "E",
-    "ESE",
-    "SE",
-    "SSE",
-    "S",
-    "SSW",
-    "SW",
-    "WSW",
-    "W",
-    "WNW",
-    "NW",
-    "NNW",
-  ];
+const getWindDirection = (deg: number, directions: string[]): string => {
   const val = Math.floor(deg / 22.5 + 0.5);
   return directions[val % 16];
 };
@@ -80,9 +62,9 @@ const CurrentClimate = () => {
   const rows: MetricPair[] = [
     [t.dashboard.temperature, `${current.temperature_2m}°C`, t.dashboard.feelsLike, `${current.apparent_temperature}°C`],
     [t.dashboard.clouds, `${current.cloud_cover}%`, t.dashboard.humidity, `${current.relative_humidity_2m}%`],
-    [t.dashboard.wind, `${current.wind_speed_10m} km/h`, t.dashboard.direction, `${current.wind_direction_10m}° ${getWindDirection(current.wind_direction_10m)}`],
-    [t.dashboard.gusts, `${current.wind_gusts_10m} km/h`, t.dashboard.rainfall, `${current.precipitation} mm`],
-    [t.dashboard.pressureMsl, `${current.pressure_msl} hPa`, t.dashboard.pressureSurf, `${current.surface_pressure} hPa`],
+    [t.dashboard.wind, `${current.wind_speed_10m} ${t.dashboard.unitKmh}`, t.dashboard.direction, `${current.wind_direction_10m}° ${getWindDirection(current.wind_direction_10m, t.dashboard.windDirections)}`],
+    [t.dashboard.gusts, `${current.wind_gusts_10m} ${t.dashboard.unitKmh}`, t.dashboard.rainfall, `${current.precipitation} ${t.dashboard.unitMm}`],
+    [t.dashboard.pressureMsl, `${current.pressure_msl} ${t.dashboard.unitHpa}`, t.dashboard.pressureSurf, `${current.surface_pressure} ${t.dashboard.unitHpa}`],
   ];
 
   return (

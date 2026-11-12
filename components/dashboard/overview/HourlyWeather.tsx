@@ -18,14 +18,9 @@ import { useWeather } from "@/hooks/useWeather";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { HourlyWeatherModal } from "./HourlyWeatherModal";
+import { formatWeatherHour } from "@/lib/weatherTime";
 
-const formatHour = (dateInput: Date | string) => {
-  const date = new Date(dateInput);
-  const h = date.getUTCHours();
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${String(h12).padStart(2, "0")} ${ampm}`;
-};
+const formatHour = formatWeatherHour;
 
 function getConditionAlt(code: number, t: { dashboard: { clear: string; cloudy: string; conditionFoggy: string; conditionDrizzle: string; conditionRainy: string; conditionSnowy: string; showers: string; conditionSnowShowers: string; conditionThunderstorm: string } }): string {
   if (code === 0) return t.dashboard.clear;
@@ -77,7 +72,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
 
   const slots = hourly
     ? hourly.time.map((time, idx) => ({
-        time: formatHour(time),
+        time: formatHour(time, t.dates),
         temp: Math.round(hourly.temperature_2m[idx]),
         rainChance: hourly.precipitation_probability[idx] ?? 0,
         windKph: Math.round(hourly.wind_speed_10m[idx]),
@@ -144,7 +139,11 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
       {
         key: "lightning",
         label: db.hourlyLightning,
-        value: `${data?.lightning?.category ?? "Low"}`,
+        // Server sends the level in English ("Low"); show it translated.
+        value: (() => {
+          const cat = data?.lightning?.category ?? "Low";
+          return t.riskText.lightningCategories[cat as keyof typeof t.riskText.lightningCategories] ?? cat;
+        })(),
         Icon: Zap,
         trend: null,
       },
@@ -171,7 +170,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                 type="button"
                 onClick={() => setModalOpen(true)}
                 className="flex size-6 items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
-                aria-label="Expand hourly forecast"
+                aria-label={t.dashboard.expandHourly}
               >
                 <Expand className="size-3.5" />
               </button>
@@ -230,7 +229,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                   </span>
 
                   <span className="text-[10px] font-semibold text-muted-foreground">
-                    {slot.windKph} km/h
+                    {slot.windKph} {db.unitKmh}
                   </span>
                 </div>
               ))}
@@ -283,7 +282,7 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
             <button
               onClick={() => setModalOpen(true)}
               className="flex size-6 items-center justify-center rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-              aria-label="Expand hourly forecast"
+              aria-label={t.dashboard.expandHourly}
             >
               <Expand className="size-3.5" />
             </button>
@@ -353,11 +352,11 @@ const HourlyWeather = ({ compact = false, hourCount = 6 }: HourlyWeatherProps) =
                         </span>
                         <span className="text-[12px] font-semibold text-muted-foreground">
                           {slot.rainfall}
-                          <span className="text-[11px]">mm</span>
+                          <span className="text-[11px]">{db.unitMm}</span>
                         </span>
                         <span className="truncate max-w-16.25 text-center">
                           {slot.windKph}
-                          <span className="text-[11px]">kph</span>
+                          <span className="text-[11px]">{db.unitKmh}</span>
                         </span>
                       </div>
                     </div>

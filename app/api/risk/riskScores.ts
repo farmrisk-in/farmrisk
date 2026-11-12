@@ -50,6 +50,28 @@ export interface RiskScores {
 }
 
 import { classify, lightningRisk } from "@/lib/services/lightningRisk";
+import { en } from "@/constants/languages/en";
+
+/** Localised phrase templates (the `riskText` section of a language file). */
+export type RiskText = typeof en.riskText;
+
+/** Language context threaded through the scorers; defaults to English. */
+export interface RiskCtx {
+  text: RiskText;
+  /** Short month names Jan..Dec from the language file (`dates.monthsShort`). */
+  months: string[];
+}
+const EN_CTX: RiskCtx = { text: en.riskText, months: en.dates.monthsShort };
+
+/** Replace {name} placeholders in a template with the given params. */
+export function fill(
+  template: string,
+  params: Record<string, string | number> = {},
+): string {
+  return template.replace(/\{(\w+)\}/g, (m, k) =>
+    k in params ? String(params[k]) : m,
+  );
+}
 
 export interface ComputeRiskInput {
   rain_next5?: number[] | null;
@@ -150,43 +172,57 @@ export function wetBulbStull(
 
 // ------------------------------------------------------------------ date helpers
 
-function dayPart(hour: number): string {
-  if (hour >= 0 && hour < 3) return "midnight";
-  if (hour >= 3 && hour < 6) return "early morning";
-  if (hour >= 6 && hour < 12) return "morning";
-  if (hour >= 12 && hour < 17) return "afternoon";
-  if (hour >= 17 && hour < 20) return "evening";
-  return "night";
+function dayPart(hour: number, t: RiskText): string {
+  if (hour >= 0 && hour < 3) return t.dayParts.midnight;
+  if (hour >= 3 && hour < 6) return t.dayParts.earlyMorning;
+  if (hour >= 6 && hour < 12) return t.dayParts.morning;
+  if (hour >= 12 && hour < 17) return t.dayParts.afternoon;
+  if (hour >= 17 && hour < 20) return t.dayParts.evening;
+  return t.dayParts.night;
 }
 
-function fmtWhen(dt: string | Date | null): string {
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Weather timestamps arrive as "YYYY-MM-DDTHH:mm…" whose leading characters
+// are the forecast location's local date/time (e.g. "…T14:00:00+05:30", or
+// the legacy "…T14:00:00.000Z" from older app builds). Read those characters
+// directly so the result never depends on the server's timezone.
+function parseLocalParts(
+  v: string,
+): { year: number; month: number; day: number; hour: number | null } | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}))?/.exec(v);
+  if (!m) return null;
+  return {
+    year: Number(m[1]),
+    month: Number(m[2]),
+    day: Number(m[3]),
+    hour: m[4] !== undefined ? Number(m[4]) : null,
+  };
+}
+
+function monthName(p: { month: number }, months: string[]): string {
+  return months[p.month - 1] ?? MONTHS_SHORT[p.month - 1];
+}
+
+function fmtWhen(dt: string | Date | null, c: RiskCtx): string {
   if (!dt) return "";
-  let d: Date;
-  if (typeof dt === "string") {
-    const s = dt.replace("T", " ");
-    d = new Date(s.length >= 16 ? s.slice(0, 16).replace(" ", "T") : s);
-    if (isNaN(d.getTime())) return String(dt);
-  } else {
-    d = dt;
-  }
-  const day = String(d.getDate()).padStart(2, "0");
-  const mon = d.toLocaleString("en-US", { month: "short" });
-  return `${day} ${mon} ${dayPart(d.getHours())}`;
+  const p = parseLocalParts(typeof dt === "string" ? dt : dt.toISOString());
+  if (!p) return String(dt);
+  return fill(c.text.whenFormat, {
+    day: String(p.day).padStart(2, "0"),
+    month: monthName(p, c.months),
+    part: dayPart(p.hour ?? 0, c.text),
+  });
 }
 
-function fmtDate(d: string | Date | null): string {
+function fmtDate(d: string | Date | null, c: RiskCtx): string {
   if (!d) return "";
-  let dt: Date;
-  if (typeof d === "string") {
-    const s = d.replace("T", " ");
-    dt = new Date(s.slice(0, 10));
-    if (isNaN(dt.getTime())) return String(d);
-  } else {
-    dt = d;
-  }
-  const day = String(dt.getDate()).padStart(2, "0");
-  const mon = dt.toLocaleString("en-US", { month: "short" });
-  return `${day} ${mon}`;
+  const p = parseLocalParts(typeof d === "string" ? d : d.toISOString());
+  if (!p) return String(d);
+  return fill(c.text.dateFormat, {
+    day: String(p.day).padStart(2, "0"),
+    month: monthName(p, c.months),
+  });
 }
 
 // ------------------------------------------------------------------ scorers
@@ -207,7 +243,9 @@ export function scoreHeavyRain(
   max_daily_rain?: number | null,
   total_rainfall?: number | null,
   rainy_days?: number | null,
+  c: RiskCtx = EN_CTX,
 ): ScoreResult {
+  const t = c.text;
   const reasons: string[] = [];
   const contributions: [number, string][] = [];
 
@@ -234,7 +272,7 @@ export function scoreHeavyRain(
         peak_idx < rain_dates.length &&
         rain_dates[peak_idx] !== null
       ) {
-        peak_date_str = fmtDate(rain_dates[peak_idx]);
+        peak_date_str = fmtDate(rain_dates[peak_idx], c);
       }
     } else {
       peak = 0;
@@ -251,7 +289,7 @@ export function scoreHeavyRain(
     (!rain_next5?.length && max_daily_rain === null) ||
     max_daily_rain === undefined
   ) {
-    return [0.0, "no rainfall data", ["no rainfall data"]];
+    return [0.0, t.noRainfallData, [t.noRainfallData]];
   }
 
   // Peak-day driver vs IMD 24-hr bands
@@ -270,39 +308,28 @@ export function scoreHeavyRain(
   }
 
   if (peak_date_str) {
-    reasons.push(
-      `peak daily rain ${r.toFixed(1)} mm expected on ${peak_date_str}`,
-    );
-    contributions.push([
-      base,
-      `peak daily rain of ${r.toFixed(1)} mm on ${peak_date_str} (IMD 24-hr band)`,
-    ]);
+    const rp = { mm: r.toFixed(1), date: peak_date_str };
+    reasons.push(fill(t.peakRainOn, rp));
+    contributions.push([base, fill(t.peakRainOnMajor, rp)]);
   } else {
-    reasons.push(`peak daily rain ${r.toFixed(1)} mm in next 5 days`);
-    contributions.push([
-      base,
-      `peak daily rain of ${r.toFixed(1)} mm (IMD 24-hr band)`,
-    ]);
+    const rp = { mm: r.toFixed(1) };
+    reasons.push(fill(t.peakRain, rp));
+    contributions.push([base, fill(t.peakRainMajor, rp)]);
   }
 
   // 5-day accumulation bump
   let acc = 0.0;
   if (total5 > 100) {
     acc = lerp(total5, 100, 400, 0, 12);
-    reasons.push(`5-day total ${total5.toFixed(1)} mm`);
-    contributions.push([
-      acc,
-      `5-day rainfall accumulation of ${total5.toFixed(1)} mm`,
-    ]);
+    const tp = { mm: total5.toFixed(1) };
+    reasons.push(fill(t.total5, tp));
+    contributions.push([acc, fill(t.total5Major, tp)]);
   }
   if (wet_days5 >= 3) {
     const wd = Math.min(6.0, (wet_days5 - 2) * 2.0);
     acc += wd;
-    reasons.push(`${wet_days5} wet days in the next 5 days`);
-    contributions.push([
-      wd,
-      `${wet_days5} consecutive/near-consecutive wet days`,
-    ]);
+    reasons.push(fill(t.wetDays, { n: wet_days5 }));
+    contributions.push([wd, fill(t.wetDaysMajor, { n: wet_days5 })]);
   }
 
   // Wet-soil amplifier
@@ -314,11 +341,8 @@ export function scoreHeavyRain(
     r >= 64.5
   ) {
     wet_bump = lerp(soil_percentile, 70, 98, 4, 15);
-    reasons.push("already-wet soil reduces infiltration");
-    contributions.push([
-      wet_bump,
-      "already-saturated soil that cannot absorb more",
-    ]);
+    reasons.push(t.wetSoilReason);
+    contributions.push([wet_bump, t.wetSoilMajor]);
   }
 
   const score = clamp100(base + acc + wet_bump);
@@ -335,12 +359,14 @@ export function scoreHeatStress(
   humidity: number | null | undefined,
   station_type: string = "plains",
   crop_heat_threshold: number | null | undefined = null,
+  c: RiskCtx = EN_CTX,
 ): ScoreResult {
+  const t_ = c.text;
   const reasons: string[] = [];
   const contributions: [number, string][] = [];
 
   if (max_temp === null || max_temp === undefined) {
-    return [0.0, "no temperature data", ["no temperature data"]];
+    return [0.0, t_.noTempData, [t_.noTempData]];
   }
 
   const st = (station_type || "plains").trim().toLowerCase();
@@ -367,12 +393,18 @@ export function scoreHeatStress(
   } else {
     dry = lerp(t, severe, severe + 3, 85, 100);
   }
+  const stationLabel =
+    (t_.stationTypes as Record<string, string>)[st] ?? st;
   reasons.push(
-    `peak temp ${t.toFixed(1)} C vs ${st} threshold ${Math.round(thr)} C`,
+    fill(t_.peakTemp, {
+      t: t.toFixed(1),
+      station: stationLabel,
+      thr: Math.round(thr),
+    }),
   );
   contributions.push([
     dry,
-    `dry-bulb peak of ${t.toFixed(1)} C vs ${Math.round(thr)} C crop threshold`,
+    fill(t_.peakTempMajor, { t: t.toFixed(1), thr: Math.round(thr) }),
   ]);
 
   // Sustained-heat bump
@@ -383,7 +415,7 @@ export function scoreHeatStress(
   ) {
     const bump = Math.min(8.0, lerp(avg_max_temp, thr - 3, thr + 3, 0, 8));
     dry = clamp100(dry + bump);
-    reasons.push(`sustained avg max ${avg_max_temp.toFixed(1)} C`);
+    reasons.push(fill(t_.sustainedMax, { t: avg_max_temp.toFixed(1) }));
   }
 
   // (2) Wet-bulb driver
@@ -397,11 +429,8 @@ export function scoreHeatStress(
     } else {
       wet = lerp(twb, 31, 35, 70, 100);
     }
-    reasons.push(`wet-bulb temp ${twb.toFixed(1)} C (humid-heat, Stull 2011)`);
-    contributions.push([
-      wet,
-      `wet-bulb temperature of ${twb.toFixed(1)} C (humid heat limits cooling)`,
-    ]);
+    reasons.push(fill(t_.wetBulb, { t: twb.toFixed(1) }));
+    contributions.push([wet, fill(t_.wetBulbMajor, { t: twb.toFixed(1) })]);
   }
 
   const score = clamp100(Math.max(dry, wet));
@@ -418,7 +447,9 @@ export function scorePest(
   soil_percentile: number | null | undefined,
   rainy_days: number | null | undefined,
   total_rainfall?: number | null,
+  c: RiskCtx = EN_CTX,
 ): ScoreResult {
+  const t = c.text;
   const reasons: string[] = [];
   const contributions: [number, string][] = [];
   let total = 0.0;
@@ -435,10 +466,10 @@ export function scorePest(
     }
     total += t_score;
     components += 1;
-    reasons.push("warm temperatures favour pest activity");
+    reasons.push(t.pestWarm);
     contributions.push([
       t_score,
-      `warm temperatures (${avg_max_temp.toFixed(1)} C) in the pest-active band`,
+      fill(t.pestWarmMajor, { t: avg_max_temp.toFixed(1) }),
     ]);
   }
 
@@ -447,11 +478,11 @@ export function scorePest(
     total += h_score;
     components += 1;
     if (humidity >= 70) {
-      reasons.push(`high humidity ${Math.round(humidity)}% favours disease`);
+      reasons.push(fill(t.pestHumidity, { h: Math.round(humidity) }));
     }
     contributions.push([
       h_score,
-      `humidity of ${Math.round(humidity)}% favouring fungal disease`,
+      fill(t.pestHumidityMajor, { h: Math.round(humidity) }),
     ]);
   }
 
@@ -461,28 +492,28 @@ export function scorePest(
     const s = lerp(soil_percentile, 40, 95, 20, 90);
     if (s > wet_score) {
       wet_score = s;
-      wet_label = "wet soil supporting pest/disease build-up";
+      wet_label = t.pestWetSoil;
     }
   }
   if (rainy_days !== null && rainy_days !== undefined) {
     const s = lerp(rainy_days, 2, 8, 20, 90);
     if (s > wet_score) {
       wet_score = s;
-      wet_label = `${rainy_days} rainy days keeping foliage wet`;
+      wet_label = fill(t.pestRainyDays, { n: rainy_days });
     }
   }
   if (wet_label !== null) {
     total += wet_score;
     components += 1;
-    reasons.push("prolonged wetness supports pest/disease build-up");
+    reasons.push(t.pestWetness);
     contributions.push([wet_score, wet_label]);
   }
 
   if (components === 0) {
     return [
       0.0,
-      "insufficient data for pest index",
-      ["insufficient data for pest index"],
+      t.noPestData,
+      [t.noPestData],
     ];
   }
 
@@ -505,7 +536,9 @@ export function scoreLightning(
     windGusts?: number | null;
     code?: number | null;
   } | null,
+  c: RiskCtx = EN_CTX,
 ): [number, string, string[], string] {
+  const t = c.text;
   const reasons: string[] = [];
   let score: number = 0;
   let category: string = "No Risk";
@@ -543,25 +576,28 @@ export function scoreLightning(
     };
     score = catMap[category.trim().toLowerCase()] ?? 25;
   } else {
-    return [0.0, "no lightning data", ["no lightning data"], "No Risk"];
+    return [0.0, t.noLightningData, [t.noLightningData], "No Risk"];
   }
 
-  reasons.push(`lightning risk index ${Math.round(score)}/100 (${category})`);
+  const catLabel =
+    (t.lightningCategories as Record<string, string>)[category] ?? category;
+  const lp = { score: Math.round(score), category: catLabel };
+  reasons.push(fill(t.lightningIndex, lp));
   if (category === "Severe") {
-    reasons.push("thunderstorms / severe convective activity imminent");
-    reasons.push("stay indoors, avoid open fields and tall metal equipment");
+    reasons.push(t.lightningSevere1);
+    reasons.push(t.lightningSevere2);
   } else if (category === "High") {
-    reasons.push("strong convective instability and thunderstorm potential");
-    reasons.push("postpone outdoor spraying and fieldwork");
+    reasons.push(t.lightningHigh1);
+    reasons.push(t.lightningHigh2);
   } else if (category === "Moderate") {
-    reasons.push("moderate atmospheric instability with convective buildup");
+    reasons.push(t.lightningModerate);
   } else if (category === "Low") {
-    reasons.push("low atmospheric instability, minimal lightning risk");
+    reasons.push(t.lightningLow);
   } else {
-    reasons.push("no convective activity, calm conditions");
+    reasons.push(t.lightningNone);
   }
 
-  const major = `lightning risk assessed as ${category} (${Math.round(score)}/100)`;
+  const major = fill(t.lightningMajor, lp);
   return [score, major, reasons, category];
 }
 
@@ -574,7 +610,9 @@ export function scoreWind(
   times_hourly?: (string | Date | null)[] | null,
   wind_gusts?: number | null,
   wind_speed?: number | null,
+  c: RiskCtx = EN_CTX,
 ): ScoreResult {
+  const t = c.text;
   const reasons: string[] = [];
   let peak: number | null = null;
   let when_str: string | null = null;
@@ -591,13 +629,13 @@ export function scoreWind(
         peak_idx < times_hourly.length &&
         times_hourly[peak_idx] !== null
       ) {
-        when_str = fmtWhen(times_hourly[peak_idx]);
+        when_str = fmtWhen(times_hourly[peak_idx], c);
       }
     }
   }
   if (peak === null) peak = wind_gusts ?? wind_speed ?? null;
   if (peak === null) {
-    return [0.0, "no wind data", ["no wind data"]];
+    return [0.0, t.noWindData, [t.noWindData]];
   }
 
   const g = peak;
@@ -614,18 +652,19 @@ export function scoreWind(
     base = lerp(g, 65, 85, 90, 100);
   }
 
+  const wp = { g: Math.round(g), when: when_str ?? "" };
   if (when_str) {
-    reasons.push(`wind gusts ${Math.round(g)} km/h expected on ${when_str}`);
+    reasons.push(fill(t.windOn, wp));
   } else {
-    reasons.push(`wind gusts ${Math.round(g)} km/h`);
+    reasons.push(fill(t.wind, wp));
   }
-  if (g >= 40) reasons.push("spraying will drift — postpone");
-  if (g >= 50) reasons.push("lodging risk for tall/flowering crops");
+  if (g >= 40) reasons.push(t.windDrift);
+  if (g >= 50) reasons.push(t.windLodging);
 
   const score = clamp100(base);
   const major = when_str
-    ? `peak wind gusts of ${Math.round(g)} km/h on ${when_str} (IMD gust band)`
-    : `wind gusts of ${Math.round(g)} km/h (IMD gust band)`;
+    ? fill(t.windMajorOn, wp)
+    : fill(t.windMajor, wp);
   return [score, major, reasons];
 }
 
@@ -637,15 +676,13 @@ export function scoreFrost(
   min_temp: number | null | undefined,
   avg_min_temp?: number | null,
   station_type: string = "plains",
+  c: RiskCtx = EN_CTX,
 ): ScoreResult {
+  const tx = c.text;
   const reasons: string[] = [];
   const t = min_temp ?? avg_min_temp ?? null;
   if (t === null || t === undefined) {
-    return [
-      0.0,
-      "no minimum-temperature data",
-      ["no minimum-temperature data"],
-    ];
+    return [0.0, tx.noMinTempData, [tx.noMinTempData]];
   }
 
   const st = (station_type || "plains").trim().toLowerCase();
@@ -661,9 +698,7 @@ export function scoreFrost(
     } else {
       base = lerp(t, 0, -4, 80, 100);
     }
-    reasons.push(
-      `forecast min temp ${t.toFixed(1)} C (IMD hilly cold-wave <=0 C)`,
-    );
+    reasons.push(fill(tx.frostHilly, { t: t.toFixed(1) }));
   } else {
     if (t > 10) {
       base = 0.0;
@@ -676,33 +711,18 @@ export function scoreFrost(
     } else {
       base = lerp(t, 0, -3, 85, 100);
     }
-    reasons.push(
-      `forecast min temp ${t.toFixed(1)} C (IMD plains Cold Wave <=4 C)`,
-    );
+    reasons.push(fill(tx.frostPlains, { t: t.toFixed(1) }));
   }
 
   const score = clamp100(base);
   if (score <= 0) {
-    return [
-      0.0,
-      "temperatures well above frost/cold-wave range",
-      ["temperatures well above frost/cold-wave range"],
-    ];
+    return [0.0, tx.aboveFrostRange, [tx.aboveFrostRange]];
   }
-  const major = `forecast minimum temperature of ${t.toFixed(1)} C`;
+  const major = fill(tx.frostMajor, { t: t.toFixed(1) });
   return [score, major, reasons];
 }
 
 // ------------------------------------------------------------------ top-level
-
-const HAZARD_LABELS: Record<string, string> = {
-  heavy_rain: "Heavy rain",
-  heat_stress: "Heat stress",
-  pest: "Pest / disease",
-  lightning: "Lightning",
-  wind: "Wind",
-  frost: "Frost",
-};
 
 function pack(s: number, m: string, r: string[]): HazardScore {
   return { score: pythonRound(s), band: band(s), major_factor: m, reasons: r };
@@ -710,7 +730,9 @@ function pack(s: number, m: string, r: string[]): HazardScore {
 
 export function computeOverall(
   per_hazard: Record<string, HazardScore>,
+  c: RiskCtx = EN_CTX,
 ): OverallScore {
+  const t = c.text;
   const items = Object.entries(per_hazard).sort(
     (a, b) => b[1].score - a[1].score,
   );
@@ -733,7 +755,7 @@ export function computeOverall(
   const ranked = items
     .filter(([, v]) => v.score >= 20)
     .map(([k, v]) => ({
-      hazard: HAZARD_LABELS[k] ?? k,
+      hazard: (t.hazards as Record<string, string>)[k] ?? k,
       score: v.score,
       band: v.band,
       major_factor: v.major_factor,
@@ -743,11 +765,20 @@ export function computeOverall(
   let summary: string;
   if (contributors.length > 0) {
     const named = contributors
-      .map((c) => `${c.hazard} (${c.score}/100, ${c.band})`)
-      .join("; ");
-    summary = `Driven mainly by ${named}.`;
+      .map((x) =>
+        fill(t.contributor, {
+          hazard: x.hazard,
+          score: x.score,
+          band:
+            (t.bands as Record<string, string>)[x.band] ??
+            (t.lightningCategories as Record<string, string>)[x.band] ??
+            x.band,
+        }),
+      )
+      .join(t.listSeparator);
+    summary = fill(t.summaryDriven, { list: named });
   } else {
-    summary = "All individual hazards are minimal.";
+    summary = t.summaryMinimal;
   }
 
   return {
@@ -761,7 +792,12 @@ export function computeOverall(
 /**
  * Compute all six risk scores from weather data.
  */
-export function computeRiskScores(input: ComputeRiskInput): RiskScores {
+export function computeRiskScores(
+  input: ComputeRiskInput,
+  text: RiskText = en.riskText,
+  months: string[] = en.dates.monthsShort,
+): RiskScores {
+  const c: RiskCtx = { text, months };
   const {
     rain_next5,
     rain_dates,
@@ -801,6 +837,7 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     max_daily_rain,
     total_rainfall,
     rainy_days,
+    c,
   );
   const [ht_s, ht_m, ht_r] = scoreHeatStress(
     max_temp,
@@ -808,6 +845,7 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     humidity,
     station_type,
     crop_heat_threshold,
+    c,
   );
   const [pe_s, pe_m, pe_r] = scorePest(
     avg_max_temp,
@@ -815,6 +853,7 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     sm,
     rainy_days,
     total_rainfall,
+    c,
   );
   const [li_s, li_m, li_r, li_band] = scoreLightning(
     lightning_score,
@@ -826,14 +865,21 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
       windGusts: peak_gust,
       code: input.weather_code,
     },
+    c,
   );
   const [wi_s, wi_m, wi_r] = scoreWind(
     gusts_hourly,
     times_hourly,
     wind_gusts,
     wind_speed,
+    c,
   );
-  const [fr_s, fr_m, fr_r] = scoreFrost(min_temp, avg_min_temp, station_type);
+  const [fr_s, fr_m, fr_r] = scoreFrost(
+    min_temp,
+    avg_min_temp,
+    station_type,
+    c,
+  );
 
   const per_hazard: Record<string, HazardScore> = {
     heavy_rain: pack(hr_s, hr_m, hr_r),
@@ -849,7 +895,7 @@ export function computeRiskScores(input: ComputeRiskInput): RiskScores {
     frost: pack(fr_s, fr_m, fr_r),
   };
 
-  const overall = computeOverall(per_hazard);
+  const overall = computeOverall(per_hazard, c);
 
   return {
     overall,

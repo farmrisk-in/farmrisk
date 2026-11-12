@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import React, { useState, useEffect } from "react";
 import { type CropOption } from "./Overview";
 import { Badge } from "@/components/ui/badge";
@@ -287,10 +288,7 @@ const CropCalender = ({ selectedCrop }: CropCalenderProps) => {
                 >
                   <span>
                     {t.dashboard.today}:{" "}
-                    {new Date().toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatDate(new Date(), t.dates, "dayMonth")}
                   </span>
                 </TooltipContent>
               </Tooltip>

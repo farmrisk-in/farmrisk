@@ -40,6 +40,7 @@ function Calendar({
       locale={locale}
       formatters={{
         formatMonthDropdown: (date) =>
+          // i18n-ignore: generic UI-kit default; visible callers pass `formatters` built from t.dates
           date.toLocaleString(locale?.code, { month: "short" }),
         ...formatters,
       }}
@@ -199,6 +200,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
+      // i18n-ignore: data attribute, never displayed
       data-day={day.date.toLocaleDateString(locale?.code)}
       data-selected-single={
         modifiers.selected &&

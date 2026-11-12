@@ -62,7 +62,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       hi: "धुंध",
       mr: "धुक्याचे",
       ta: "மூடுபனி",
-      gu: "靄",
+      gu: "ધુમ્મસ",
     },
     icon: {
       day: "haze_fog_dust_smoke.svg",
@@ -74,7 +74,7 @@ const WMO_MAP: Record<number, WmoEntry> = {
       hi: "जमी हुई धुंध",
       mr: "गोठलेली धुकी",
       ta: "பனி மூட்டம்",
-      gu: "ઠંડી靄",
+      gu: "થીજેલું ધુમ્મસ",
     },
     icon: {
       day: "blizzard.svg",
@@ -432,6 +432,28 @@ function normalizeArray(
   );
 }
 
+// All `time` fields are emitted as the location's local wall-clock time with
+// an explicit UTC offset, e.g. 14:00 IST → "2026-11-09T14:00:00+05:30".
+// This is a correct instant (parses properly with `new Date()`), and its
+// leading characters are the local date/time, so clients and the advisory
+// service read the local date/hour straight from the string
+// (see lib/weatherTime.ts). Do not change this format without updating them.
+function formatOffset(offsetSeconds: number): string {
+  const sign = offsetSeconds < 0 ? "-" : "+";
+  const abs = Math.abs(offsetSeconds);
+  const hh = String(Math.floor(abs / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((abs % 3600) / 60)).padStart(2, "0");
+  return `${sign}${hh}:${mm}`;
+}
+
+/** UTC epoch seconds → "YYYY-MM-DDTHH:mm:ss±HH:MM" in the location's local time. */
+function toLocalIso(utcSeconds: number, offsetSeconds: number): string {
+  const wallClock = new Date((utcSeconds + offsetSeconds) * 1000)
+    .toISOString()
+    .slice(0, 19);
+  return wallClock + formatOffset(offsetSeconds);
+}
+
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const lat = searchParams.get("lat");
@@ -481,9 +503,7 @@ export async function GET(request: NextRequest) {
     timezoneAbbreviation: response.timezoneAbbreviation(),
     utcOffsetSeconds: response.utcOffsetSeconds(),
     current: {
-      time: new Date(
-        (Number(current.time()) + response.utcOffsetSeconds()) * 1000,
-      ),
+      time: toLocalIso(Number(current.time()), response.utcOffsetSeconds()),
       temperature_2m: roundToNDecimals(current.variables(0)!.value(), 0),
       relative_humidity_2m: roundToNDecimals(current.variables(1)!.value(), 0),
       apparent_temperature: roundToNDecimals(current.variables(2)!.value(), 0),
@@ -500,6 +520,7 @@ export async function GET(request: NextRequest) {
         Boolean(current.variables(3)!.value()),
       ),
       condition: WMO_MAP[current.variables(4)!.value()]?.condition,
+      code: current.variables(4)!.value(),
     },
     hourly: {
       time: Array.from(
@@ -509,11 +530,9 @@ export async function GET(request: NextRequest) {
             hourly.interval(),
         },
         (_, i) =>
-          new Date(
-            (Number(hourly.time()) +
-              i * hourly.interval() +
-              response.utcOffsetSeconds()) *
-              1000,
+          toLocalIso(
+            Number(hourly.time()) + i * hourly.interval(),
+            response.utcOffsetSeconds(),
           ),
       ).splice(-24),
       temperature_2m: normalizeArray(
@@ -574,11 +593,9 @@ export async function GET(request: NextRequest) {
             (Number(daily.timeEnd()) - Number(daily.time())) / daily.interval(),
         },
         (_, i) =>
-          new Date(
-            (Number(daily.time()) +
-              i * daily.interval() +
-              response.utcOffsetSeconds()) *
-              1000,
+          toLocalIso(
+            Number(daily.time()) + i * daily.interval(),
+            response.utcOffsetSeconds(),
           ),
       ).splice(-16),
       temperature_2m_max: normalizeArray(

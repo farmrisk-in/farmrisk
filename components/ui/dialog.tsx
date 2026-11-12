@@ -75,6 +75,7 @@ function DialogContent({
               size="icon-lg"
             >
               <RiCloseLine className="size-6" />
+              {/* i18n-ignore */}
               <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>
@@ -114,6 +115,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
+          {/* i18n-ignore */}
           <Button variant="outline">Close</Button>
         </DialogPrimitive.Close>
       )}

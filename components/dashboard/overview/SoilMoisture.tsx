@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
+import { formatDate } from "@/lib/formatDate";
 import React, {
   useMemo,
   useState,
@@ -43,6 +44,7 @@ import {
   CloudOff,
   Settings,
   Droplets,
+  Info,
   Percent,
   CloudRain,
   Wind,
@@ -53,6 +55,12 @@ import {
 } from "lucide-react";
 import { TranslationType } from "@/constants/content";
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,9 +184,7 @@ interface CustomTooltipProps {
 const CustomTooltip = ({ active, payload, t }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const dateStr = new Date(data.date)
-      .toLocaleDateString("en-GB", { day: "numeric", month: "short" })
-      .toUpperCase();
+    const dateStr = formatDate(data.date, t.dates, "dayMonth").toUpperCase();
 
     const smValue = data.sm_percentile;
     const hasSm = typeof smValue === "number";
@@ -311,6 +317,8 @@ export default function SoilMoisture({
     const handleIrrigationUpdate = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       setDaysbefore(detail);
+      // Cleared (location change, sign-out, skip) — clear the picked date too.
+      if (detail === undefined) setSelectedDate(null);
     };
 
     window.addEventListener(
@@ -490,8 +498,7 @@ export default function SoilMoisture({
   }, [visibleData]);
 
   const formatXAxis = (tickItem: string) => {
-    const date = new Date(tickItem);
-    return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    return formatDate(tickItem, t.dates, "dayMonth");
   };
 
   const formatKeyLabel = (key: string) => {
@@ -536,11 +543,7 @@ export default function SoilMoisture({
     const diffTime = tObj.getTime() - d.getTime();
     const diffDays = Math.round(diffTime / (1000 * 3600 * 24));
 
-    const locale = t.locale || "en-US";
-    const dateStr = d.toLocaleDateString(locale, {
-      month: "short",
-      day: "numeric",
-    });
+    const dateStr = formatDate(d, t.dates, "dayMonth");
 
     if (diffDays === 0) return t.dashboard.smIrrigatedToday;
     if (diffDays === 1) return t.dashboard.smIrrigatedYesterday;
@@ -746,6 +749,29 @@ export default function SoilMoisture({
         <div className="flex items-center gap-2">
           <Droplets className="size-4.5 text-blue-500" />
           {t.dashboard.soilMoisture}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-label={t.dashboard.soilMoisture}
+                className="text-muted-foreground hover:text-foreground transition-colors p-0.5 -m-0.5 rounded-full"
+              >
+                <Info className="size-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              className="gap-2 text-xs font-normal normal-case tracking-normal"
+            >
+              <p className="leading-relaxed">{t.dashboard.smInfoText}</p>
+              <Link
+                href="/methods"
+                className="font-semibold text-primary underline underline-offset-2"
+              >
+                {t.dashboard.smInfoLink}
+              </Link>
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="flex items-center gap-2">
           {/* IRRIGATION DATE DIALOG BUTTON */}
@@ -792,6 +818,12 @@ export default function SoilMoisture({
                     numberOfMonths={isMobile ? 1 : 2}
                     defaultMonth={defaultMonth}
                     disabled={isDateDisabled}
+                    formatters={{
+                      formatCaption: (d) =>
+                        `${formatDate(d, t.dates, "month", { long: true })} ${d.getFullYear()}`,
+                      formatMonthDropdown: (d) => formatDate(d, t.dates, "month"),
+                      formatWeekdayName: (d) => formatDate(d, t.dates, "weekday"),
+                    }}
                     className="p-1 bg-transparent border-0 shadow-none"
                   />
                 </div>

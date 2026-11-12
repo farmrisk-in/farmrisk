@@ -59,6 +59,9 @@ export function usePestDisease(cropId: string, language: string) {
     data: query.data,
     isLoading: isContextLoading || query.isLoading,
     isFetching: query.isFetching,
+    // True while a previous key's card (other language/crop/location) is
+    // being shown via keepPreviousData during the refetch.
+    isPlaceholderData: query.isPlaceholderData,
     error: query.error || errors.calendar || errors.weather,
     isError: query.isError || !!errors.calendar || !!errors.weather,
     refetch: query.refetch,

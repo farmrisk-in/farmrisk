@@ -98,7 +98,7 @@ export function CropSelector() {
               </span>
               {isCustomSelected && (
                 <span className="text-[10px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold px-1 rounded">
-                  Other
+                  {t.cropCatalog.other}
                 </span>
               )}
             </div>
@@ -171,12 +171,12 @@ export function CropSelector() {
           >
             <div className="flex items-center gap-2 min-w-0">
               <Grid className="size-3.5 shrink-0" />
-              <span className="truncate font-semibold">Other crop...</span>
+              <span className="truncate font-semibold">{t.cropCatalog.otherCrop}</span>
             </div>
             {isFree ? (
               <Lock className="size-3.5 text-muted-foreground shrink-0" />
             ) : (
-              <span className="text-[10px] text-muted-foreground">Catalog</span>
+              <span className="text-[10px] text-muted-foreground">{t.cropCatalog.catalog}</span>
             )}
           </DropdownMenuItem>
         </DropdownMenuContent>

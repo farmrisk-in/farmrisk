@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Globe } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
-import { LanguageCode } from "@/constants/content";
+import { AVAILABLE_LANGUAGES } from "@/constants/languages/registry";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,13 +20,11 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const languages: { code: LanguageCode; label: string; native: string }[] = [
-    { code: "en", label: "English", native: "English" },
-    { code: "hi", label: "Hindi", native: "हिन्दी" },
-    { code: "mr", label: "Marathi", native: "मराठी" },
-    { code: "ta", label: "Tamil", native: "தமிழ்" },
-    { code: "gu", label: "Gujarati", native: "ગુજરાતી" },
-  ];
+  const languages = AVAILABLE_LANGUAGES.map((l) => ({
+    code: l.code,
+    label: l.englishName,
+    native: l.nativeName,
+  }));
 
   const currentLangObj =
     languages.find((l) => l.code === language) || languages[0];
@@ -79,7 +77,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       </Button>
 
       {isOpen && (
-        <div className="bg-background absolute -left-1/2 mt-1.5 z-[9999] w-48 rounded-xl border p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 border-border text-slate-800 dark:text-white">
+        <div className="bg-background absolute -left-1/2 mt-1.5 z-[9999] w-48 max-h-[min(70vh,26rem)] overflow-y-auto overscroll-contain rounded-xl border p-3 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 border-border text-slate-800 dark:text-white">
           {languages.map((l) => (
             <button
               key={l.code}

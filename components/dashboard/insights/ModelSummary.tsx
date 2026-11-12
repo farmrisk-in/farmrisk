@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate, type DateWords } from "@/lib/formatDate";
 import { useEffect, useMemo, useState } from "react";
 import { TrendingUpDown, CheckCheck, CloudOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,13 +13,12 @@ import { useSoilMoisture } from "@/hooks/useSoilMoisture";
 import { useIrrigation } from "@/hooks/useIrrigation";
 import { TranslationType } from "@/constants/content";
 import { ForecastRow } from "@/types/forecast";
+import { weatherLocalDate } from "@/lib/weatherTime";
 
 const RAINY_DAY_THRESHOLD_MM = 2.5;
 
-const formatDateText = (dateStr: string, locale: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(locale, { day: "numeric", month: "short" });
-};
+const formatDateText = (dateStr: string, words: DateWords) =>
+  formatDate(dateStr, words, "dayMonth");
 
 type SoilWordKey =
   | "smExceptionalWet"
@@ -101,7 +101,7 @@ const ModelSummary = () => {
 
   const fallbackPredictions: ForecastRow[] = daily
     ? daily.time.map((time, idx) => ({
-        date: new Date(time).toISOString().split("T")[0],
+        date: weatherLocalDate(String(time)),
         tmax: daily.temperature_2m_max[idx],
         tmax_corrected: daily.temperature_2m_max[idx],
         tmin: daily.temperature_2m_min[idx],
@@ -222,15 +222,15 @@ const ModelSummary = () => {
   const rows: Row[] = [
     [
       t.dashboard.totalRainfall,
-      `${metrics.totalRainfall.toFixed(1)} mm`,
+      `${metrics.totalRainfall.toFixed(1)} ${t.dashboard.unitMm}`,
       t.dashboard.rainyDays,
       `${metrics.rainyDays} ${t.dashboard.daysUnit}`,
     ],
     [
       t.dashboard.peakDayRain,
-      `${metrics.peakRain.toFixed(1)} mm`,
+      `${metrics.peakRain.toFixed(1)} ${t.dashboard.unitMm}`,
       t.dashboard.peakDate,
-      formatDateText(metrics.peakDate, t.locale),
+      formatDateText(metrics.peakDate, t.dates),
     ],
     [
       t.dashboard.maxTemp,
